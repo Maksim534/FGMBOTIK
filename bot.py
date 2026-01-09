@@ -3,7 +3,9 @@
 import config as cfg
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
+from telegram.ext import Updater, DefaultBotProperties
 
-bot = Bot(cfg.API_TOKEN, parse_mode='HTML', link_preview_is_disabled=True)
-dp = Dispatcher(bot, storage=MemoryStorage())
+
+bot = Bot(token='YOUR_BOT_TOKEN', default=DefaultBotProperties(parse_mode='HTML'))
+updater = Updater(bot=bot, use_context=True)
 
