@@ -4,5 +4,5 @@ from aiogram import Bot, Dispatcher
 import config as cfg
 
 
-bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
+bot = Bot(token="7092521991:AAG18Ty2cie-czUSvfhQmyWo9sZmIpHtYos", parse_mode=ParseMode.HTML)
 dp = Dispatcher(storage=MemoryStorage())
