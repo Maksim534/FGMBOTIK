@@ -6,6 +6,6 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from telegram.ext import Updater, DefaultBotProperties
 
 
-bot = Bot(token='YOUR_BOT_TOKEN', default=DefaultBotProperties(parse_mode='HTML'))
+bot = Bot(token='7092521991:AAG18Ty2cie-czUSvfhQmyWo9sZmIpHtYos', default=DefaultBotProperties(parse_mode='HTML'))
 updater = Updater(bot=bot, use_context=True)
 
