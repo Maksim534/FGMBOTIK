@@ -129,7 +129,7 @@ async def catalog_modules(message: types.Message):
     global CATALOG
     
     try:
-        response = requests.get("https://raw.githubusercontent.com/Maksim534/bfg-modules")
+        response = requests.get("https://raw.githubusercontent.com/Maksim534/bfg-modules/blob/main/modules.json")
         CATALOG = response.json()
     except:
         pass
