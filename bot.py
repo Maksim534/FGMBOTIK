@@ -1,8 +1,9 @@
-# bot version: 3.0.0,3
-from aiogram import Bot, Dispatcher
+# bot version: 2.0.0,7
 
 import config as cfg
+from aiogram import Bot, Dispatcher
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 
-bot = Bot(token="7092521991:AAG18Ty2cie-czUSvfhQmyWo9sZmIpHtYos")
-dp = Dispatcher(bot)
+bot = Bot(cfg.API_TOKEN, parse_mode='HTML', disable_web_page_preview=True)
+dp = Dispatcher(bot, storage=MemoryStorage())
