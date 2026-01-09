@@ -1,6 +1,7 @@
 import time
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 import config as cfg
 from utils.settings import get_setting
