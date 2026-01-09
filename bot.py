@@ -5,4 +5,4 @@ import config as cfg
 
 
 bot = Bot(token="7092521991:AAG18Ty2cie-czUSvfhQmyWo9sZmIpHtYos")
-dp = Dispatcher(storage=MemoryStorage())
+dp = Dispatcher(bot)
