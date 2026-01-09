@@ -5,6 +5,6 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 
-bot = Bot(token='7092521991:AAG18Ty2cie-czUSvfhQmyWo9sZmIpHtYos', default=DefaultBotProperties(parse_mode='HTML'))
+bot = Bot(token='7092521991:AAG18Ty2cie-czUSvfhQmyWo9sZmIpHtYos', parse_mode='HTML')
 dp = Dispatcher(storage=MemoryStorage())
 
