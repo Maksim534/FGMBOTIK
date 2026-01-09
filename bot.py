@@ -3,7 +3,8 @@
 import config as cfg
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import DefaultBotProperties
 
-
-bot = Bot(cfg.API_TOKEN, parse_mode='HTML', disable_web_page_preview=True)
+bot = Bot(cfg.API_TOKEN, default=DefaultBotProperties(parse_mode='HTML', link_preview_is_disabled=True))
 dp = Dispatcher(bot, storage=MemoryStorage())
+
