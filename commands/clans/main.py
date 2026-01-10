@@ -38,7 +38,7 @@ async def new_clan(message: types.message, user: BFGuser):
 		await message.answer(f'{user.url}, название вашего клана содержит запрещённые символы {lose}')
 		return
 
-	if int(user.balance) < 50_000_000_000:
+	if int(user.balance) < 1_000_000_000_000:
 		await message.answer(f'{user.url}, у вас недостаточно денег для создания клана {lose}')
 		return
 
