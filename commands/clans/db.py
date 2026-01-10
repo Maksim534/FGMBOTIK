@@ -10,7 +10,7 @@ async def clan_info(user_id: int) -> tuple:
 
 async def new_clan_db(user_id: int, name) -> None:
 	balance = cursor.execute('SELECT balance FROM users WHERE user_id = ?', (user_id,)).fetchone()[0]
-	balance = int(Decimal(balance) - Decimal('250000000000'))
+	balance = int(Decimal(balance) - Decimal('50000000000'))
 	cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (str(balance), user_id))
 
 	dt = int((datetime.now() + timedelta(hours=24)).timestamp())
