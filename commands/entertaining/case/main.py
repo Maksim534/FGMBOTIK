@@ -28,8 +28,8 @@ async def my_cases_cmd(message: types.Message, user: BFGuser):
         txt = f"😕 У вас нету кейсов."
 
     await message.answer(f'''{user.url}, доступные кейсы:
-🎁 1. Обычный кейс — 750 квдр $
-🎁 2. Золотой кейс - 5 квнт $
+🎁 1. Обычный кейс — 50.000$
+🎁 2. Золотой кейс - 1.500.000$
 🎁 3. Рудный кейс - 50 ⚙️
 🎁 4. Материальный кейс - 200 🌌
 
@@ -58,7 +58,7 @@ async def buy_case_cmd(message: types.Message, user: BFGuser):
         return
     
     if case == 1:
-        summ = 750_000_000_000_000_000 * amount
+        summ = 50_000 * amount
         
         if summ > int(user.balance):
             await message.answer(f'{user.url}, у вас недостаточно средств для покупки данного кейса {lose}')
@@ -69,7 +69,7 @@ async def buy_case_cmd(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, вы успешно купили {amount} «Обычный кейс» за {tr(summ)}$ ✅')
     
     elif case == 2:
-        summ = 5_000_000_000_000_000_000 * amount
+        summ = 1_500_000 * amount
         
         if summ > int(user.balance):
             await message.answer(f'{user.url}, у вас недостаточно средств для покупки данного кейса {lose}')
@@ -80,7 +80,7 @@ async def buy_case_cmd(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, вы успешно купили {amount} «Золотой кейс» за {tr(summ)}$ ✅')
     
     elif case == 3:
-        summ = 50 * case
+        summ = 40 * case
         
         if summ > int(user.mine.titanium):
             await message.answer(f'{user.url}, у вас недостаточно средств для покупки данного кейса {lose}')
@@ -149,9 +149,9 @@ async def open_case_logic(message: types.Message, amount: int, case: int, user: 
 
         if case in [1, 2]:
             if prize in range(1, 45):
-                smoney += random.randint(100_000_000_000_000_000, 1_000_000_000_000_000_000) * coff
+                smoney += random.randint(30_000, 150_000) * coff
             elif prize in range(45, 70):
-                srating += random.randint(5_000_000, 150_000_000) * coff
+                srating += random.randint(20, 50) * coff
             else:
                 sexpe += random.randint(100, 250) * coff
                 
@@ -159,23 +159,23 @@ async def open_case_logic(message: types.Message, amount: int, case: int, user: 
             if prize in range(1, 5):
                 spalladium += random.randint(1, 3)
             if prize in range(5, 30):
-                smoney += random.randint(100_000_000_000_000_000, 1_000_000_000_000_000_000)
+                smoney += random.randint(900_000, 2_000_000)
             elif prize in range(30, 60):
-                srating += random.randint(5_000_000, 150_000_000)
+                srating += random.randint(50, 150)
             elif prize in range(60, 80):
-                stitan += random.randint(30, 80)
+                stitan += random.randint(25, 50)
             else:
                 sexpe += random.randint(100, 250)
                 
         elif case == 4:
             if prize in range(1, 30):
-                smoney += random.randint(100_000_000_000_000_000, 1_000_000_000_000_000_000)
+                smoney += random.randint(1_000_000, 4_000_000)
             elif prize in range(30, 60):
-                srating += random.randint(5_000_000, 150_000_000)
+                srating += random.randint(100, 250)
             elif prize in range(60, 80):
                 smatter += random.randint(30, 80)
             else:
-                sexpe += random.randint(100, 250)
+                sexpe += random.randint(101, 250)
                 
     if smoney > 0:
         await db.open_case_db(user.user_id, smoney, 'balance')
