@@ -15,14 +15,14 @@ import config as cfg
 def get_limit_cmd(status: int) -> int:
     """Получить лимит на дневную передачу"""
     if status == 1:
-        return 300_000_000_000_000
+        return 1_000_000_000
     elif status == 2:
-        return 750_000_000_000_000
+        return 100_000_000_000
     elif status == 3:
-        return 1_000_000_000_000_000
+        return 500_000_000_000
     elif status == 4:
-        return 30_000_000_000_000_000
-    return 150_000_000_000_000  # Для статуса "игрок" (0)
+        return 1_000_000_000_000
+    return 500_000_000  # Для статуса "игрок" (0)
 
 
 @antispam
