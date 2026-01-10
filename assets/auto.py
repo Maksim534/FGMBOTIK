@@ -42,7 +42,6 @@ async def autocommands3() -> None:
 
 async def autocommands4() -> None:
     """Каждый день в 00:00"""
-    await search_update(force=True)
     await autobank()
     await reset_limit()
 
