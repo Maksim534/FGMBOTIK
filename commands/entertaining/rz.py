@@ -94,7 +94,7 @@ async def try_luck_cmd(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, ты уже испытывал свою удачу, следующий раз ты сможешь через {txt}')
         return
 
-    summ = random.randint(10_000_000, 900_000_000)
+    summ = random.randint(20_000, 50_000)
 
     await user.biores.upd(summ, '+')
     await message.answer(f'✅ Вы успешно испытали удачу и получили {tr(summ)}кг биоресурса ☣️')
@@ -115,7 +115,7 @@ async def bonus_cmd(message: types.Message, user: BFGuser):
     i = random.randint(1, 4)
     
     if i == 1:
-        summ = random.randint(1_000_000, 4_000_000)
+        summ = random.randint(10_000, 40_000)
         await user.balance.upd(summ, '+')
         txt = f'{tr(summ)}$ 💰'
     elif i == 2:
