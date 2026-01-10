@@ -116,7 +116,7 @@ async def buy_ratting_cmd(message: types.Message, user: BFGuser):
         return
 
     r_summ = Decimal(r_summ)
-    kurs = 150_000_000  # стоимость 1 рейтинга
+    kurs = 10_000  # стоимость 1 рейтинга
     summ = r_summ * kurs
     
     if Decimal(str(user.balance)) < summ:
