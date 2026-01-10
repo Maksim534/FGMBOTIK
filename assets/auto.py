@@ -52,8 +52,6 @@ async def upd_bot_username() -> None:
     """Выполняется при запуске бота"""
     bot_info = await bot.get_me()
     cfg.bot_username = bot_info.username
-    await check_updates()
-    await search_update()
     await update_ads_const()
 
 
