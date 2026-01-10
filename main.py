@@ -3,7 +3,6 @@ import asyncio
 import importlib
 
 from utils.logger import check_log_size
-from commands.admin.module_manager import load_modules
 from assets.auto import automatisation
 from commands.basic.ore.db import auto_rate_btc_new
 from utils.settings import init_settings
