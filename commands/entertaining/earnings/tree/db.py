@@ -47,7 +47,7 @@ async def sell_tree(user_id: int, summ: int) -> None:
 
 
 async def autotree() -> None:
-    cursor.execute('UPDATE tree SET balance = balance + ROUND(3000 * POWER(tree, 3.8)) WHERE nalogs < 5000000')
+    cursor.execute('UPDATE tree SET balance = balance + ROUND(1500 * POWER(tree, 3.8)) WHERE nalogs < 5000000')
     cursor.execute('UPDATE tree SET yen = yen + ROUND(tree * 5) WHERE nalogs < 5000000')
     cursor.execute('UPDATE tree SET nalogs = nalogs + 200000 WHERE nalogs < 5000000')
     conn.commit()
