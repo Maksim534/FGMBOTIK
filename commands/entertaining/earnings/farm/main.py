@@ -65,8 +65,8 @@ async def buy_ferma_cmd(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, у вас уже есть построенная ферма. Чтобы узнать подробнее, введите "Моя ферма" {lose}')
         return
     
-    if int(user.balance) < 30_000:
-        await message.answer(f'{user.url}, у вас недостаточно денег для постройки фермы. Её стоимость 30.000$ {lose}')
+    if int(user.balance) < 100_000:
+        await message.answer(f'{user.url}, у вас недостаточно денег для постройки фермы. Её стоимость 100.000$ {lose}')
         return
         
     await db.buy_ferma(user.id)
