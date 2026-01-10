@@ -10,7 +10,7 @@ from assets import keyboards as kb
 import config as cfg
 
 CONFIG = {
-    "money_for_bcoins": 2_000_000_000_000_000,  # "обменять" (цена)
+    "money_for_bcoins": 1_000_000,  # "обменять" (цена)
     
     "status_price": {  # "купить привилегию" (название, цена)
         1: ("Standart VIP", 250),
