@@ -76,7 +76,7 @@ async def ogr_kazna(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, к сожалению вам не удалось ограбить казну ❎')
         return
 
-    summ = random.randint(100_000_000, 400_000_000)
+    summ = random.randint(30_000, 60_000)
 
     await user.balance.upd(summ, '+')
     await message.answer(f'{user.url}, вы успешно ограбили казну. На ваш баланс зачислено {tr(summ)} ✅')
