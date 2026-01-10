@@ -139,7 +139,7 @@ async def sell_ferma_cmd(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, у вас нет своей фермы чтобы построить введите команду "Построить ферму" {lose}')
         return
     
-    summ = 15_000  # Половина стоимости фермы
+    summ = 50_000  # Половина стоимости фермы
     
     for i in range(1, ferma.cards.get() + 1):  # Компенсация за видеокарты (50%)
         summ += int(200_000 * (1 + 0.15) ** (i - 1)) // 2
