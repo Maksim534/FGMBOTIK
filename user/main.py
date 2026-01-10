@@ -143,5 +143,4 @@ class User:
 			self.clan = None
 		
 		self.Fstatus = get_text_status(self.status)
-		self.Fregister = datetime.fromtimestamp(data[17]).strftime('%Y-%m-%d в %H:%M:%S')
 		self.url = f'<a href="tg://user?id={self.user_id}">{self.name}</a>'
