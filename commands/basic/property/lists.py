@@ -31,32 +31,9 @@ phones = {
 
 
 cars = {
-    1: ("Самокат", 25, 0, 0, "https://te.legra.ph/file/30c8327863e32f6167e25.jpg", 10000000),
-    2: ("Велосипед", 35, 0, 0, "https://te.legra.ph/file/398da5a26b0022907b3b5.jpg", 15000000),
-    3: ("Гироскутер", 25, 0, 0, "https://te.legra.ph/file/9cdebf77843bb637677ac.jpg", 30000000),
-    4: ("Сегвей", 50, 0, 0, "https://te.legra.ph/file/75bf1c1f0742ecc30b954.jpg", 50000000),
-    5: ("Мопед", 50, 10, 0, "https://te.legra.ph/file/bad671b61a5de913ec46c.jpg", 90000000),
-    6: ("Мотоцикл", 300, 181, 2.8, "https://te.legra.ph/file/e3e9dd4c91fdfd9ac725e.jpg", 100000000),
-    7: ("ВАЗ 2109", 150, 140, 12.5, "https://te.legra.ph/file/26511a048c1d26e36f4ce.jpg", 250000000),
-    8: ("Квадроцикл", 130, 80, 11.4, "https://te.legra.ph/file/98adca8f3135b85d5a047.jpg", 400000000),
-    9: ("Багги", 95, 50, 3.4, "https://te.legra.ph/file/09bed8298f05b9314ee41.jpg", 600000000),
-    10: ("Вездеход", 40, 260, 30.2, "https://te.legra.ph/file/9409bf7b52297de89b711.jpg", 900000000),
-    11: ("Лада Xray", 175, 106, 11.5, "https://te.legra.ph/file/f83a6249fb58511570697.jpg", 1400000000),
-    12: ("Audi Q7", 250, 450, 6.6, "https://te.legra.ph/file/b5d9b0728014bba97e4b2.jpg", 2500000000),
-    13: ("BMW X6", 250, 626, 4.2, "https://te.legra.ph/file/7de01330b5001f621a4ae.jpg", 6000000000),
-    14: ("Toyota FT-HS", 249, 400, 4, "https://te.legra.ph/file/83f88a77f7045f4eea43a.jpg", 8000000000),
-    15: ("BMW Z4 M", 250, 343, 4.5, "https://te.legra.ph/file/4d3088a28bff32ff19b73.jpg", 10000000000),
-    16: ("Subaru WRX STI", 250, 329, 5.2, "https://te.legra.ph/file/bf2ce40a52a955b3d4ae0.jpg", 40000000000),
-    17: ("Lamborghini Veneno", 355, 750, 2.8, "https://te.legra.ph/file/ca572bc6236c97bf3e09f.jpg", 100000000000),
-    18: ("Tesla Roadster", 400, 772, 1.1, "https://te.legra.ph/file/80fea59529fed557ca48f.jpg", 300000000000),
-    19: ("Yamaha YZF R6", 265, 129, 3.2, "https://te.legra.ph/file/fa922c1b1e2b9c049edd3.jpg", 500000000000),
-    20: ("Bugatti Chiron", 420, 1500, 2.4, "https://te.legra.ph/file/f74f850d7ff8441d804c8.jpg", 700000000000),
-    21: ("Thrust SSC", 1227, 110000, 1.6, "https://te.legra.ph/file/a2ef778d62c6c2223eca1.jpg", 900000000000),
-    22: ("Ferrari LaFerrari", 350, 800, 2.9, "https://te.legra.ph/file/4fa2b7cbbc238bf440c5a.jpg", 2100000000000),
-    23: ("Koenigsegg Regear", 447, 1360, 2.7, "https://te.legra.ph/file/95898fa3af8c80a77db20.jpg", 3100000000000),
-    24: ("Tesla Semi", 400, 1032, 5, "https://te.legra.ph/file/cfb779a7de3fabbfb9335.jpg", 4430000000000),
-    25: ("Venom GT", 427, 1400, 2.9, "https://te.legra.ph/file/f3b393defa0382b1827f1.jpg", 6430000000000),
-    26: ("Rolls-Royce", 300, 460, 4.6, "https://te.legra.ph/file/0f8241795dd3b36ee53cf.jpg", 9430000000000),
+    1: ("Самокат", 25, 0, 0, "https://te.legra.ph/file/30c8327863e32f6167e25.jpg", 10000),
+    2: ("Peel P50", 64, 4, -, "https://imgfoto.host/i/pHlUSu", 50000),
+    
 }
 
 
