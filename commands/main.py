@@ -7,7 +7,7 @@ from aiogram.filters import Command
 from assets.antispam import antispam
 from commands.db import getban
 from assets.classes import CustomEvent
-from assets import keyboards as kb
+from assets.keyboards import keyboards as kb
 import config as cfg
 from user import BFGuser
 
