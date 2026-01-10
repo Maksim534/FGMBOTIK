@@ -6,8 +6,7 @@ from commands.entertaining.earnings.garden.db import autogarden
 from commands.entertaining.earnings.generator.db import autogen
 from commands.entertaining.earnings.tree.db import autotree
 from commands.basic.ore.db import auto_energy, auto_rate_btc_new
-from commands.basic.bank.db import autobank
-from commands.admin.updater import search_update, check_updates
+from commands.basic.bank.db import autobank 
 from commands.db import reset_limit, update_ads_const
 
 from bot import bot
