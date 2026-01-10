@@ -5,7 +5,7 @@ from bot import bot
 
 async def buy_garden(user_id: int) -> None:
     balance = cursor.execute('SELECT balance FROM users WHERE user_id = ?', (user_id,)).fetchone()[0]
-    summ = Decimal(balance) - Decimal('1000000000')
+    summ = Decimal(balance) - Decimal('50000000')
 
     cursor.execute('INSERT INTO garden (user_id, balance, nalogs, tree, water) VALUES (?, ?, ?, ?, ?)', (user_id, 0, 0, 0, 100))
     cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (str(summ), user_id))
@@ -54,7 +54,7 @@ async def sell_garden(user_id: int, ch: int) -> None:
 async def autogarden() -> None:
     cursor.execute('UPDATE garden SET balance = balance + ((tree + 1) * 3) WHERE nalogs < 5000000')
     cursor.execute('UPDATE garden SET water = water - 10 WHERE water >= 10')
-    cursor.execute('UPDATE garden SET nalogs = nalogs + 200000 WHERE nalogs < 5000000')
+    cursor.execute('UPDATE garden SET nalogs = nalogs + 100000 WHERE nalogs < 5000000')
     conn.commit()
     await garden_driedup()
 
