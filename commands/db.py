@@ -16,6 +16,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS users (
     name TEXT,
     balance TEXT,
     btc TEXT DEFAULT '0',
+    rub TEXT DEFAULT '0',
     bank TEXT DEFAULT '0',
     depozit TEXT DEFAULT '0',
     timedepozit NUMERIC DEFAULT '0',
