@@ -40,7 +40,7 @@ async def creat_help_msg(profil, user: BFGuser):
 🌟 Опыт: {user.expe.tr()}
 🎲 Всего сыграно игр: {user.games.tr()}
 
-<blockquote>📅 Дата регистрации:\n{user.Fregister}</blockquote>"""
+"""
     return text
 
 
