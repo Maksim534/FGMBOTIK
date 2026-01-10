@@ -70,8 +70,8 @@ async def buy_business(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, у вас уже есть построенная территория под бизнес. Чтобы узнать подробнее, введите "Мой бизнес" {lose}')
         return
 
-    if int(user.balance) < 500_000_000:   # при изменении стоимости, меняйте ее также в бд...
-        await message.answer(f'{user.url}, у вас недостаточно денег для постройки территории бизнеса. Её стоимость 500 млн$ {lose}')
+    if int(user.balance) < 100_000:   # при изменении стоимости, меняйте ее также в бд...
+        await message.answer(f'{user.url}, у вас недостаточно денег для постройки территории бизнеса. Её стоимость 100.000$ {lose}')
         return
 
     await db.buy_business(user.id)  # <- тута
@@ -86,7 +86,7 @@ async def buy_territory(call: types.CallbackQuery, user: BFGuser):
     if not business:
        return
 
-    ch = int(22000000 * (1 + 0.15) ** (business.territory.get() - 4))
+    ch = int(150000 * (1 + 0.15) ** (business.territory.get() - 4))
 
     if int(user.balance) < ch:
         await call.answer(f'{user.name}, у вас недостаточно денег на балансе чтобы увеличить территорию бизнеса {lose}')
@@ -109,7 +109,7 @@ async def buy_bsterritory(call: types.CallbackQuery, user: BFGuser):
         await call.answer(f'{user.name}, чтобы увеличить бизнес для начала увеличьте его территорию {lose}')
         return
 
-    ch = int(22000000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
+    ch = int(150000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
 
     if int(user.balance) < ch:
         await call.answer(f'{user.name}, у вас недостаточно денег на балансе чтобы увеличить бизнес {lose}')
@@ -167,13 +167,13 @@ async def sell_business(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, у вас нет своего бизнеса чтобы построить введите команду "Построить бизнес" {lose}')
         return
     
-    summ = 250_000_000  # Половина стоимости бизнеса
+    summ = 50_000  # Половина стоимости бизнеса
     
     for i in range(6, business.territory.get() + 1):  # Компенсация за территорию (50%)
-        summ += int(22_000_000 * (1 + 0.15) ** (i - 4)) // 2
+        summ += int(150_000 * (1 + 0.15) ** (i - 4)) // 2
         
     for i in range(6, business.bsterritory.get() + 1):  # Компенсация за территорию бизнеса (50%)
-        summ += int(22_000_000 * (1 + 0.15) ** (i - 1))
+        summ += int(150_000 * (1 + 0.15) ** (i - 1))
     
     await db.sell_business(user.id, summ)
     await message.answer(f'{user.url}, Вы успешно продали свой бизнес за {tr(summ)}$ {win}')
