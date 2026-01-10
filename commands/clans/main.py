@@ -38,7 +38,7 @@ async def new_clan(message: types.message, user: BFGuser):
 		await message.answer(f'{user.url}, название вашего клана содержит запрещённые символы {lose}')
 		return
 
-	if int(user.balance) < 250_000_000_000:
+	if int(user.balance) < 50_000_000_000:
 		await message.answer(f'{user.url}, у вас недостаточно денег для создания клана {lose}')
 		return
 
@@ -149,8 +149,8 @@ async def clan_kazna_up(message: types.message, user: BFGuser):
 	except:
 		return
 
-	if summ < 2_000_000_000_000:
-		await message.answer(f'{user.url}, минимальная сумма чтобы положить в казну клана - 2.000.000.000.000$ {lose}')
+	if summ < 1_000_000:
+		await message.answer(f'{user.url}, минимальная сумма чтобы положить в казну клана - 1.000.000$ {lose}')
 		return
 
 	if summ > int(user.balance):
