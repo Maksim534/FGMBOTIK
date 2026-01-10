@@ -45,7 +45,6 @@ MODULES = [
 async def main():
     check_log_size()
     init_settings()
-    load_modules(dp)
     reg_handlers()
     await auto_rate_btc_new()
     await asyncio.gather(dp.start_polling(bot), automatisation())
