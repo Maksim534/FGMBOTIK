@@ -37,9 +37,9 @@ async def upd_business_text(call: types.CallbackQuery | types.Message, user: BFG
     if action == 'edit':
         await user.update()
 
-    dox = int(90000000 * business.bsterritory.get() / 15)
-    ch = int(22000000 * (1 + 0.15) ** (business.territory.get() - 4))
-    ch2 = int(22000000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
+    dox = int(200000 * business.bsterritory.get() / 15)
+    ch = int(400000 * (1 + 0.15) ** (business.territory.get() - 4))
+    ch2 = int(400000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
 
     txt = f'''{user.url}, информация о вашем бизнесе "Бизнес":
 🧱 Территория: {business.territory.tr()} м²
@@ -167,13 +167,13 @@ async def sell_business(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, у вас нет своего бизнеса чтобы построить введите команду "Построить бизнес" {lose}')
         return
     
-    summ = 50_000  # Половина стоимости бизнеса
+    summ = 100_000  # Половина стоимости бизнеса
     
     for i in range(6, business.territory.get() + 1):  # Компенсация за территорию (50%)
-        summ += int(150_000 * (1 + 0.15) ** (i - 4)) // 2
+        summ += int(400_000 * (1 + 0.15) ** (i - 4)) // 2
         
     for i in range(6, business.bsterritory.get() + 1):  # Компенсация за территорию бизнеса (50%)
-        summ += int(150_000 * (1 + 0.15) ** (i - 1))
+        summ += int(400_000 * (1 + 0.15) ** (i - 1))
     
     await db.sell_business(user.id, summ)
     await message.answer(f'{user.url}, Вы успешно продали свой бизнес за {tr(summ)}$ {win}')
