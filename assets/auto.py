@@ -30,7 +30,6 @@ async def autocommands() -> None:
 
 async def autocommands2() -> None:
     """Каждые 15 минут"""
-    await search_update()
     await auto_energy()
 
 
