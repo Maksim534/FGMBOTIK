@@ -18,6 +18,7 @@ async def get_rate() -> int:
 
 async def dig_ore(i: int, user_id: int, r: str, op: int) -> None:
     cursor.execute(f"UPDATE users SET exp = exp + ? WHERE user_id = ?", (int(op), user_id))
+    cursor.execute(f"UPDATE mine SET {r} = {r} + ? WHERE user_id = ?", (int(i), user_id))
     cursor.execute(f"UPDATE users SET energy = energy - 1 WHERE user_id = ?", (user_id,))
     conn.commit()
 
