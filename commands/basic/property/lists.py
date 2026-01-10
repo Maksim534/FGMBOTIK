@@ -32,7 +32,7 @@ phones = {
 
 cars = {
     1: ("Самокат", 25, 0, 0, "https://te.legra.ph/file/30c8327863e32f6167e25.jpg", 10000),
-    2: ("Peel P50", 64, 4, -, "https://imgfoto.host/i/pHlUSu", 50000),
+    2: ("Peel P50", 64, 4, 0, "https://imgfoto.host/i/pHlUSu", 50000),
     
 }
 
