@@ -18,13 +18,17 @@ async def get_rate() -> int:
 
 async def dig_ore(i: int, user_id: int, r: str, op: int) -> None:
     try:
+        print(f"Attempting to update user {user_id}: exp + {op}, {r} - {i}")
+        
         cursor.execute("UPDATE users SET exp = exp + ? WHERE user_id = ?", (int(op), user_id))
         cursor.execute(f"UPDATE mine SET {r} = {r} - ? WHERE user_id = ?", (int(i), user_id))
         cursor.execute("UPDATE users SET energy = energy - 1 WHERE user_id = ?", (user_id,))
+        
         conn.commit()
-        print(f"Updated user {user_id}: exp + {op}, {r} - {i}, energy - 1")
+        print(f"Successfully updated user {user_id}: exp + {op}, {r} - {i}, energy - 1")
     except Exception as e:
         print(f"Error: {e}")
+
 
 
 async def sell_ore(i: int | str, user_id: int, r: str, kolvo: int) -> None:
