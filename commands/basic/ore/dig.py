@@ -56,19 +56,19 @@ async def mine_cmd(message: types.Message, user: BFGuser):
 @antispam
 async def price_cmd(message: types.Message, user: BFGuser):
     await message.answer(f"""{user.url}, курс руды:
-⛓ 1 железо - 230.000$
-🌕 1 золото - 1.000.000$
-💎 1 алмаз - 116.000.000$
-🎆 1 аметист - 217.000.000$
-💠 1 аквамарин - 461.000.000$
-🍀 1 изумруд - 792.000.000$
-🌌 1 материя - 8.000.000.000$
-💥 1 плазма - 12.000.000.000$
-🪙 1 никель - 30.000.000.000$
-⚙ 1 титан - 70.000.000.000.000$
-🧪 1 кобальт - 120.000.000.000.000$
-☄️ 1 эктоплазма - 270.000.000.000.000$
-⚗ 1 палладий - 2.000.000.000.000.000$""")
+⛓ 1 железо - 10.000$
+🌕 1 золото - 30.000$
+💎 1 алмаз - 50.000$
+🎆 1 аметист - 65.000$
+💠 1 аквамарин - 80.000$
+🍀 1 изумруд - 120.000$
+🌌 1 материя - 150.000$
+💥 1 плазма - 230.000$
+🪙 1 никель - 300.000$
+⚙ 1 титан - 450.000$
+🧪 1 кобальт - 600.000$
+☄️ 1 эктоплазма - 800.000$
+⚗ 1 палладий - 1.000.000$""")
 
 
 @antispam
@@ -180,7 +180,7 @@ async def dig_mine_cmd(message: types.Message, user: BFGuser):
 
         await message.answer(f"{user.url}, +{i} {ruda}.\n💡 Энергия: {user.energy.get() - 1}, опыт: {tr(opit)}\n\n{ads}")
     else:
-        await message.answer(f"{user.url}, данной руды не существует {lose}")
+        await message.answer(f"{user.url}, данной руды не существует {lose}")    
 
 
 @antispam
@@ -195,19 +195,19 @@ async def sell_cmd(message: types.Message, user: BFGuser):
     ruda = txt[1].lower()
 
     ruda_data = {
-        "железо": ("iron", 230000, user.mine.iron),
-        "золото": ("gold", 1000000, user.mine.gold),
-        "алмазы": ("diamond", 116000000, user.mine.diamond),
-        "аметисты": ("amestit", 217000000, user.mine.amestit),
-        "аквамарин": ("aquamarine", 461000000, user.mine.aquamarine),
-        "изумруды": ("emeralds", 792000000, user.mine.emeralds),
-        "материю": ("matter", 8000000000, user.mine.matter),
-        "плазму": ("plasma", 12000000000, user.mine.plasma),
-        "никель": ("nickel", 30000000000, user.mine.nickel),
-        "титан": ("titanium", 70000000000000, user.mine.titanium),
-        "кобальт": ("cobalt", 120000000000000, user.mine.cobalt),
-        "эктоплазму": ("ectoplasm", 270000000000000, user.mine.ectoplasm),
-        "палладий": ("palladium", 2000000000000000, user.mine.palladium)
+        "железо": ("iron", 10000, user.mine.iron),
+        "золото": ("gold", 30000, user.mine.gold),
+        "алмазы": ("diamond", 50000, user.mine.diamond),
+        "аметисты": ("amestit", 65000, user.mine.amestit),
+        "аквамарин": ("aquamarine", 80000, user.mine.aquamarine),
+        "изумруды": ("emeralds", 120000, user.mine.emeralds),
+        "материю": ("matter", 150000, user.mine.matter),
+        "плазму": ("plasma", 230000, user.mine.plasma),
+        "никель": ("nickel", 300000, user.mine.nickel),
+        "титан": ("titanium", 4500000, user.mine.titanium),
+        "кобальт": ("cobalt", 600000, user.mine.cobalt),
+        "эктоплазму": ("ectoplasm", 800000, user.mine.ectoplasm),
+        "палладий": ("palladium", 1000000, user.mine.palladium)
     }
 
     if ruda in ruda_data:
