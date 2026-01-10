@@ -1,7 +1,7 @@
 API_TOKEN = '7092521991:AAG18Ty2cie-czUSvfhQmyWo9sZmIpHtYos'
 
 admin = [6888643375]
-start_money = 10000
+start_money = 100
 
 bot_name = 'FGM'
 chat = 't.me/ge'
