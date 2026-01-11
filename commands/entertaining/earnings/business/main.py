@@ -37,7 +37,7 @@ async def upd_business_text(call: types.CallbackQuery | types.Message, user: BFG
     if action == 'edit':
         await user.update()
 
-    dox = int(200000 * business.bsterritory.get() / 15)
+    dox = int(100000 * business.bsterritory.get() / 15)
     ch = int(400000 * (1 + 0.15) ** (business.territory.get() - 4))
     ch2 = int(400000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
 
