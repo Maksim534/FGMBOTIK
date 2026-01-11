@@ -43,7 +43,7 @@ async def upd_ferma_text(call: types.CallbackQuery | types.Message, user: BFGuse
 📝 Видеокарты: {ferma.cards.tr()} шт./♾️ шт.
 🆙 для следующего уровня: {tr(ch)}$
 
-💸 Налоги: {ferma.nalogs.tr()}$/5.000.000$
+💸 Налоги: {ferma.nalogs.tr()}$/2.000.000$
 💰 На счету: {ferma.balance.tr()}฿'''
     
     try:
