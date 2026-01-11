@@ -38,8 +38,8 @@ async def upd_business_text(call: types.CallbackQuery | types.Message, user: BFG
         await user.update()
 
     dox = int(400000 * business.bsterritory.get() / 15)
-    ch = int(400000 * (1 + 0.15) ** (business.territory.get() - 4))
-    ch2 = int(400000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
+    ch = int(50000 * (1 + 0.15) ** (business.territory.get() - 4))
+    ch2 = int(40000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
 
     txt = f'''{user.url}, информация о вашем бизнесе "Бизнес":
 🧱 Территория: {business.territory.tr()} м²
