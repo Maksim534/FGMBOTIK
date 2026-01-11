@@ -4,7 +4,7 @@ from decimal import Decimal
 
 async def buy_ferma(user_id: int) -> None:
     balance = cursor.execute('SELECT balance FROM users WHERE user_id = ?', (user_id,)).fetchone()[0]
-    summ = Decimal(balance) - Decimal('100000')
+    summ = Decimal(balance) - Decimal('500000000')
 
     cursor.execute('INSERT INTO ferma (user_id, balance, nalogs, cards) VALUES (?, ?, ?, ?)', (user_id, 0, 0, 0))
     cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (str(summ), user_id))
@@ -45,7 +45,7 @@ async def sell_ferma(user_id: int, ch: int) -> None:
     
 
 async def autoferma() -> None:
-    cursor.execute(f'UPDATE ferma SET balance = balance + 1 WHERE nalogs < 5000000 AND cards = 0')
-    cursor.execute('UPDATE ferma SET balance = balance + ROUND(1 * POWER(cards, 2.5)) WHERE nalogs < 2000000 AND cards > 0')
-    cursor.execute('UPDATE ferma SET nalogs = nalogs + 100000 WHERE nalogs < 2000000')
+    cursor.execute(f'UPDATE ferma SET balance = balance + 3000 WHERE nalogs < 5000000 AND cards = 0')
+    cursor.execute('UPDATE ferma SET balance = balance + ROUND(3000 * POWER(cards, 2.5)) WHERE nalogs < 5000000 AND cards > 0')
+    cursor.execute('UPDATE ferma SET nalogs = nalogs + 200000 WHERE nalogs < 5000000')
     conn.commit()
