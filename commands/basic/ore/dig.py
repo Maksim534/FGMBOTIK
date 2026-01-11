@@ -196,18 +196,18 @@ async def sell_cmd(message: types.Message, user: BFGuser):
 
     ruda_data = {
         "железо": ("iron", 100, user.mine.iron),
-        "золото": ("gold", 250, user.mine.gold),
-        "алмазы": ("diamond", 500, user.mine.diamond),
-        "аметисты": ("amestit", 700, user.mine.amestit),
-        "аквамарин": ("aquamarine", 900, user.mine.aquamarine),
-        "изумруды": ("emeralds", 1300, user.mine.emeralds),
-        "материю": ("matter", 4000, user.mine.matter),
-        "плазму": ("plasma", 10000, user.mine.plasma),
-        "никель": ("nickel", 15000, user.mine.nickel),
-        "титан": ("titanium", 19000, user.mine.titanium),
-        "кобальт": ("cobalt", 26000, user.mine.cobalt),
-        "эктоплазму": ("ectoplasm", 35000, user.mine.ectoplasm),
-        "палладий": ("palladium", 80000, user.mine.palladium)
+        "золото": ("gold", 1000, user.mine.gold),
+        "алмазы": ("diamond", 2000, user.mine.diamond),
+        "аметисты": ("amestit", 5000, user.mine.amestit),
+        "аквамарин": ("aquamarine", 15000, user.mine.aquamarine),
+        "изумруды": ("emeralds", 22000, user.mine.emeralds),
+        "материю": ("matter", 34000, user.mine.matter),
+        "плазму": ("plasma", 60000, user.mine.plasma),
+        "никель": ("nickel", 120000, user.mine.nickel),
+        "титан": ("titanium", 160000, user.mine.titanium),
+        "кобальт": ("cobalt", 200000, user.mine.cobalt),
+        "эктоплазму": ("ectoplasm", 400000, user.mine.ectoplasm),
+        "палладий": ("palladium", 500000, user.mine.palladium)
     }
 
     if ruda in ruda_data:
