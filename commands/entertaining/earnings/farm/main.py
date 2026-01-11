@@ -35,8 +35,8 @@ async def upd_ferma_text(call: types.CallbackQuery | types.Message, user: BFGuse
     if action == 'edit':
         await user.update()
 
-    dox = int(3 * (ferma.cards.get() ** 1.5)) if ferma.cards.get() != 0 else 2
-    ch = int(200000 * (1 + 0.65) ** ferma.cards.get())
+    dox = int(3000 * (ferma.cards.get() ** 2.5)) if ferma.cards.get() != 0 else 3000
+    ch = int(500000000 * (1 + 0.15) ** ferma.cards.get())
 
     txt = f'''{user.url}, информация о вашей "Майнинг ферма":
 💷 Доход: {tr(dox)}฿/час
@@ -54,7 +54,6 @@ async def upd_ferma_text(call: types.CallbackQuery | types.Message, user: BFGuse
             await new_earning(msg)
     except:
         return
-
 
 @antispam
 async def buy_ferma_cmd(message: types.Message, user: BFGuser):
