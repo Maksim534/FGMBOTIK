@@ -23,6 +23,7 @@ async def autocommands() -> None:
         await autogarden()
         await autogen()
         await autotree()
+        await autoferma()
     except Exception as e:
         print(f'error autocommands: {e}')
 
@@ -37,7 +38,6 @@ async def autocommands3() -> None:
     # await autokursbtc() изменение курса на рандом число
     # Сейчас курс идет за настоящим BTC (autokursbtc_new())
     await auto_rate_btc_new()
-    await autoferma()
 
 
 async def autocommands4() -> None:
