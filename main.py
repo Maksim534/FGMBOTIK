@@ -38,7 +38,6 @@ MODULES = [
     'commands.basic.transfer',
     'commands.basic.rpmod',
     'commands.main',
-    'commands.14february',
     'commands.moderation',
 ]
 
