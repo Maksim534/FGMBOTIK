@@ -157,60 +157,6 @@ async def my_name(message: types.Message, user: BFGuser):
     await message.answer(f'🗂 Ваш ник - «{user.name}»')
     
 
-async def update_balance(user_id: int, amount: int | str, operation="subtract") -> None:
-	balance = cursor.execute('SELECT balance FROM users WHERE user_id = ?', (user_id,)).fetchone()[0]
-	
-	if operation == 'add':
-		new_balance = Decimal(str(balance)) + Decimal(str(amount))
-	else:
-		new_balance = Decimal(str(balance)) - Decimal(str(amount))
-	
-	new_balance = "{:.0f}".format(new_balance)
-	cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (str(new_balance), user_id))
-	cursor.execute('UPDATE users SET games = games + 1 WHERE user_id = ?', (user_id,))
-	conn.commit()
-
-
-@antispam
-async def oxota(message: types.Message, user: BFGuser):
-	summ = await game_check(message, user, index=1)
-	
-	if not summ:
-		return
-	
-	wins = [
-		"💥🐗 | Отлично! Вы попали в кабана, вот ваша награда: {}$",
-		"💥🐊 | Отлично! Вы попали в крокодила, вот ваша награда: {}$",
-		"💥🐿️🌲 | Отлично! Вы попали в бобра, вот ваша награда: {}$",
-		"💥🐰 | Отлично! Вы попали в зайца, вот ваша награда: {}$",
-		"💥🐅 | Отлично! Вы попали в рысь, вот ваша награда: {}$",
-		"💥🐘 | Отлично! Вы попали в слона, вот ваша награда: {}$"
-	]
-	
-	losses = [
-		"💥🦔 | Звезда этот ёжик! Вы даже не сообразили, что точно попали в цель. Но вот теперь стоит держать свое оружие и идти дальше, ведь зазвездился - проиграл!",
-		"💥😷 | Вот к черту, вы заразились в больнице! Этот раунд лучше пропустить, сидите дома и лечитесь.",
-		"💥💀 | Попали по нефору... Теперь у вас дурной привык, и вы тусите каждый вечер в одной из местных грязных бардаков.",
-		"💥🐻 | Большой и сильный медведь... только кажется, что попадания не было. Но вот он, на вас смотрит глазами, наполненными гневом!",
-		"💥🐺 | Волки - наши братья меньшие. На этот раз вам не удалось их победить, но можно попробовать еще разок.",
-		"💥🦊 | Попадание в лису - это успех! Но будет лучше, если вы не смените свое направление и не пойдете на охоту на этих милых зверьков в нашем мире."
-	]
-	
-	chance = random.random()
-	
-	if chance < 0.45:
-		su = int(summ * 0.5)
-		txt = random.choice(wins).format(tr(su))
-		await update_balance(user.user_id, su, operation='add')
-	elif chance < 0.5:
-		txt = '💥❎ | Вы промазали...  деньги остаются при вас.'
-	else:
-		txt = random.choice(losses)
-		await update_balance(user.user_id, summ, operation='subtract')
-	
-	msg = await message.answer("💥 | Выстрел... посмотрим в кого вы попали")
-	await asyncio.sleep(2)
-	await bot.edit_message_text(chat_id=msg.chat.id, message_id=msg.message_id, text=txt)
 
 
 
@@ -219,7 +165,6 @@ def reg(dp: Dispatcher):
     dp.message.register(vibor_cmd, StartsWith("выбери "))
     dp.message.register(shans_cmd, StartsWith("шанс "))
     dp.message.register(set_name_cmd, StartsWith("сменить ник"))
-	dp.message.register(oxota, TextIn("охота"))
     dp.message.register(kazna_cmd, TextIn("казна"))
     dp.message.register(stats_cmd, TextIn("статистика бота"))
     dp.message.register(bonus_cmd, TextIn("ежедневный бонус"))
