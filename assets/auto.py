@@ -19,7 +19,6 @@ scheduler = AsyncIOScheduler()
 async def autocommands() -> None:
     """Каждый час"""
     try:
-        await autoferma()
         await autobusiness()
         await autogarden()
         await autogen()
@@ -38,6 +37,7 @@ async def autocommands3() -> None:
     # await autokursbtc() изменение курса на рандом число
     # Сейчас курс идет за настоящим BTC (autokursbtc_new())
     await auto_rate_btc_new()
+    await autoferma()
 
 
 async def autocommands4() -> None:
