@@ -2,7 +2,7 @@ import random
 import re
 
 
-from assets import keyboards as kb
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram import Dispatcher, types
 from assets.antispam import antispam
 from commands.db import get_colvo_users, setname
