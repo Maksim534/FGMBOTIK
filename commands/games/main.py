@@ -1,4 +1,5 @@
 import random
+from bot import bot
 from aiogram import types, Dispatcher
 from assets.transform import transform_int as tr
 from commands.games.db import *
