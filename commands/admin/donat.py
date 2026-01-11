@@ -33,7 +33,7 @@ async def donat_set_cmd(call: types.CallbackQuery):
     text = "<b>💰 Донат меню:</b>"
 
     if get_setting(key="stars_donat", default=False):
-        text += "\n<a href='t.me/copybfg/124'>· Как вывести звёзды с бота?</a>"
+        text += "\n<a href='t.me/FGMOFICIAL/28950'>· Как вывести звёзды с бота?</a>"
 
     try:
         await call.message.edit_text(text=text, reply_markup=kb.admin_donat_menu(user_id=user_id))
