@@ -219,7 +219,7 @@ def reg(dp: Dispatcher):
     dp.message.register(vibor_cmd, StartsWith("выбери "))
     dp.message.register(shans_cmd, StartsWith("шанс "))
     dp.message.register(set_name_cmd, StartsWith("сменить ник"))
-	dp.message.register(oxota, StartsWith('охота'))
+	dp.message.register(oxota, StartsWith("охота"))
     dp.message.register(kazna_cmd, TextIn("казна"))
     dp.message.register(stats_cmd, TextIn("статистика бота"))
     dp.message.register(bonus_cmd, TextIn("ежедневный бонус"))
