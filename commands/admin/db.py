@@ -5,7 +5,7 @@ from commands.db import conn, cursor, update_ads_const
 
 async def give_money_db(user_id: int, r_user_id: int, summ: str, status: str) -> str | None:
     if status == 'adm':
-        limit = 150_000_000_000_000  # лимит выдачи денег у статуса админ (4)
+        limit = 1_000_000_000  # лимит выдачи денег у статуса админ (4)
         per = cursor.execute(f"SELECT issued FROM users WHERE user_id = ?", (user_id,)).fetchone()[0]
         if (per + summ) > limit:
             return 'limit'
