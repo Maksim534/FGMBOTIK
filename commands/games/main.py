@@ -396,8 +396,6 @@ async def roulette(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-	dp.message.register(roulette_ruless, StartsWith('рулетка'))
-	dp.message.register(roulette, StartsWith('рулетка'))
     dp.message.register(oxota, StartsWith("охота"))
     dp.message.register(darts_cmd, StartsWith("дартс"))
     dp.message.register(dice_cmd, StartsWith("кубик"))
@@ -406,4 +404,6 @@ def reg(dp: Dispatcher):
     dp.message.register(bowling_cmd, StartsWith("боулинг"))
     dp.message.register(casino_cmd, StartsWith("казино"))
     dp.message.register(spin_cmd, StartsWith("спин"))
+	dp.message.register(roulette_ruless, StartsWith('рулетка'))
+	dp.message.register(roulette, StartsWith('рулетка'))
     dp.message.register(trade_cmd, StartsWith("трейд вверх", "трейд вниз"))
