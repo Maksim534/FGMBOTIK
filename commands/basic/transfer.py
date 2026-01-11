@@ -17,11 +17,11 @@ def get_limit_cmd(status: int) -> int:
     if status == 1:
         return 1_000_000_000
     elif status == 2:
-        return 100_000_000_000
+        return 5_000_000_000
     elif status == 3:
-        return 500_000_000_000
+        return 9_500_000
     elif status == 4:
-        return 1_000_000_000_000
+        return 30_000_000_000
     return 500_000_000  # Для статуса "игрок" (0)
 
 
