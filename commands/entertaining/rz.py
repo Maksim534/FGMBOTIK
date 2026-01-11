@@ -215,7 +215,7 @@ async def oxota(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-	dp.message.register(oxota, lambda message: message.text.lower().startswith('охота'))
+	dp.message.register(oxota, StartsWith('охота'))
     dp.message.register(shar_cmd, StartsWith("шар "))
     dp.message.register(vibor_cmd, StartsWith("выбери "))
     dp.message.register(shans_cmd, StartsWith("шанс "))
