@@ -10,7 +10,7 @@ from assets import keyboards as kb
 
 @antispam
 async def balance_cmd(message: types.Message, user: BFGuser):
-    await message.answer(f"""══════════════════════════════
+    await message.answer(f"""═══════════════════════════
    📊 АКТИВЫ ПОЛЬЗОВАТЕЛЯ   
 ══════════════════════════
 👫  Имя: {user.name}
