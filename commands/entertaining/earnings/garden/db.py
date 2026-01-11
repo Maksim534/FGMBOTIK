@@ -5,7 +5,7 @@ from bot import bot
 
 async def buy_garden(user_id: int) -> None:
     balance = cursor.execute('SELECT balance FROM users WHERE user_id = ?', (user_id,)).fetchone()[0]
-    summ = Decimal(balance) - Decimal('50000000')
+    summ = Decimal(balance) - Decimal('40000000')
 
     cursor.execute('INSERT INTO garden (user_id, balance, nalogs, tree, water) VALUES (?, ?, ?, ?, ?)', (user_id, 0, 0, 0, 100))
     cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (str(summ), user_id))
