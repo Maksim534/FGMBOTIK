@@ -196,16 +196,16 @@ async def sell_cmd(message: types.Message, user: BFGuser):
 
     ruda_data = {
         "железо": ("iron", 100, user.mine.iron),
-        "золото": ("gold", 1000, user.mine.gold),
-        "алмазы": ("diamond", 2000, user.mine.diamond),
-        "аметисты": ("amestit", 5000, user.mine.amestit),
-        "аквамарин": ("aquamarine", 15000, user.mine.aquamarine),
-        "изумруды": ("emeralds", 22000, user.mine.emeralds),
-        "материю": ("matter", 34000, user.mine.matter),
-        "плазму": ("plasma", 60000, user.mine.plasma),
-        "никель": ("nickel", 120000, user.mine.nickel),
-        "титан": ("titanium", 160000, user.mine.titanium),
-        "кобальт": ("cobalt", 200000, user.mine.cobalt),
+        "золото": ("gold", 3000, user.mine.gold),
+        "алмазы": ("diamond", 5000, user.mine.diamond),
+        "аметисты": ("amestit", 10000, user.mine.amestit),
+        "аквамарин": ("aquamarine", 25000, user.mine.aquamarine),
+        "изумруды": ("emeralds", 32000, user.mine.emeralds),
+        "материю": ("matter", 48000, user.mine.matter),
+        "плазму": ("plasma", 80000, user.mine.plasma),
+        "никель": ("nickel", 150000, user.mine.nickel),
+        "титан": ("titanium", 210000, user.mine.titanium),
+        "кобальт": ("cobalt", 250000, user.mine.cobalt),
         "эктоплазму": ("ectoplasm", 400000, user.mine.ectoplasm),
         "палладий": ("palladium", 500000, user.mine.palladium)
     }
