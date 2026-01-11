@@ -35,15 +35,15 @@ async def upd_ferma_text(call: types.CallbackQuery | types.Message, user: BFGuse
     if action == 'edit':
         await user.update()
 
-    dox = int(1 * (ferma.cards.get() ** 1.5)) if ferma.cards.get() != 0 else 1
-    ch = int(200000 * (1 + 0.50) ** ferma.cards.get())
+    dox = int(2 * (ferma.cards.get() ** 2.5)) if ferma.cards.get() != 0 else 2
+    ch = int(200000 * (1 + 0.75) ** ferma.cards.get())
 
     txt = f'''{user.url}, информация о вашей "Майнинг ферма":
 💷 Доход: {tr(dox)}฿/час
 📝 Видеокарты: {ferma.cards.tr()} шт./♾️ шт.
 🆙 для следующего уровня: {tr(ch)}$
 
-💸 Налоги: {ferma.nalogs.tr()}$/2.000.000$
+💸 Налоги: {ferma.nalogs.tr()}$/5.000.000$
 💰 На счету: {ferma.balance.tr()}฿'''
     
     try:
