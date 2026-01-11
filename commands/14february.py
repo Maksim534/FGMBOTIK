@@ -4,7 +4,6 @@ import sqlite3
 import time
 
 from aiogram import types, Dispatcher
-from aiogram.dispatcher.filters.state import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
