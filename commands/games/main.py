@@ -441,7 +441,7 @@ def reg(dp: Dispatcher):
     dp.message.register(bowling_cmd, StartsWith("боулинг"))
     dp.message.register(casino_cmd, StartsWith("казино"))
     dp.message.register(spin_cmd, StartsWith("спин"))
-	dp.register_message_handler(roulette_ruless, lambda message: message.text.lower() == 'рулетка')
-	dp.register_message_handler(roulette, lambda message: message.text.lower().startswith('рулетка'))
+	dp.message.register(roulette_ruless, lambda message: message.text.lower() == 'рулетка')
+	dp.message.register(roulette, lambda message: message.text.lower().startswith('рулетка'))
     dp.message.register(trade_cmd, StartsWith("трейд вверх", "трейд вниз"))
    
