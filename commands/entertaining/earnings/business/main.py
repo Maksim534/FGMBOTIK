@@ -86,7 +86,7 @@ async def buy_territory(call: types.CallbackQuery, user: BFGuser):
     if not business:
        return
 
-    ch = int(150000 * (1 + 0.15) ** (business.territory.get() - 4))
+    ch = int(50000 * (1 + 0.15) ** (business.territory.get() - 4))
 
     if int(user.balance) < ch:
         await call.answer(f'{user.name}, у вас недостаточно денег на балансе чтобы увеличить территорию бизнеса {lose}')
@@ -109,7 +109,7 @@ async def buy_bsterritory(call: types.CallbackQuery, user: BFGuser):
         await call.answer(f'{user.name}, чтобы увеличить бизнес для начала увеличьте его территорию {lose}')
         return
 
-    ch = int(150000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
+    ch = int(40000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
 
     if int(user.balance) < ch:
         await call.answer(f'{user.name}, у вас недостаточно денег на балансе чтобы увеличить бизнес {lose}')
