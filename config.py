@@ -1,6 +1,6 @@
 API_TOKEN = '7092521991:AAG18Ty2cie-czUSvfhQmyWo9sZmIpHtYos'
 
-admin = [6888643375]
+admin = [6888643375, 7700272318, 8137074959, 7257521344, 1864589162]
 start_money = 100
 
 bot_name = 'FGM'
