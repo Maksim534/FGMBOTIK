@@ -13,7 +13,7 @@ phones = {
 
 
 cars = {
-    1: ("Самокат", 25, 0, 0, "https://te.legra.ph/file/30c8327863e32f6167e25.jpg", 10000),    https://imgfoto.host/i/p2uYy1
+    1: ("Самокат", 25, 0, 0, "https://te.legra.ph/file/30c8327863e32f6167e25.jpg", 10000),  
     2: ("УАЗ Хантер", 125, 106, 32, "https://imgfoto.host/i/p2v0fw", 325000),
     3: ("Peel P50", 64, 4, 0, "https://imgfoto.host/i/pHlUSu", 50000),
     4: ("Daihatsu Terios kid", 139, 105, 13, "https://imgfoto.host/i/p2DmJE", 200000),
