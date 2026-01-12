@@ -20,7 +20,29 @@ async def helicopters_list(message: types.Message, user: BFGuser):
 async def cars_list(message: types.Message, user: BFGuser):
     await message.answer(f"""{user.url}, доступные машины:
 🚗 1. Самокат - 10.000$
-🚗 2. Peel P50 - 50.000$
+🚗 2. УАЗ Хантер - 32.500$
+🚗 3. Peel P50 - 50.000$
+🚗 4. Daihatsu Terios kid - 200.000$
+🚗 5. Mitsubishi Pajero Mini - 370.000$
+🚗 6. Honda civic - 450.000$
+🚗 7. Acura Integra - 650.000$
+🚗 8. Mazda MX-5 Miata - 800.000$
+🚗 9. Opel Astra - 1.000.000$
+🚗 10. Audi 80 - 1.200.000$
+🚗 11. Lada Granta - 1.500.000$
+🚗 12. Lincoln Continental - 2.000.000$
+🚗 13. Volkswagen Golf GTI - 2.500.000$
+🚗 14. Nissan Almera Classic - 3.100.000$
+🚗 15. BMW 3-series e36 - 4.500.000$
+🚗 16. Mercedes-Benz w220 - 6.000.000$
+🚗 17. Ford Raptor - 8.000.000$
+🚗 18. Dodge Durango - 16.500.000$
+🚗 19. Infinity FX37 - 40.000.000$
+🚗 20. Porsche Cayenne S - 80.000.000$
+🚗 21. Jeep grand Cherokee - 300.000.000$
+🚗 22. Aurus Senat - 700.000.000$
+🚗 23. Bugatti La Voiture Noire - 4.000.000.000$
+
 
 🛒 Для покупки машины введите "Купить машину [номер]\"""")
 
