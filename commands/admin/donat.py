@@ -12,7 +12,7 @@ async def donat_menu_cmd(message: types.Message):
     text = "<b>💰 Донат меню:</b>"
 
     if get_setting(key="stars_donat", default=False):
-        text += "\n<a href='t.me/copybfg/123'>· Как вывести звёзды с бота?</a>"
+        text += "\n<a href='t.me/FGMOFICIAL/28950'>· Как вывести звёзды с бота?</a>"
 
     msg = await message.answer(text=text, reply_markup=kb.admin_donat_menu(user_id=user_id))
     await new_earning(msg)
