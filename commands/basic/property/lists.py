@@ -33,7 +33,7 @@ cars = {
     18: ("Dodge Durango", 245, 365, 6.4, "https://imgfoto.host/i/p2v1Wa", 16500000),
     19: ("Infinity FX37", 233, 333, 6.8, "https://imgfoto.host/i/p2KKza", 40000000),
     20: ("Porsche Cayenne S", 270, 440, 4.7, "https://imgfoto.host/i/p2DfTe", 80000000),
-    21: ("Jeep grand Cherokee", 215, 273, 8.2, "https://imgfoto.host/i/p2Kmsw", 300000000),
+    21: ("Jeep grand Cherokee", 215, 273, 8.2, "https://postimg.cc/7J4R3LtT", 300000000),
     22: ("Aurus Senat", 255, 598, 6, "https://imgfoto.host/i/p2wxkx", 700000000),
     23: ("Bugatti La Voiture Noire", 378, 1500, 2.4, "https://imgfoto.host/i/p2uYy1", 4000000000),
     
