@@ -4,7 +4,7 @@ from decimal import Decimal
 
 async def buy_ferma(user_id: int) -> None:
     balance = cursor.execute('SELECT balance FROM users WHERE user_id = ?', (user_id,)).fetchone()[0]
-    summ = Decimal(balance) - Decimal('500000000')
+    summ = Decimal(balance) - Decimal('200000')
 
     cursor.execute('INSERT INTO ferma (user_id, balance, nalogs, cards) VALUES (?, ?, ?, ?)', (user_id, 0, 0, 0))
     cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (str(summ), user_id))
