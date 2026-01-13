@@ -43,6 +43,22 @@ cars = {
 
 house = {
     1: ("Коробка", "https://te.legra.ph/file/926b8df6e95dc49540780.jpg", 500000),
+    2: ("Почтовый Ящик", "https://imgfoto.host/i/pI5OM1", 750000),
+    3: ("Подвал", "https://imgfoto.host/i/pIJV4c", 800000),
+    4: ("Гараж", "https://imgfoto.host/i/pIJXge", 1200000),
+    5: ("Бытовка", "https://imgfoto.host/i/pIpK29", 1500000),
+    6: ("Маленький Домик", "https://imgfoto.host/i/pIpDrE", 2750000),
+    7: ("Дом в Скандинавском Стиле", "https://imgfoto.host/i/pIpNy9", 3500000),
+    8: ("Дом в стиле Барнхаус", "https://imgfoto.host/i/pIyaxu", 4555000),
+    9: ("Дом в стиле Хай-тек", "https://imgfoto.host/i/pIyHWy", 5930000),
+    10: ("Дом в стиле Райта", "https://imgfoto.host/i/pI6K3K", 6555000),
+    11: ("Дом в стиле Футуризм", "https://imgfoto.host/i/pI6FmL", 7400000),
+    12: ("Особняк", "https://imgfoto.host/i/pI6nPK", 10750000),
+    13: ("Дворец", "https://imgfoto.host/i/pIf6cu", 14000000),
+    14: ("Замок", "https://imgfoto.host/i/pIf8V1", 17555000),
+    15: ("Небоскрёб Антилия", "https://imgfoto.host/i/pIQq45", 25500000),
+    16: ("Марс", "https://imgfoto.host/i/pIa9fm", 99999999),
+    
 
 }
 
