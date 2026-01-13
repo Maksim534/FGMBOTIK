@@ -26,7 +26,7 @@ cars = {
     11: ("Lada Granta", 197, 87, 13.1, "https://imgfoto.host/i/p2wxkx", 1500000),
     12: ("Lincoln Continental", 217, 203, 8.1, "https://imgfoto.host/i/p27vl1", 2000000),
     13: ("Volkswagen Golf GTI", 235, 227, 7.5, "https://imgfoto.host/i/p27PoR", 2500000),
-    14: ("Nissan Almera Classic", 184, 107, 12.1, "https://imgfoto.host/i/p2D2ie", 3100000),
+    14: ("Nissan Almera Classic", 184, 107, 12.1, "https://postimg.cc/vDQFxPJZ", 3100000),
     15: ("BMW 3-series e36", 195, 195, 7.8, "https://imgfoto.host/i/p2BCB5", 4500000),
     16: ("Mercedes-Benz w220", 245, 279, 7.8, "https://imgfoto.host/i/p27oTa", 6000000),
     17: ("Ford Raptor", 273, 775, 4, "https://imgfoto.host/i/p2Kmsw", 8000000),
