@@ -16,7 +16,7 @@ phones = {
     7: ("iPhone 5", "https://imgfoto.host/i/pIjJd9", 2500000),
     8: ("Xiaomi Redmi 12C", "https://imgfoto.host/i/pIjsis", 3000000),
     9: ("iPhone X", "https://imgfoto.host/i/pIjHn9", 4500000),
-    10: ("Samsung Galaxy Z Fold 3", "https://imgfoto.host/i/pIL9z5",7500000),
+    10: ("Samsung Galaxy S23 Ultra", "https://imgfoto.host/i/pIZc3n",7500000),
     11: ("iPhone 13", "https://imgfoto.host/i/pILTNk", 8700000),
     12: ("Samsung Galaxy Z Fold5", "https://imgfoto.host/i/pIPClL", 9500000),
     13: ("iPhone 17 Pro Max", "https://imgfoto.host/i/pISAM1", 15000000),
