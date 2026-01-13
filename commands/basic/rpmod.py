@@ -6,7 +6,7 @@ from assets.antispam import antispam
 from commands.db import url_name
 from user import BFGuser
 
-rplist = {  # Спасибo @ x0x1dead за составление списка рп команд
+rplist = {  
 	"ударить": "{} ударил(-а) {}",
 	"выебать": "{} выебал(-а) {}",
 	"дать пять": "{} дал(-а) пять {}",
