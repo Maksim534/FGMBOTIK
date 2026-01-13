@@ -7,7 +7,20 @@ helicopters = {
 
 
 phones = {
-    1: ("Nokia 3310", "https://te.legra.ph/file/5f8aaca5fac3669d574ae.jpg", 100000),
+    1: ("Игрушечный Телефон", "https://imgfoto.host/i/pIVLCk", 75000),
+    2: ("Nokia 3310", "https://te.legra.ph/file/5f8aaca5fac3669d574ae.jpg", 200000),
+    3: ("Sony Ericsson W810", "https://imgfoto.host/i/pIVN8s", 390000),
+    4: ("Nokia 3250", "https://imgfoto.host/i/pIXz21", 530000),
+    5: ("Motorola ROKR Z6", "https://imgfoto.host/i/pIe8jy", 750000),
+    6: ("LG Optimus p500", "https://imgfoto.host/i/pIeSfu", 1200000),
+    7: ("iPhone 5", "https://imgfoto.host/i/pIjJd9", 2500000),
+    8: ("Xiaomi Redmi 12C", "https://imgfoto.host/i/pIjsis", 3000000),
+    9: ("iPhone X", "https://imgfoto.host/i/pIjHn9", 4500000),
+    10: ("Samsung Galaxy Z Fold 3", "https://imgfoto.host/i/pIL9z5",7500000),
+    11: ("iPhone 13", "https://imgfoto.host/i/pILTNk", 8700000),
+    12: ("Samsung Galaxy Z Fold5", "https://imgfoto.host/i/pIPClL", 9500000),
+    13: ("iPhone 17 Pro Max", "https://imgfoto.host/i/pISAM1", 15000000),
+    14: ("Diamond Crypto Smartphone", "https://imgfoto.host/i/pIH4qn", 19000000),
 
 }
 
