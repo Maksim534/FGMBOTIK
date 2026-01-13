@@ -48,7 +48,7 @@ house = {
 
 
 yahts = {
-    1: ("Ванна", 5, 100, "https://te.legra.ph/file/491c300689cbe160228ac.jpg", 1000000),
+    1: ("Ванна", 5, 0, "https://te.legra.ph/file/491c300689cbe160228ac.jpg", 1000000),
 
 }
 
