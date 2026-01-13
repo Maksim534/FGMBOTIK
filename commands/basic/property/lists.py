@@ -23,7 +23,7 @@ cars = {
     8: ("Mazda MX-5 Miata", 179, 184, 9.1, "https://imgfoto.host/i/p2DXQI", 800000),
     9: ("Opel Astra", 197, 120, 12, "https://imgfoto.host/i/p2zi7w", 1000000),
     10: ("Audi 80", 185, 115, 11.8, "https://imgfoto.host/i/p2BCB5", 1200000),
-    11: ("Lada Granta", 197, 87, 13.1, "https://imgfoto.host/i/p2wxkx", 1500000),
+    11: ("Lada Granta", 197, 87, 13.1, "https://postimg.cc/9rrkysJV", 1500000),
     12: ("Lincoln Continental", 217, 203, 8.1, "https://imgfoto.host/i/p27vl1", 2000000),
     13: ("Volkswagen Golf GTI", 235, 227, 7.5, "https://imgfoto.host/i/p27PoR", 2500000),
     14: ("Nissan Almera Classic", 184, 107, 12.1, "https://postimg.cc/vDQFxPJZ", 3100000),
