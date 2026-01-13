@@ -82,7 +82,20 @@ async def yahta_list(message: types.Message, user: BFGuser):
 @antispam
 async def phone_list(message: types.Message, user: BFGuser):
     await message.answer(f"""{user.url}, доступные телефоны:
-📱 1. Nokia 3310 - 100.000$
+📱 1. Игрушечный Телефон - 75.000$
+📱 2. Nokia 3310 - 200.000$
+📱 3. Sony Ericsson W810 - 390.000$
+📱 4. Nokia 3250 - 530.000$
+📱 5. Motorola ROKR Z6 - 750.000$
+📱 6. LG Optimus P500 - 1.200.000$
+📱 7. iPhone 5 - 2.500.000$
+📱 8. Xiaomi Redmi 12C - 3.000.000$
+📱 9. iPhone X - 4.500.000$
+📱 10. Samsung Galaxy S23 Ultra - 7.500.000$
+📱 11. iPhone 13 - 8.700.000$
+📱 12. Samsung Galaxy Z Fold5 - 9.500.000$
+📱 13. iPhone 17 Pro Max - 15.000.000$
+📱 14. Diamond Crypto Smartphone - 19.000.000$
 
 🛒 Для покупки телефона введите "Купить телефон [номер]\"""")
 
