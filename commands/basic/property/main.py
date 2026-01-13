@@ -458,7 +458,7 @@ async def sell_plane(message: types.Message, user: BFGuser):
 def reg(dp: Dispatcher):
     dp.message.register(helicopters_list, TextIn("вертолеты", "вертолёты"))
     dp.message.register(cars_list, TextIn("машины"))
-    dp.message.register(yahta_list, TextIn("дома"))
+    dp.message.register(house_list, TextIn("дома"))
     dp.message.register(phone_list, TextIn("телефоны"))
     dp.message.register(plane_list, TextIn("самолеты", "самолёты"))
     dp.message.register(yahts_list, TextIn("яхты"))
