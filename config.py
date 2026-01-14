@@ -9,7 +9,7 @@ channel = 't.me/informationfgm'
 admin_username = '@geormor'
 bot_username = 'FGM'
 
-chat_log = 0
+chat_log = -1003366581906
 cleaning = 60
 
 custom_modules = True
