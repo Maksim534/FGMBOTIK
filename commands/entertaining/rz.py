@@ -96,7 +96,7 @@ async def try_luck_cmd(message: types.Message, user: BFGuser):
         await message.answer(f'{user.url}, ты уже испытывал свою удачу, следующий раз ты сможешь через {txt}')
         return
 
-    summ = random.randint(20_000, 50_000)
+    summ = random.randint(2_000_000, 10_000_000)
 
     await user.biores.upd(summ, '+')
     await message.answer(f'✅ Вы успешно испытали удачу и получили {tr(summ)}кг биоресурса ☣️')
