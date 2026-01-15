@@ -88,7 +88,7 @@ async def sell_rating_cmd(message: types.Message, user: BFGuser):
 
     summ_r = Decimal(summ_r)
 
-    kurs = 1_000_000  # сумма за 1 рейтинг
+    kurs = 50_000 # сумма за 1 рейтинг
     summ = summ_r * kurs
     rating = Decimal(str(user.rating))
 
