@@ -111,7 +111,28 @@ async def yahts_list(message: types.Message, user: BFGuser):
 @antispam
 async def plane_list(message: types.Message, user: BFGuser):
     await message.answer(f"""{user.url}, доступные самолеты:
-✈️ 1. Параплан - 100.000.000$
+✈️ 1. Параплан - 50.000$
+✈️ 2. Cessna 172 Skyhawk - 360.000$
+✈️ 3. АН-2 - 780.000$
+✈️ 4. Boeing 717 - 1.350.000$
+✈️ 5. Boeing 737-200 - 4.700.000$
+✈️ 6. Cessna 182 (Skylane) - 4.900.000$
+✈️ 7. Bombardier Challenger 3500 - 10.700.000$
+✈️ 8. Falcon 2000LX - 13.900.000$
+✈️ 9. Embraer Legacy 450 - 16.570.000$
+✈️ 10. Gulfstream G280 - 19.000.000$
+✈️ 11. Airbus A318 - 26.950.000$
+✈️ 12. Sukhoi Superjet 100-95 (SSJ100) - 574.950.000$
+✈️ 13. Bombardier CRJ1000 - 678.850.000$
+✈️ 14. Embraer E195-E2 - 689.970.000$
+✈️ 15. Airbus A220-300 (Bombardier CSeries) - 987.990.000$
+✈️ 16. Boeing 737-8 MAX - 1.050.650.000$
+✈️ 17. Airbus A320neo - 1.450.980.000$
+✈️ 18.Airbus A321ceo - 1.970.650.000$
+✈️ 19. Airbus A350-1000 - 2.750.875.000$
+✈️ 20. Airbus A380 - 3.560.457.000$
+✈️ 21. Boeing 747-800 Intercontinental - 3.630.220.000$
+✈️ 22. Туполев Ту-144 - 4.245.950.000$
 
 🛒 Для покупки самолёта введите "Купить самолёт [номер]\"""")
 
