@@ -81,7 +81,7 @@ async def buy_cards_cmd(call: types.CallbackQuery, user: BFGuser):
     if not ferma:
         return
 
-    ch = int(201_000 * (1 + 0.85) ** (ferma.cards.get() - 1))
+    ch = int(200_500 * (1 + 0.85) ** (ferma.cards.get() - 1))
     
     if int(user.balance) < ch:
         await call.answer(f'{user.name}, у вас недостаточно денег для увеличения видеокарт. Её стоимость {tr(ch)}$ {lose}')
