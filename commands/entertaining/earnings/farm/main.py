@@ -66,7 +66,7 @@ async def buy_ferma_cmd(message: types.Message, user: BFGuser):
         return
     
     if int(user.balance) < 200000:
-        await message.answer(f'{user.url}, у вас недостаточно денег для постройки фермы. Её стоимость 200000$ {lose}')
+        await message.answer(f'{user.url}, у вас недостаточно денег для постройки фермы. Её стоимость 200.000$ {lose}')
         return
         
     await db.buy_ferma(user.id)
@@ -81,7 +81,7 @@ async def buy_cards_cmd(call: types.CallbackQuery, user: BFGuser):
     if not ferma:
         return
 
-    ch = int(200000 * (1 + 0.85) ** (ferma.cards.get() - 1))
+    ch = int(200_000 * (1 + 0.85) ** (ferma.cards.get() - 1))
     
     if int(user.balance) < ch:
         await call.answer(f'{user.name}, у вас недостаточно денег для увеличения видеокарт. Её стоимость {tr(ch)}$ {lose}')
