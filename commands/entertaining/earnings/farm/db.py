@@ -46,6 +46,6 @@ async def sell_ferma(user_id: int, ch: int) -> None:
 
 async def autoferma() -> None:
     cursor.execute(f'UPDATE ferma SET balance = balance + 2 WHERE nalogs < 2000000 AND cards = 0')
-    cursor.execute('UPDATE ferma SET balance = balance + ROUND(2 * POWER(cards, 1.5)) WHERE nalogs < 2000000 AND cards > 0')
+    cursor.execute('UPDATE ferma SET balance = balance + ROUND(2 * POWER(cards, 2.5)) WHERE nalogs < 2000000 AND cards > 0')
     cursor.execute('UPDATE ferma SET nalogs = nalogs + 100000 WHERE nalogs < 2000000')
     conn.commit()
