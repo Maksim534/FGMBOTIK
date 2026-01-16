@@ -69,7 +69,7 @@ async def buy_garden(message: types.Message, user: BFGuser):
         return
 
     if int(user.balance) < 40_000_000_000:
-        await message.answer(f'{user.url}, у вас недостаточно денег для постройки Сада. Его стоимость 400.000.000$ {lose}')
+        await message.answer(f'{user.url}, у вас недостаточно денег для постройки Сада. Его стоимость 40.000.000.000$ {lose}')
         return
 
     await db.buy_garden(user.id)
