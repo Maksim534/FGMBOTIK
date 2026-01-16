@@ -225,9 +225,10 @@ async def my_plane(message: types.Message, user: BFGuser):
 
     txt = f"""{user.url}, информация о вашем самолёте "{hdata[0]}"
 ⛽️ Максимальная скорость: {hdata[1]} км/ч
-🐎 Лошадиных сил: {hdata[2]}"""
+💪 Мощность: {hdata[2]}
+🛫 Дальность полета: {hdata[3]}"""
 
-    await message.answer_photo(photo=hdata[3], caption=txt)
+    await message.answer_photo(photo=hdata[4], caption=txt)
 
 
 @antispam
@@ -362,12 +363,12 @@ async def buy_yahta(message: types.Message, user: BFGuser):
         await message.answer(f"{user.url}, вы не ввели число имущества или привелегии которое хотите купить {lose}")
         return
 
-    if int(user.balance) < hdata[4]:
+    if int(user.balance) < hdata[5]:
         await message.answer(f"{user.url}, у вас недостаточно денег для покупки имущества {lose}")
         return
 
     await message.answer(f"{user.url}, вы успешно купили яхту \"{hdata[0]}\" 🎉")
-    await db.buy_property(user.user_id, num, "yahta", hdata[4])
+    await db.buy_property(user.user_id, num, "yahta", hdata[5])
 
 
 @antispam
@@ -483,7 +484,7 @@ async def sell_plane(message: types.Message, user: BFGuser):
         return
 
     hdata = planes.get(int(user.property.plane))
-    summ = int(hdata[4] * 0.75)
+    summ = int(hdata[5] * 0.75)
 
     await message.answer(f"{user.url}, вы успешно продали самолёт за {tr(summ)}$ 🎉")
     await db.sell_property(user.user_id, "plane", summ)
