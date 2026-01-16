@@ -391,7 +391,7 @@ async def buy_plane(message: types.Message, user: BFGuser):
         await message.answer(f"{user.url}, вы не ввели число имущества или привелегии которое хотите купить {lose}")
         return
 
-    if int(user.balance) < hdata[4]:
+    if int(user.balance) < hdata[5]:
         await message.answer(f"{user.url}, у вас недостаточно денег для покупки имущества {lose}")
         return
 
