@@ -83,6 +83,6 @@ yahts = {
 
 
 planes = {
-    1: ("Параплан", 20, 0, "https://te.legra.ph/file/f8de2aaf5e09aa0b8f429.jpg", 100000000),
+    1: ("Параплан", 20, 0, 200, "https://te.legra.ph/file/f8de2aaf5e09aa0b8f429.jpg", 100000000),
 
 }
