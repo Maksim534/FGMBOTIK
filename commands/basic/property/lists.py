@@ -71,7 +71,7 @@ house = {
     14: ("Замок", "https://imgfoto.host/i/pIf8V1", 17555000),
     15: ("Небоскрёб Антилия", "https://imgfoto.host/i/pIQq45", 25500000),
     16: ("Марс", "https://imgfoto.host/i/pIa9fm", 99999999),
-    19512: ("Марс", "https://imgfoto.host/i/y95gFa", 0),
+    19512: ("Кладбище", "https://imgfoto.host/i/y95gFa", 0),
 
     
 
