@@ -396,7 +396,7 @@ async def buy_plane(message: types.Message, user: BFGuser):
         return
 
     await message.answer(f"{user.url}, вы успешно купили самолёт \"{hdata[0]}\" 🎉")
-    await db.buy_property(user.user_id, num, "plane", hdata[4])
+    await db.buy_property(user.user_id, num, "plane", hdata[5])
 
 
 @antispam
