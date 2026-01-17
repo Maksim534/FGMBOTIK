@@ -47,7 +47,7 @@ cars = {
     19: ("Infinity FX37", 233, 333, 6.8, "https://imgfoto.host/i/p2KKza", 4000000000),
     20: ("Porsche Cayenne S", 270, 440, 4.7, "https://imgfoto.host/i/p2DfTe", 8000000000),
     21: ("Jeep grand Cherokee", 215, 273, 8.2, "https://postimg.cc/7J4R3LtT", 30000000000),
-    22: ("Aurus Senat", 255, 598, 6, "https://imgfoto.host/i/p2wxkx", 7000000000),
+    22: ("Aurus Senat", 255, 598, 6, "https://imgfoto.host/i/p2wxkx", 70000000000),
     23: ("Bugatti La Voiture Noire", 378, 1500, 2.4, "https://imgfoto.host/i/p2uYy1", 500000000000),
     
     
