@@ -79,7 +79,18 @@ house = {
 
 
 yahts = {
-    1: ("Ванна", 5, 0, "https://te.legra.ph/file/491c300689cbe160228ac.jpg", 1000000),
+    1: ("Ванна", 2, 0, "https://te.legra.ph/file/491c300689cbe160228ac.jpg", 1000000),
+    2: ("Boston Whaler 170 Montauk", 50, 25, "https://imgfoto.host/i/y9KZWy", 5530000),
+    3: ("Sea Ray SPX 190 OB", 85, 55, "https://imgfoto.host/i/y9K06k", 25000000),
+    4: ("Axopar 28 Cabin", 95, 77, "https://imgfoto.host/i/y9K2RA", 40500000),
+    5: ("Beneteau Gran Turismo 41", 102, 87, "https://imgfoto.host/i/y9KFZ5", 55780000),
+    6: ("Sunseeker Manhattan 55", 63, 42, "https://imgfoto.host/i/y9vv5V", 75000000),
+    7: ("Princess Y78", 55, 49, "https://imgfoto.host/i/y9vMbm", 80000000),
+    8: ("Azimut S7", 85, 80, "https://imgfoto.host/i/y9vRkA", 130000000),
+    9: ("Ferretti Yachts 1000", 52, 45, "https://imgfoto.host/i/y9vTve", 270000000),
+    10: ("Heesen 3700 Project SkyFall", 102, 87, "https://imgfoto.host/i/y9vjkb", 380000000),
+    11: ("Oceanco Y712", 35, 40, "https://imgfoto.host/i/y9wCw1", 980980000),
+    12: ("Lürssen Dilbar", 55, 60, "https://imgfoto.host/i/y9wJ0k", 1877000000),
 
 }
 
