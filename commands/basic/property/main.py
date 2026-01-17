@@ -380,7 +380,7 @@ async def buy_yahta(message: types.Message, user: BFGuser):
         return
 
     await message.answer(f"{user.url}, вы успешно купили яхту \"{hdata[0]}\" 🎉")
-    await db.buy_property(user.user_id, num, "yahta", hdata[5])
+    await db.buy_property(user.user_id, num, "yahta", hdata[4])
 
 
 @antispam
