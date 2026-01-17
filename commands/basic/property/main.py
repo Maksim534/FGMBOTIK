@@ -104,6 +104,18 @@ async def phone_list(message: types.Message, user: BFGuser):
 async def yahts_list(message: types.Message, user: BFGuser):
     await message.answer(f"""{user.url}, доступные яхты:
 🛳 1. Ванна - 1.000.000$
+🛳 2. Boston Whaler 170 Montauk - 5.530.000$
+🛳 3. Sea Ray SPX 190 OB - 25.850.000$
+🛳 4. Axopar 28 Cabin - 40.500.000$
+🛳 5. Beneteau Gran Turismo 41 - 55.780.000$
+🛳 6. Sunseeker Manhattan 55 - 75.000.000$
+🛳 7. Princess Y78 - 80.000.000$
+🛳 8. Azimut S7 - 130.000.000$
+🛳 9. Ferretti Yachts 1000 - 270.790.000$
+🛳 10. Heesen 3700 Project SkyFall - 380.990.000$
+🛳 11. Oceanco Y712 - 980.890.000$
+🛳 12. Lürssen Dilbar - 1.890.550.000$
+
 
 🛒 Для покупки яхты введите "Купить яхту [номер]\"""")
 
