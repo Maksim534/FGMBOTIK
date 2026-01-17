@@ -375,7 +375,7 @@ async def buy_yahta(message: types.Message, user: BFGuser):
         await message.answer(f"{user.url}, вы не ввели число имущества или привелегии которое хотите купить {lose}")
         return
 
-    if int(user.balance) < hdata[5]:
+    if int(user.balance) < hdata[4]:
         await message.answer(f"{user.url}, у вас недостаточно денег для покупки имущества {lose}")
         return
 
