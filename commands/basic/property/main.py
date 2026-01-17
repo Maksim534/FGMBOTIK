@@ -19,29 +19,29 @@ async def helicopters_list(message: types.Message, user: BFGuser):
 @antispam
 async def cars_list(message: types.Message, user: BFGuser):
     await message.answer(f"""{user.url}, доступные машины:
-🚗 1. Самокат - 10.000$
-🚗 2. УАЗ Хантер - 32.500$
-🚗 3. Peel P50 - 50.000$
-🚗 4. Daihatsu Terios kid - 200.000$
-🚗 5. Mitsubishi Pajero Mini - 370.000$
-🚗 6. Honda civic - 450.000$
-🚗 7. Acura Integra - 650.000$
-🚗 8. Mazda MX-5 Miata - 800.000$
-🚗 9. Opel Astra - 1.000.000$
-🚗 10. Audi 80 - 1.200.000$
-🚗 11. Lada Granta - 1.500.000$
-🚗 12. Lincoln Continental - 2.000.000$
-🚗 13. Volkswagen Golf GTI - 2.500.000$
-🚗 14. Nissan Almera Classic - 3.100.000$
-🚗 15. BMW 3-series e36 - 4.500.000$
-🚗 16. Mercedes-Benz w220 - 6.000.000$
-🚗 17. Ford Raptor - 8.000.000$
-🚗 18. Dodge Durango - 16.500.000$
-🚗 19. Infinity FX37 - 40.000.000$
-🚗 20. Porsche Cayenne S - 80.000.000$
-🚗 21. Jeep grand Cherokee - 300.000.000$
-🚗 22. Aurus Senat - 700.000.000$
-🚗 23. Bugatti La Voiture Noire - 4.000.000.000$
+🚗 1. Самокат - 100.000$
+🚗 2. УАЗ Хантер - 500.000$
+🚗 3. Peel P50 - 750.000$
+🚗 4. Daihatsu Terios kid - 1.200.000$
+🚗 5. Mitsubishi Pajero Mini - 3.700.000$
+🚗 6. Honda civic - 15.000.000$
+🚗 7. Acura Integra - 50.000.000$
+🚗 8. Mazda MX-5 Miata - 80.000.000$
+🚗 9. Opel Astra - 100.000.000$
+🚗 10. Audi 80 - 120.000.000$
+🚗 11. Lada Granta - 150.000.000$
+🚗 12. Lincoln Continental - 200.000.000$
+🚗 13. Volkswagen Golf GTI - 250.000.000$
+🚗 14. Nissan Almera Classic - 310.000.000$
+🚗 15. BMW 3-series e36 - 450.000.000$
+🚗 16. Mercedes-Benz w220 - 600.000.000$
+🚗 17. Ford Raptor - 800.000.000$
+🚗 18. Dodge Durango - 1.650.000.000$
+🚗 19. Infinity FX37 - 4.000.000.000$
+🚗 20. Porsche Cayenne S - 8.000.000.000$
+🚗 21. Jeep grand Cherokee - 30.000.000.000$
+🚗 22. Aurus Senat - 70.000.000.000$
+🚗 23. Bugatti La Voiture Noire - 500.000.000.000$
 
 
 🛒 Для покупки машины введите "Купить машину [номер]\"""")
