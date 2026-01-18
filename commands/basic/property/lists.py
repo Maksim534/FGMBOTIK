@@ -2,6 +2,15 @@
 
 helicopters = {
     1: ("Воздушный шар", 60, 0, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 100000),
+    2: ("Robinson R22", 190, 124, "https://imgfoto.host/i/yhngvn", 620000),
+    3: ("Robinson R44 Raven", 240, 220, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 850000),
+    4: ("Bell 505 Jet Ranger X", 232, 505, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 1550000),
+    5: ("Airbus H125", 287, 847, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 2100000),
+    6: ("Leonardo AW109 Grand New", 311, 811, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 3800000),
+    7: ("Airbus H145", 268, 808, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 5000000),
+    8: ("Bell 429 GlobalRanger", 287, 730, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 7550000),
+    9: ("Leonardo AW139", 310, 1007, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 10300000),
+    10: ("Sikorsky S-76D", 357, 1682, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 13700000),
    
 }
 
