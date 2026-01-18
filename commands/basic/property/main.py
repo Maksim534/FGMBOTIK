@@ -12,6 +12,15 @@ from user import BFGuser, BFGconst
 async def helicopters_list(message: types.Message, user: BFGuser):
     await message.answer(f"""{user.url}, доступные вертолёты:
 🚁 1. Воздушный шар - 100.000$
+🚁 2. Robinson R22 - 620.000$
+🚁 3. Robinson R44 Raven - 850.000$
+🚁 4. Bell 505 Jet Ranger X - 1.550.000$
+🚁 5. Airbus H125 - 2.100.000$
+🚁 6. Leonardo AW109 Grand New - 3.800.000$
+🚁 7. Airbus H145 - 5.000.000$
+🚁 8. Bell 429 GlobalRanger - 7.550.000$
+🚁 9. Leonardo AW139 - 10.300.000$
+🚁 10. Sikorsky S-76D - 13.700.000$
 
 🛒 Для покупки вертолёта введите "Купить вертолет [номер]\"""")
 
