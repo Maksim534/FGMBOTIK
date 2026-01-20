@@ -36,7 +36,7 @@ async def upd_ferma_text(call: types.CallbackQuery | types.Message, user: BFGuse
         await user.update()
 
     dox = int(3 * (ferma.cards.get() ** 1.5)) if ferma.cards.get() != 0 else 3
-    ch = int(200000 * (1 + 0.85) ** ferma.cards.get())
+    ch = int(200000 * (1 + 0.65) ** ferma.cards.get())
 
     txt = f'''{user.url}, информация о вашей "Майнинг ферма":
 💷 Доход: {tr(dox)}฿/час
@@ -81,7 +81,7 @@ async def buy_cards_cmd(call: types.CallbackQuery, user: BFGuser):
     if not ferma:
         return
 
-    ch = int(200_000 * (1 + 0.85) ** (ferma.cards.get()))
+    ch = int(200_000 * (1 + 0.65) ** (ferma.cards.get()))
     
     if int(user.balance) < ch:
         await call.answer(f'{user.name}, у вас недостаточно денег для увеличения видеокарт. Её стоимость {tr(ch)}$ {lose}')
