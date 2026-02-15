@@ -433,10 +433,10 @@ class Game:
         txt += '\n\n' + pole
         return txt
     
-	def get_kb(self):
+		def get_kb(self):
     	"""Получение клавиатуры с учётом текущего ряда"""
-    	from assets.keyboards.game import kwak_game
-    	return kwak_game(self.user_id, self.player[0])
+    		from assets.keyboards.game import kwak_game
+    		return kwak_game(self.user_id, self.player[0])
 
 
 @antispam
