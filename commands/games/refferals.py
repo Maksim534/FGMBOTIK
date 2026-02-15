@@ -133,7 +133,7 @@ class Database:
         # Проверяем, есть ли настройки, если нет — создаём
         rtop_row = self.cursor.execute('SELECT rtop FROM settings').fetchone()
         if not rtop_row:
-            summ = 1_000_000_000_000_000
+            summ = 100_000_000
             self.cursor.execute('INSERT INTO settings (summ, column, rtop) VALUES (?, ?, ?)',
                               (summ, 'balance', 1))
             self.conn.commit()
