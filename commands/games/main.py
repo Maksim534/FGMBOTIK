@@ -433,10 +433,10 @@ class Game:
         txt += '\n\n' + pole
         return txt
     
-    def get_kb(self):
-        """Получение клавиатуры для игры из отдельного файла"""
-        from assets.keyboards.game import kwak_game
-        return kwak_game(self.user_id)
+	def get_kb(self):
+    	"""Получение клавиатуры с учётом текущего ряда"""
+    	from assets.keyboards.game import kwak_game
+    	return kwak_game(self.user_id, self.player[0])
 
 
 @antispam
@@ -497,11 +497,11 @@ async def kwak_callback(call: types.CallbackQuery, user: BFGuser):
             game.get_text('win').format(user.url) + f'\n💰 Выигрыш: {tr(win_sum)}$'
         )
         games.pop(user_id)
-    else:
-        await call.message.edit_text(
-            game.get_text('game').format(user.url),
-            reply_markup=game.get_kb()
-        )
+	else:  # Продолжение игры
+    	await call.message.edit_text(
+       	 game.get_text('game').format(user.url),
+        	reply_markup=game.get_kb()  # Здесь автоматом передастся новый player[0]
+    )
     
     await call.answer()
 
