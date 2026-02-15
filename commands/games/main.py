@@ -6,6 +6,7 @@ from aiogram import types, Dispatcher
 from assets.transform import transform_int as tr
 from commands.games.db import *
 from assets.antispam import antispam
+from assets.antispam import antispam, antispam_earning, new_earning_msg
 from assets.gettime import gametime
 from filters.custom import StartsWith
 from user import BFGuser, BFGconst
@@ -467,7 +468,7 @@ async def kwak_cmd(message: types.Message, user: BFGuser):
     game.message_id = msg.message_id
 
 
-@antispam
+@antispam_earning
 async def kwak_callback(call: types.CallbackQuery, user: BFGuser):
     """Обработка нажатий на кнопки игры"""
     user_id = call.from_user.id
@@ -505,7 +506,7 @@ async def kwak_callback(call: types.CallbackQuery, user: BFGuser):
     await call.answer()
 
 
-@antispam
+@antispam_earning
 async def kwak_stop_callback(call: types.CallbackQuery, user: BFGuser):
     """Обработка нажатия на кнопку остановки"""
     user_id = call.from_user.id
