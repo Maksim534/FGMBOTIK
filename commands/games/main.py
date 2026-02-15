@@ -467,7 +467,7 @@ async def kwak_cmd(message: types.Message, user: BFGuser):
     game.message_id = msg.message_id
 
 
-@antispam_earning
+@antispam
 async def kwak_callback(call: types.CallbackQuery, user: BFGuser):
     """Обработка нажатий на кнопки игры"""
     user_id = call.from_user.id
@@ -505,7 +505,7 @@ async def kwak_callback(call: types.CallbackQuery, user: BFGuser):
     await call.answer()
 
 
-@antispam_earning
+@antispam
 async def kwak_stop_callback(call: types.CallbackQuery, user: BFGuser):
     """Обработка нажатия на кнопку остановки"""
     user_id = call.from_user.id
