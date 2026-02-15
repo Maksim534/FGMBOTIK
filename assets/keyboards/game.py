@@ -26,3 +26,29 @@ def miracles_start() -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="🛑 Завершить игру", callback_data=f"miracles-stop"),
     )
     return keyboard.as_markup()
+
+
+def kwak_game(user_id: int) -> InlineKeyboardMarkup:
+    """Клавиатура для игры Квак"""
+    keyboard = InlineKeyboardBuilder()
+    
+    # Первый ряд - кнопки выбора кувшинок
+    buttons = []
+    for i in range(5):
+        buttons.append(
+            InlineKeyboardButton(
+                text="🍀",
+                callback_data=f"kwak_{i}|{user_id}"
+            )
+        )
+    keyboard.row(*buttons)
+    
+    # Второй ряд - кнопка остановки/завершения
+    keyboard.row(
+        InlineKeyboardButton(
+            text="❌ Отменить игру",
+            callback_data=f"kwak-stop|{user_id}"
+        )
+    )
+    
+    return keyboard.as_markup()
