@@ -524,18 +524,8 @@ class Game:
         txt += '\n\n' + pole
         return txt
     
-    def get_kb(self) -> InlineKeyboardMarkup:
-        """Получение клавиатуры для игры"""
-        keyboard = InlineKeyboardMarkup(row_width=5)
-        buttons = []
-        
-        for i in range(5):
-            buttons.append(InlineKeyboardButton('🍀', callback_data=f"kwak_{i}|{self.user_id}"))
-        keyboard.add(*buttons)
-        
-        txt = '💰 Забрать' if self.player[0] != 4 else '❌ Отменить'
-        keyboard.add(InlineKeyboardButton(txt, callback_data=f"kwak-stop|{self.user_id}"))
-        return keyboard
+   def get_kb(self):
+    return kwak_game(self.user_id)
 
 
 @antispam
