@@ -422,12 +422,12 @@ class Game:
         txt = messages.get(stype, messages['game'])
         pole = self.get_pole(stype)
         next_win = self.get_x(self.player[0]-1) if self.player[0] > 0 else 0
-        nsumm = trt(int(self.summ * next_win)) if next_win else 0
         
-        txt += f'\n<code>·····················</code>\n💸 <b>Ставка:</b> {trt(self.summ)}$'
+        txt += f'\n<code>·····················</code>\n💸 <b>Ставка:</b> {tr(self.summ)}$'
         
         if stype == 'game' and next_win:
-            txt += f'\n🍀 <b>Сл. кувшин:</b> х{next_win} / {nsumm}$'
+            nsumm = int(self.summ * next_win)
+            txt += f'\n🍀 <b>Сл. кувшин:</b> х{next_win} / {tr(nsumm)}$'
         
         txt += '\n\n' + pole
         return txt
@@ -467,7 +467,7 @@ async def kwak_cmd(message: types.Message, user: BFGuser):
     game.message_id = msg.message_id
 
 
-@antispam
+@antispam_earning
 async def kwak_callback(call: types.CallbackQuery, user: BFGuser):
     """Обработка нажатий на кнопки игры"""
     user_id = call.from_user.id
@@ -505,7 +505,7 @@ async def kwak_callback(call: types.CallbackQuery, user: BFGuser):
     await call.answer()
 
 
-@antispam
+@antispam_earning
 async def kwak_stop_callback(call: types.CallbackQuery, user: BFGuser):
     """Обработка нажатия на кнопку остановки"""
     user_id = call.from_user.id
@@ -553,6 +553,7 @@ if not loop.is_running():
     loop.create_task(check_game())
 else:
     asyncio.create_task(check_game())
+
 
 
 
