@@ -8,6 +8,7 @@ from assets.antispam import antispam
 from assets.gettime import gametime
 from filters.custom import StartsWith
 from user import BFGuser, BFGconst
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 def get_summ(message: types.Message, balance: int, index: int) -> int:
