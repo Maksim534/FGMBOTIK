@@ -355,7 +355,7 @@ class Game:
         self.place_traps()
         self.player = [4, 2]  # [row, col]
         self.last_time = time.time()
-    
+
     def place_traps(self):
         """Размещение ловушек на поле"""
         trap_counts = [4, 3, 2, 1]
@@ -366,11 +366,11 @@ class Game:
                     pos = random.choice(positions)
                     self.grid[row][pos] = '🌀'
                     positions.remove(pos)
-    
+
     def get_x(self, n: int) -> float:
         """Получение множителя для ряда"""
         return {3: 1.23, 2: 2.05, 1: 5.11, 0: 25.96}.get(n, 1)
-    
+
     def get_pole(self, stype: str, txt: str = '') -> str:
         """Формирование текстового отображения поля"""
         if stype == 'game':
@@ -381,26 +381,26 @@ class Game:
             grid = self.grid
             if stype == 'lose':
                 grid[self.player[0]][self.player[1]] = '🔵'
-        
+
         multiplier = [25.96, 5.11, 2.05, 1.23, 1]
         for i, row in enumerate(grid):
             txt += f"<code>{'|'.join(row)}</code>| ({multiplier[i]}x)\n"
-        
+
         return txt
-    
+
     def make_move(self, x: int) -> str:
         """Совершение хода в указанную позицию"""
         self.grid[self.player[0]][self.player[1]] = '🍀'
         self.player = [self.player[0]-1, x]
         position = self.grid[self.player[0]][self.player[1]]
         self.grid[self.player[0]][self.player[1]] = '🐸️'
-        
+
         if position == '🌀':
             return 'lose'
         if self.player[0] == 0:
             return 'win'
         return 'continue'
-    
+
     async def stop_game(self) -> int:
         """Завершение игры с возвратом выигрыша"""
         x = self.get_x(self.player[0])
@@ -408,58 +408,58 @@ class Game:
         # Добавляем чистый выигрыш
         await gXX(self.user_id, win_sum - self.summ, 1)
         return win_sum
-    
+
     def get_text(self, stype: str) -> str:
         """Получение текста для сообщения"""
         win, lose = BFGconst.emj()
-        
+
         messages = {
             'win': f'{win} {{}}, <b>ты успешно забрал приз!</b>',
             'stop': f'❌ {{}}, <b>вы отменили игру!</b>',
             'lose': f'{lose} {{}}, <b>ты проиграл!\nВ следующий раз повезет!</b>',
             'game': f'🐸 {{}}, <b>ты начал игру Frog Time!</b>'
         }
-        
+
         txt = messages.get(stype, messages['game'])
         pole = self.get_pole(stype)
         next_win = self.get_x(self.player[0]-1) if self.player[0] > 0 else 0
-        
+
         txt += f'\n<code>·····················</code>\n💸 <b>Ставка:</b> {tr(self.summ)}$'
-        
+
         if stype == 'game' and next_win:
             nsumm = int(self.summ * next_win)
             txt += f'\n🍀 <b>Сл. кувшин:</b> х{next_win} / {tr(nsumm)}$'
-        
+
         txt += '\n\n' + pole
         return txt
-    
-		def get_kb(self):
-    	"""Получение клавиатуры с учётом текущего ряда"""
-    		from assets.keyboards.game import kwak_game
-    		return kwak_game(self.user_id, self.player[0])
+
+    def get_kb(self):
+        """Получение клавиатуры с учётом текущего ряда"""
+        from assets.keyboards.game import kwak_game
+        return kwak_game(self.user_id, self.player[0])
 
 
 @antispam
 async def kwak_cmd(message: types.Message, user: BFGuser):
     """Основная команда для запуска игры Квак"""
     win, lose = BFGconst.emj()
-    
+
     if user.user_id in games:
         await message.answer(f'{user.url}, у вас уже есть активная игра {lose}')
         return
-    
+
     # Используем вашу стандартную проверку ставки
     summ = await game_check(message, user, index=1)
     if not summ:
         return
-    
+
     # Создаем игру
     game = Game(message.chat.id, user.user_id, summ)
     games[user.user_id] = game
-    
+
     # Списываем ставку
     await gXX(user.id, summ, 0)
-    
+
     msg = await message.answer(
         game.get_text('game').format(user.url),
         reply_markup=game.get_kb()
@@ -475,19 +475,19 @@ async def kwak_callback(call: types.CallbackQuery, user: BFGuser):
     chat_id = call.message.chat.id
     message_id = call.message.message_id
     game = games.get(user_id, None)
-    
+
     if not game or game.chat_id != chat_id or game.message_id != message_id:
         await bot.answer_callback_query(call.id, '🐸 Игра не найдена.')
         return
-    
+
     try:
         x = int(call.data.split('_')[1].split('|')[0])
     except:
         await call.answer('❌ Ошибка хода')
         return
-    
+
     result = game.make_move(x)
-    
+
     if result == 'lose':
         await call.message.edit_text(game.get_text('lose').format(user.url))
         games.pop(user_id)
@@ -497,12 +497,12 @@ async def kwak_callback(call: types.CallbackQuery, user: BFGuser):
             game.get_text('win').format(user.url) + f'\n💰 Выигрыш: {tr(win_sum)}$'
         )
         games.pop(user_id)
-	else:  # Продолжение игры
-    	await call.message.edit_text(
-       	 game.get_text('game').format(user.url),
-        	reply_markup=game.get_kb()  # Здесь автоматом передастся новый player[0]
-    )
-    
+    else:
+        await call.message.edit_text(
+            game.get_text('game').format(user.url),
+            reply_markup=game.get_kb()
+        )
+
     await call.answer()
 
 
@@ -513,21 +513,21 @@ async def kwak_stop_callback(call: types.CallbackQuery, user: BFGuser):
     chat_id = call.message.chat.id
     message_id = call.message.message_id
     game = games.get(user_id, None)
-    
+
     if not game or game.chat_id != chat_id or game.message_id != message_id:
         await bot.answer_callback_query(call.id, '🐸 Игра не найдена.')
         return
-    
+
     win_sum = await game.stop_game() if game.player[0] != 4 else 0
     txt = 'stop' if game.player[0] == 4 else 'win'
-    
+
     if game.player[0] != 4:
         await call.message.edit_text(
             game.get_text(txt).format(user.url) + f'\n💰 Выигрыш: {tr(win_sum)}$'
         )
     else:
         await call.message.edit_text(game.get_text(txt).format(user.url))
-    
+
     games.pop(user_id)
     await call.answer()
 
@@ -556,6 +556,11 @@ else:
     asyncio.create_task(check_game())
 
 
+# Регистрация хэндлеров (aiogram 3.x)
+def register_frog_handlers(dp: Dispatcher):
+    dp.message.register(kwak_cmd, lambda message: message.text.lower().startswith('квак'))
+    dp.callback_query.register(kwak_callback, lambda call: call.data.startswith('kwak_'))
+    dp.callback_query.register(kwak_stop_callback, lambda call: call.data.startswith('kwak-stop'))
 
 
 
