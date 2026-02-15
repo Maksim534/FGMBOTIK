@@ -649,7 +649,7 @@ else:
 
 
 def reg(dp: Dispatcher):
-	dp.register_message_handler(kwak_cmd, lambda message: message.text.lower().startswith('квак'))
+	dp.message.register(kwak_cmd, lambda message: message.text.lower().startswith('квак'))
 	dp.register_callback_query_handler(kwak_callback, lambda call: call.data.startswith('kwak_'))
 	dp.register_callback_query_handler(kwak_stop_callback, lambda call: call.data.startswith('kwak-stop'))
 	dp.message.register(oxota, StartsWith("охота"))
