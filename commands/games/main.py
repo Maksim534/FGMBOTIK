@@ -1,5 +1,6 @@
 import random
 import asyncio
+import time
 from bot import bot
 from aiogram import types, Dispatcher
 from assets.transform import transform_int as tr
