@@ -8,6 +8,7 @@ from assets.antispam import antispam
 from assets.gettime import gametime
 from filters.custom import StartsWith
 from user import BFGuser, BFGconst
+from assets.keyboards.game import kwak_game
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
