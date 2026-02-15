@@ -524,8 +524,8 @@ class Game:
         txt += '\n\n' + pole
         return txt
     
-   def get_kb(self):
-    return kwak_game(self.user_id)
+	def get_kb(self):
+    	return kwak_game(self.user_id)
 
 
 @antispam
