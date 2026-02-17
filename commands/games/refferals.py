@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from aiogram.filters import Command
 from decimal import Decimal
 from aiogram import types, Dispatcher, F
 from aiogram.fsm.context import FSMContext
@@ -286,6 +287,78 @@ async def on_start_event(event_data: dict):
     except Exception as e:
         print('Ошибка в реферальной системе:', e)
 
+
+# ==================== ПРЯМОЙ ОБРАБОТЧИК СТАРТА ====================
+async def start_with_ref(message: types.Message):
+    """Обработчик /start с реферальной ссылкой"""
+    try:
+        text = message.text
+        if not text or not text.startswith('/start r'):
+            return
+        
+        user_id = message.from_user.id
+        r_id = int(text.split('/start r')[1])
+        summ, column = await db.get_summ()
+        
+        print(f"🔗 Реферальный переход: {user_id} по ссылке {r_id}")  # Отладка
+        
+        # Проверяем, что реферал не пригласил сам себя
+        if user_id == r_id:
+            print("❌ Реферал равен пригласившему")
+            return
+        
+        # Проверяем, существует ли пригласивший
+        real_id_row = main_cursor.execute(
+            'SELECT user_id FROM users WHERE game_id = ?', 
+            (r_id,)
+        ).fetchone()
+        
+        if not real_id_row:
+            print(f"❌ Пригласивший с game_id {r_id} не найден")
+            return
+        
+        real_id = real_id_row[0]
+        print(f"✅ Пригласивший найден: {real_id}")
+        
+        # Проверяем, что приглашённый ещё не зарегистрирован
+        user_exists = main_cursor.execute(
+            'SELECT user_id FROM users WHERE user_id = ?', 
+            (user_id,)
+        ).fetchone()
+        
+        if user_exists:
+            print(f"❌ Пользователь {user_id} уже зарегистрирован")
+            return
+        
+        # Начисляем награду пригласившему
+        print(f"💰 Начисляем {summ} {column} пользователю {real_id}")
+        
+        if column == 'balance':
+            main_cursor.execute(
+                'UPDATE users SET balance = balance + ? WHERE user_id = ?', 
+                (summ, real_id)
+            )
+            main_conn.commit()
+            print(f"✅ Баланс обновлён")
+        
+        # Записываем реферала
+        await db.new_ref(real_id, summ)
+        print(f"✅ Реферал записан в базу")
+        
+        # Уведомляем пригласившего
+        currency_name = CONFIG_VALUES[column][3] if column in CONFIG_VALUES else "💰 Деньги"
+        await bot.send_message(
+            real_id,
+            f'🥰 <b>По вашей ссылке зарегистрировался новый пользователь!</b>\n'
+            f'На ваш баланс зачислено {tr(summ)} ({currency_name})'
+        )
+        print(f"✅ Уведомление отправлено")
+        
+    except Exception as e:
+        print(f"❌ Ошибка в обработчике рефералов: {e}")
+        import traceback
+        traceback.print_exc()
+
 # ==================== РЕГИСТРАЦИЯ ====================
 def reg(dp: Dispatcher):
     """Регистрация всех обработчиков"""
@@ -293,6 +366,8 @@ def reg(dp: Dispatcher):
     dp.message.register(ref_cmd, StartsWith('реф'))
     dp.message.register(ref_cmd, StartsWith('/ref'))
     dp.message.register(ref_settings_cmd, StartsWith('/lefsetting'))
+
+    dp.message.register(start_with_ref, lambda msg: msg.text and msg.text.startswith('/start r'))
 
     # Колбэки (callback_data как в оригинале)
     dp.callback_query.register(ref_dell_callback, F.data == 'ref-dell')
