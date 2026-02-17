@@ -282,7 +282,7 @@ async def on_start_event(event_data: dict):
         print('Ошибка в реферальной системе:', e)
 
 # ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
-def register_handlers(dp: Dispatcher):
+def reg(dp: Dispatcher):
     """Регистрация всех обработчиков для aiogram 3.x"""
     # Команды через StartsWith
     dp.message.register(ref_cmd, StartsWith('реф'))
