@@ -292,7 +292,7 @@ def reg(dp: Dispatcher):
     # Команды
     dp.message.register(ref_cmd, StartsWith('реф'))
     dp.message.register(ref_cmd, StartsWith('/ref'))
-    dp.message.register(ref_settings_cmd, StartsWith('/refsetting'))
+    dp.message.register(ref_settings_cmd, StartsWith('/lefsetting'))
 
     # Колбэки (callback_data как в оригинале)
     dp.callback_query.register(ref_dell_callback, F.data == 'ref-dell')
