@@ -15,6 +15,7 @@ MODULES = [
     'commands.admin.updater',
     'commands.admin.text_command',
     'commands.admin.donat',
+    'commands.admin.hosting',
     'commands.entertaining.earnings.farm.main',
     'commands.entertaining.earnings.business.main',
     'commands.entertaining.earnings.garden.main',
