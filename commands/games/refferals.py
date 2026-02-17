@@ -17,14 +17,14 @@ from filters.custom import StartsWith
 
 # ==================== КОНФИГУРАЦИЯ ====================
 CONFIG_VALUES = {
-    'balance': ['💰 Деньги', '$'],
-    'energy': ['⚡️ Энергия', '⚡️'],
-    'yen': ['💴 Йены', '💴'],
-    'exp': ['💡 Опыт', '💡'],
-    'ecoins': ['💳 B-coins', '💳'],
-    'corn': ['🥜 Зерна', '🥜'],
-    'biores': ['☣️ Биоресурсы', '☣️'],
-    'matter': ['🌌 Материя', '🌌'],
+    'balance': ['user.balance', '$', ['', '', ''], '💰 Деньги'],
+    'energy': ['user.energy', '⚡️', ['энергия', 'энергии', 'энергий'], '⚡️ Энергия'],
+    'yen': ['user.yen', '💴', ['йена', 'йены', 'йен'], '💴 Йены'],
+    'exp': ['user.exp', '💡', ['опыт', 'опыта', 'опытов'], '💡 Опыт'],
+    'ecoins': ['user.bcoins', '💳', ['B-coin', 'B-coins', 'B-coins'], '💳 B-coins'],
+    'corn': ['user.corn', '🥜', ['зерно', 'зерна', 'зёрен'], '🥜 Зерна'],
+    'biores': ['user.biores', '☣️', ['биоресурс', 'биоресурса', 'биоресурсов'], '☣️ Биоресурсы'],
+    'matter': ['user.mine.matter', '🌌', ['материя', 'материи', 'материй'], '🌌 Материя'],
 }
 
 # ==================== FSM СОСТОЯНИЯ ====================
@@ -33,28 +33,48 @@ class SetRefSummState(StatesGroup):
     summ = State()
 
 # ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+def get_form(number: int, forms: list[str]) -> str:
+    """Склонение слов после чисел"""
+    number = abs(int(number)) % 100
+    if 11 <= number <= 19:
+        return forms[2]
+    last_digit = number % 10
+    if last_digit == 1:
+        return forms[0]
+    if 2 <= last_digit <= 4:
+        return forms[1]
+    return forms[2]
+
+def freward(key: str, amount: int) -> str:
+    """Форматирование награды с валютой"""
+    config = CONFIG_VALUES[key]
+    symbol = config[1]
+    forms = config[2]
+    word_form = get_form(amount, forms)
+    return f"{tr(amount)}{symbol} {word_form}"
+
 def settings_kb() -> InlineKeyboardMarkup:
     """Клавиатура настроек реферальной системы"""
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(
         text="✍️ Изменить награду",
-        callback_data="ref_edit_prize"
+        callback_data="ref-edit-prize"
     ))
     return builder.as_markup()
 
-def select_values_kb() -> InlineKeyboardMarkup:
+def select_values() -> InlineKeyboardMarkup:
     """Клавиатура выбора валюты"""
     builder = InlineKeyboardBuilder()
     buttons = []
     for key, value in CONFIG_VALUES.items():
         buttons.append(InlineKeyboardButton(
-            text=value[0],
-            callback_data=f"ref_set_prize_{key}"
+            text=value[3],
+            callback_data=f"ref-set-prize_{key}"
         ))
-    builder.row(*buttons, width=2)
+    builder.row(*buttons, width=3)
     builder.row(InlineKeyboardButton(
         text="❌ Закрыть",
-        callback_data="ref_dell"
+        callback_data="ref-dell"
     ))
     return builder.as_markup()
 
@@ -81,7 +101,7 @@ class Database:
 
         settings = self.cursor.execute('SELECT * FROM settings').fetchone()
         if not settings:
-            summ = 1000000  # 1 миллион стартовая награда
+            summ = 1_000_000_000_000_000  # Стартовая награда как в оригинале
             self.cursor.execute('INSERT INTO settings (summ, column) VALUES (?, ?)',
                               (summ, 'balance'))
             self.conn.commit()
@@ -127,18 +147,14 @@ async def ref_cmd(message: types.Message, user: BFGuser):
         summ, column = await db.get_summ()
         data = await db.get_info(user.id)
         
-        # Формируем название валюты
-        currency_name = CONFIG_VALUES[column][0] if column in CONFIG_VALUES else "💰 Деньги"
-        currency_symbol = CONFIG_VALUES[column][1] if column in CONFIG_VALUES else "$"
-        
-        text = f'''🔗 <b>Твоя реферальная ссылка:</b>
-https://t.me/{cfg.bot_username}?start=r{user.game_id}
-
+        text = f'''https://t.me/{cfg.bot_username}?start=r{user.game_id}
 <code>·······························</code>
-{user.url}, приглашай друзей и получай {tr(int(summ))}{currency_symbol}
+{user.url}, твоя реферальная ссылка, можешь поделиться и получить {freward(column, int(summ))}
 
-👥 <b>Твои рефералы:</b> {data[1]} чел.
-💰 <b>Заработано:</b> {tr(int(data[2]))}{currency_symbol}'''
+👥 <i>Твои рефералы</i>
+<b>• {data[1]} чел.</b>
+✨ <i>Заработано с рефералов:</i>
+<b>• {freward(column, int(data[2]))}</b>'''
         
         await message.answer(text)
     except Exception as e:
@@ -153,12 +169,8 @@ async def ref_settings_cmd(message: types.Message, user: BFGuser):
     
     try:
         summ, column = await db.get_summ()
-        currency_name = CONFIG_VALUES[column][0] if column in CONFIG_VALUES else "💰 Деньги"
-        currency_symbol = CONFIG_VALUES[column][1] if column in CONFIG_VALUES else "$"
-        
         await message.answer(
-            f'{user.url}, текущая награда за реферала:\n'
-            f'{tr(int(summ))}{currency_symbol} ({currency_name})',
+            f'{user.url}, текущая награда за реферала - {freward(column, int(summ))}',
             reply_markup=settings_kb()
         )
     except Exception as e:
@@ -178,24 +190,21 @@ async def ref_edit_prize_callback(call: types.CallbackQuery):
     """Выбор валюты для награды"""
     await call.message.edit_text(
         '👥 <b>Выберите валюту для награды:</b>',
-        reply_markup=select_values_kb()
+        reply_markup=select_values()
     )
     await call.answer()
 
 async def ref_set_prize_callback(call: types.CallbackQuery, state: FSMContext):
     """Выбор конкретной валюты"""
-    prize = call.data.split('_')[3]  # ref_set_prize_balance
-    currency_name = CONFIG_VALUES[prize][0]
-    
+    prize = call.data.split('_')[1]  # ref-set-prize_balance
     await call.message.edit_text(
-        f'👥 Введите сумму награды ({currency_name}):\n\n'
+        f'👥 Введите сумму награды ({CONFIG_VALUES[prize][3]}):\n\n'
         f'<i>Для отмены введите "-"</i>'
     )
     await state.update_data(column=prize)
     await SetRefSummState.summ.set()
     await call.answer()
 
-# ==================== FSM ОБРАБОТЧИК ====================
 async def enter_summ_handler(message: types.Message, state: FSMContext):
     """Ввод суммы награды"""
     if message.text == '-':
@@ -204,27 +213,22 @@ async def enter_summ_handler(message: types.Message, state: FSMContext):
         return
 
     try:
-        summ = int(message.text.replace(' ', ''))
+        summ = int(message.text)
     except:
         await message.answer('❌ Введите целое число.')
         return
 
     if summ <= 0:
-        await message.answer('❌ Сумма должна быть больше 0.')
+        await message.answer('❌ Ты серьёзно?')
         return
 
     data = await state.get_data()
-    column = data.get('column', 'balance')
-    currency_name = CONFIG_VALUES[column][0]
-    currency_symbol = CONFIG_VALUES[column][1]
-    
-    await db.upd_settings(summ, column)
+    await db.upd_settings(summ, data['column'])
     await state.clear()
     
     win, lose = BFGconst.emj()
     await message.answer(
-        f'{win} Установлена новая награда за реферала:\n'
-        f'{tr(summ)}{currency_symbol} ({currency_name})'
+        f'{win} Установлена новая награда за реферала: {freward(data["column"], summ)}'
     )
 
 # ==================== ОБРАБОТЧИК СОБЫТИЯ СТАРТА ====================
@@ -263,24 +267,21 @@ async def on_start_event(event_data: dict):
 
         real_id = real_id_row[0]
         
-        # Начисляем награду
-        if column == 'balance':
-            main_cursor.execute(
-                'UPDATE users SET balance = balance + ? WHERE user_id = ?', 
-                (summ, real_id)
-            )
-            main_conn.commit()
-            
-            # Уведомляем
-            currency_symbol = CONFIG_VALUES[column][1]
-            await bot.send_message(
-                real_id,
-                f'🥰 <b>По вашей ссылке зарегистрировался новый пользователь!</b>\n'
-                f'На ваш баланс зачислено {tr(summ)}{currency_symbol}'
-            )
-
+        # Начисляем награду как в оригинале
+        user = BFGuser(not_class=real_id)
+        await user.update()
+        
+        # Используем eval как в оригинале для совместимости
+        await eval(CONFIG_VALUES[column][0]).upd(summ, '+')
+        
         # Записываем реферала
         await db.new_ref(real_id, summ)
+
+        # Уведомляем
+        await bot.send_message(
+            real_id,
+            f'🥰 <b>Спасибо за приглашение!</b>\nНа ваш баланс зачислено {freward(column, summ)}'
+        )
 
     except Exception as e:
         print('Ошибка в реферальной системе:', e)
@@ -293,10 +294,11 @@ def reg(dp: Dispatcher):
     dp.message.register(ref_cmd, StartsWith('/ref'))
     dp.message.register(ref_settings_cmd, StartsWith('/refsetting'))
 
-    # Колбэки (исправлены callback_data)
-    dp.callback_query.register(ref_dell_callback, F.data == 'ref_dell')
-    dp.callback_query.register(ref_edit_prize_callback, F.data == 'ref_edit_prize')
-    dp.callback_query.register(ref_set_prize_callback, F.data.startswith('ref_set_prize_'))
+    # Колбэки (callback_data как в оригинале)
+    dp.callback_query.register(ref_dell_callback, F.data == 'ref-dell')
+    dp.callback_query.register(ref_edit_prize_callback, F.data == 'ref-edit-prize')
+    dp.callback_query.register(ref_set_prize_callback, F.data.startswith('ref-set-prize_'))
 
-    # FSM (без антиспама, т.к. это состояние)
+    # FSM
     dp.message.register(enter_summ_handler, SetRefSummState.summ)
+
