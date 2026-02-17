@@ -15,15 +15,14 @@ from filters.custom import StartsWith
 # Время запуска бота
 BOT_START_TIME = datetime.now()
 
-# Цвета для индикаторов
 def get_color(percent: float) -> str:
     """Возвращает цвет в зависимости от процента"""
     if percent < 50:
-        return "🟢"  # Зелёный - хорошо
+        return "🟢"
     elif percent < 80:
-        return "🟡"  # Жёлтый - средне
+        return "🟡"
     else:
-        return "🔴"  # Красный - плохо
+        return "🔴"
 
 def get_bar(percent: float, length: int = 10) -> str:
     """Создаёт визуальную полосу загрузки"""
@@ -50,79 +49,63 @@ def format_uptime() -> str:
     return " ".join(parts)
 
 def get_system_info() -> dict:
-    """Собирает информацию о системе"""
-    # CPU
-    cpu_percent = psutil.cpu_percent(interval=1)
-    cpu_count = psutil.cpu_count()
-    cpu_freq = psutil.cpu_freq()
-    cpu_freq_current = cpu_freq.current if cpu_freq else 0
-    
-    # RAM
-    memory = psutil.virtual_memory()
-    ram_used = memory.used / (1024**3)  # в GB
-    ram_total = memory.total / (1024**3)
-    ram_percent = memory.percent
-    
-    # Swap
-    swap = psutil.swap_memory()
-    swap_used = swap.used / (1024**3)
-    swap_total = swap.total / (1024**3)
-    swap_percent = swap.percent
-    
-    # Диск
-    disk = psutil.disk_usage('/')
-    disk_used = disk.used / (1024**3)
-    disk_total = disk.total / (1024**3)
-    disk_percent = disk.percent
-    
-    # Сеть
-    net = psutil.net_io_counters()
-    net_sent = net.bytes_sent / (1024**2)  # в MB
-    net_recv = net.bytes_recv / (1024**2)
-    
-    # Процессы
-    processes = len(psutil.pids())
-    
-    # Температура (не везде доступно)
-    try:
-        temps = psutil.sensors_temperatures()
-        cpu_temp = temps.get('coretemp', [{}])[0].get('current', 0) if temps else 0
-    except:
-        cpu_temp = 0
-    
-    return {
-        'cpu': {
-            'percent': cpu_percent,
-            'count': cpu_count,
-            'freq': cpu_freq_current / 1000  # в GHz
-        },
-        'ram': {
-            'used': round(ram_used, 2),
-            'total': round(ram_total, 2),
-            'percent': ram_percent
-        },
-        'swap': {
-            'used': round(swap_used, 2),
-            'total': round(swap_total, 2),
-            'percent': swap_percent
-        },
-        'disk': {
-            'used': round(disk_used, 2),
-            'total': round(disk_total, 2),
-            'percent': disk_percent
-        },
-        'net': {
-            'sent': round(net_sent, 2),
-            'recv': round(net_recv, 2)
-        },
+    """Собирает информацию о системе с обработкой ошибок"""
+    info = {
+        'cpu': {'percent': 0, 'count': 0},
+        'ram': {'used': 0, 'total': 0, 'percent': 0},
+        'swap': {'used': 0, 'total': 0, 'percent': 0},
+        'disk': {'used': 0, 'total': 0, 'percent': 0},
         'system': {
-            'platform': platform.platform(),
+            'platform': 'Неизвестно',
             'python': platform.python_version(),
-            'hostname': platform.node(),
-            'processes': processes,
-            'cpu_temp': round(cpu_temp, 1)
+            'hostname': 'Неизвестно',
+            'processes': 0
         }
     }
+    
+    try:
+        # CPU (без частоты, так как она вызывает ошибку на FreeBSD)
+        info['cpu']['percent'] = psutil.cpu_percent(interval=0.5)
+        info['cpu']['count'] = psutil.cpu_count()
+    except Exception as e:
+        print(f"Ошибка получения CPU: {e}")
+    
+    try:
+        # RAM
+        memory = psutil.virtual_memory()
+        info['ram']['used'] = round(memory.used / (1024**3), 2)
+        info['ram']['total'] = round(memory.total / (1024**3), 2)
+        info['ram']['percent'] = memory.percent
+    except Exception as e:
+        print(f"Ошибка получения RAM: {e}")
+    
+    try:
+        # Swap
+        swap = psutil.swap_memory()
+        info['swap']['used'] = round(swap.used / (1024**3), 2)
+        info['swap']['total'] = round(swap.total / (1024**3), 2)
+        info['swap']['percent'] = swap.percent
+    except Exception as e:
+        print(f"Ошибка получения Swap: {e}")
+    
+    try:
+        # Диск
+        disk = psutil.disk_usage('/')
+        info['disk']['used'] = round(disk.used / (1024**3), 2)
+        info['disk']['total'] = round(disk.total / (1024**3), 2)
+        info['disk']['percent'] = disk.percent
+    except Exception as e:
+        print(f"Ошибка получения диска: {e}")
+    
+    try:
+        # Системная информация
+        info['system']['platform'] = platform.platform()
+        info['system']['hostname'] = platform.node()
+        info['system']['processes'] = len(psutil.pids())
+    except Exception as e:
+        print(f"Ошибка получения системной информации: {e}")
+    
+    return info
 
 def get_status_emoji(percent: float) -> str:
     """Возвращает эмодзи статуса"""
@@ -154,17 +137,15 @@ async def hosting_status_cmd(message: types.Message, user: BFGuser):
 🕐 **Время старта:** {BOT_START_TIME.strftime('%Y-%m-%d %H:%M:%S')}
 
 💻 **СИСТЕМА**
-• Платформа: {info['system']['platform'][:30]}...
+• Платформа: {info['system']['platform'][:50]}...
 • Python: {info['system']['python']}
 • Хост: {info['system']['hostname']}
 • Процессов: {info['system']['processes']}
-• Температура CPU: {info['system']['cpu_temp']}°C
 
 ⚙️ **ПРОЦЕССОР**
 {get_status_emoji(info['cpu']['percent'])} Загрузка: {info['cpu']['percent']}%
 {get_bar(info['cpu']['percent'])} 
 • Ядер: {info['cpu']['count']}
-• Частота: {info['cpu']['freq']} GHz
 
 🧠 **ОПЕРАТИВНАЯ ПАМЯТЬ**
 {get_status_emoji(info['ram']['percent'])} Использовано: {info['ram']['used']} GB / {info['ram']['total']} GB
@@ -180,10 +161,6 @@ async def hosting_status_cmd(message: types.Message, user: BFGuser):
 {get_status_emoji(info['disk']['percent'])} Использовано: {info['disk']['used']} GB / {info['disk']['total']} GB
 {get_bar(info['disk']['percent'])} 
 • {info['disk']['percent']}%
-
-🌐 **СЕТЬ (с момента запуска)**
-• Отправлено: {info['net']['sent']} MB
-• Получено: {info['net']['recv']} MB
 
 📊 **Сводка:**
 • CPU: {info['cpu']['percent']}% {get_color(info['cpu']['percent'])}
@@ -206,7 +183,6 @@ async def hosting_refresh_callback(call: types.CallbackQuery, user: BFGuser):
         callback_data="hosting_refresh"
     ))
     
-    # Формируем сообщение (тот же текст)
     text = f"""
 📊 **СТАТУС ХОСТИНГА** 📊
 
@@ -214,17 +190,15 @@ async def hosting_refresh_callback(call: types.CallbackQuery, user: BFGuser):
 🕐 **Время старта:** {BOT_START_TIME.strftime('%Y-%m-%d %H:%M:%S')}
 
 💻 **СИСТЕМА**
-• Платформа: {info['system']['platform'][:30]}...
+• Платформа: {info['system']['platform'][:50]}...
 • Python: {info['system']['python']}
 • Хост: {info['system']['hostname']}
 • Процессов: {info['system']['processes']}
-• Температура CPU: {info['system']['cpu_temp']}°C
 
 ⚙️ **ПРОЦЕССОР**
 {get_status_emoji(info['cpu']['percent'])} Загрузка: {info['cpu']['percent']}%
 {get_bar(info['cpu']['percent'])} 
 • Ядер: {info['cpu']['count']}
-• Частота: {info['cpu']['freq']} GHz
 
 🧠 **ОПЕРАТИВНАЯ ПАМЯТЬ**
 {get_status_emoji(info['ram']['percent'])} Использовано: {info['ram']['used']} GB / {info['ram']['total']} GB
@@ -240,10 +214,6 @@ async def hosting_refresh_callback(call: types.CallbackQuery, user: BFGuser):
 {get_status_emoji(info['disk']['percent'])} Использовано: {info['disk']['used']} GB / {info['disk']['total']} GB
 {get_bar(info['disk']['percent'])} 
 • {info['disk']['percent']}%
-
-🌐 **СЕТЬ (с момента запуска)**
-• Отправлено: {info['net']['sent']} MB
-• Получено: {info['net']['recv']} MB
 
 📊 **Сводка:**
 • CPU: {info['cpu']['percent']}% {get_color(info['cpu']['percent'])}
@@ -286,3 +256,5 @@ def reg(dp: Dispatcher):
     
     # Колбэк для обновления
     dp.callback_query.register(hosting_refresh_callback, F.data == 'hosting_refresh')
+
+# ==================== ОПИСАНИЕ МОДУЛЯ ====================
