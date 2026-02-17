@@ -8,18 +8,14 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot import bot
-from assets.antispam import antispam, admin_only, antispam_earning
+from assets.antispam import antispam, admin_only
 from assets.transform import transform_int as tr
-from commands.db import cursor as main_cursor, conn as main_conn
-from user import BFGuser
+from commands.db import cursor as main_cursor
+from user import BFGuser, BFGconst
 import config as cfg
-import assets.keyboards as kb  # Импортируем общие клавиатуры
+from filters.custom import StartsWith
 
 # ==================== КОНФИГУРАЦИЯ ====================
-# Добавляем команду в help (если у вас есть такая система)
-# from commands.help import CONFIG
-# CONFIG['help_osn'] = CONFIG.get('help_osn', '') + '\n   👥 Реф'
-
 # Словарь доступных валют для награды
 CONFIG_VALUES = {
     'balance': ['user.balance', '$', ['', '', ''], '💰 Деньги'],
@@ -58,17 +54,12 @@ def freward(key: str, amount: int) -> str:
     word_form = get_form(amount, forms)
     return f"{tr(amount)}{symbol} {word_form}"
 
-def settings_kb(top: int) -> InlineKeyboardMarkup:
+def settings_kb() -> InlineKeyboardMarkup:
     """Клавиатура настроек реферальной системы"""
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(
         text="✍️ Изменить награду",
         callback_data="ref-edit-prize"
-    ))
-    txt = '➕ Добавить топ рефаводов' if top == 0 else '❌ Удалить топ рефаводов'
-    builder.row(InlineKeyboardButton(
-        text=txt,
-        callback_data="ref-edit-top"
     ))
     return builder.as_markup()
 
@@ -88,29 +79,9 @@ def select_values() -> InlineKeyboardMarkup:
     ))
     return builder.as_markup()
 
-def top_substitution_kb(user_id: int, tab: str) -> InlineKeyboardMarkup:
-    """Замена для стандартной топ-клавиатуры"""
-    builder = InlineKeyboardBuilder()
-    buttons = [
-        InlineKeyboardButton("👑 Топ рейтинга", callback_data=f"top-rating|{user_id}|{tab}"),
-        InlineKeyboardButton("💰 Топ денег", callback_data=f"top-balance|{user_id}|{tab}"),
-        InlineKeyboardButton("🧰 Топ ферм", callback_data=f"top-cards|{user_id}|{tab}"),
-        InlineKeyboardButton("🗄 Топ бизнесов", callback_data=f"top-bsterritory|{user_id}|{tab}"),
-        InlineKeyboardButton("🏆 Топ опыта", callback_data=f"top-exp|{user_id}|{tab}"),
-        InlineKeyboardButton("💴 Топ йен", callback_data=f"top-yen|{user_id}|{tab}"),
-        InlineKeyboardButton("📦 Топ обычных кейсов", callback_data=f"top-case1|{user_id}|{tab}"),
-        InlineKeyboardButton("🏵 Топ золотых кейсов", callback_data=f"top-case2|{user_id}|{tab}"),
-        InlineKeyboardButton("🏺 Топ рудных кейсов", callback_data=f"top-case3|{user_id}|{tab}"),
-        InlineKeyboardButton("🌌 Топ материальных кейсов", callback_data=f"top-case4|{user_id}|{tab}"),
-        InlineKeyboardButton("👥 Топ рефаводов", callback_data=f"ref-top|{user_id}|{tab}"),
-    ]
-    builder.row(*buttons, width=2)
-    return builder.as_markup()
-
 # ==================== РАБОТА С БАЗОЙ ДАННЫХ ====================
 class Database:
     def __init__(self):
-        # Создаём папку для базы данных, если её нет
         os.makedirs('modules/temp', exist_ok=True)
         self.conn = sqlite3.connect('modules/temp/referrals.db')
         self.cursor = self.conn.cursor()
@@ -126,46 +97,21 @@ class Database:
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS settings (
                 summ TEXT,
-                column TEXT,
-                rtop INTEGER DEFAULT 1
+                column TEXT
             )''')
 
         # Проверяем, есть ли настройки, если нет — создаём
-        rtop_row = self.cursor.execute('SELECT rtop FROM settings').fetchone()
-        if not rtop_row:
-            summ = 100_000_000
-            self.cursor.execute('INSERT INTO settings (summ, column, rtop) VALUES (?, ?, ?)',
-                              (summ, 'balance', 1))
+        settings = self.cursor.execute('SELECT * FROM settings').fetchone()
+        if not settings:
+            summ = 1_000_000_000_000_000  # Стартовая награда
+            self.cursor.execute('INSERT INTO settings (summ, column) VALUES (?, ?)',
+                              (summ, 'balance'))
             self.conn.commit()
-            rtop = 1
-        else:
-            rtop = rtop_row[0]
-
-        # Обновляем глобальную клавиатуру (сохраняем оригинал)
-        global original_kb
-        original_kb = kb.top
-        self.upd_keyboards(rtop)
-
-    def upd_keyboards(self, rtop: int) -> None:
-        """Обновляет глобальную топ-клавиатуру"""
-        if rtop == 0:
-            kb.top = original_kb
-        else:
-            # Временно, пока не передадим user_id и tab
-            kb.top = lambda user_id, tab: top_substitution_kb(user_id, tab)
 
     async def upd_settings(self, summ: int, column: str) -> None:
         self.cursor.execute('UPDATE settings SET summ = ?, column = ?', (summ, column))
-        self.cursor.execute('UPDATE users SET balance = 0')  # Обнуляем баланс рефералов
+        self.cursor.execute('UPDATE users SET balance = 0')
         self.conn.commit()
-
-    async def upd_rtop(self, rtop: int) -> None:
-        self.cursor.execute('UPDATE settings SET rtop = ?', (rtop,))
-        self.conn.commit()
-        self.upd_keyboards(rtop)
-
-    async def get_rtop(self) -> int:
-        return self.cursor.execute('SELECT rtop FROM settings').fetchone()[0]
 
     async def reg_user(self, user_id: int) -> None:
         ex = self.cursor.execute('SELECT user_id FROM users WHERE user_id = ?', (user_id,)).fetchone()
@@ -180,68 +126,66 @@ class Database:
     async def get_summ(self) -> tuple:
         return self.cursor.execute('SELECT summ, column FROM settings').fetchone()
 
-    async def upd_summ(self, summ: int) -> None:
-        summ = "{:.0f}".format(summ)
-        self.cursor.execute('UPDATE settings SET summ = ?', (summ,))
-        self.conn.commit()
-
     async def new_ref(self, user_id: int, summ: int) -> None:
         await self.reg_user(user_id)
         rbalance = self.cursor.execute('SELECT balance FROM users WHERE user_id = ?', (user_id,)).fetchone()[0]
-
+        
         new_rbalance = Decimal(str(rbalance)) + Decimal(str(summ))
         new_rbalance = "{:.0f}".format(new_rbalance)
-
+        
         self.cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (new_rbalance, user_id))
         self.cursor.execute('UPDATE users SET ref = ref + 1 WHERE user_id = ?', (user_id,))
         self.conn.commit()
 
-    async def get_top(self) -> list:
-        data = self.cursor.execute('SELECT user_id, ref FROM users ORDER BY ref DESC LIMIT 10').fetchall()
-        users = []
-        for user_id, ref in data:
-            name = main_cursor.execute("SELECT name FROM users WHERE user_id = ?", (user_id,)).fetchone()
-            if name:
-                users.append((user_id, ref, name[0]))
-        return users
-
 # Инициализация базы данных
 db = Database()
-original_kb = None  # Будет заполнено в create_tables
 
 # ==================== ОБРАБОТЧИКИ КОМАНД ====================
 @antispam
 async def ref_cmd(message: types.Message, user: BFGuser):
-    """Команда /ref или 'реф' - показать реферальную ссылку"""
-    summ, column = await db.get_summ()
-    data = await db.get_info(user.id)
-    text = f'''https://t.me/{cfg.bot_username}?start=r{user.game_id}
+    """Команда реф - показать реферальную ссылку"""
+    win, lose = BFGconst.emj()
+    
+    try:
+        summ, column = await db.get_summ()
+        data = await db.get_info(user.id)
+        
+        text = f'''https://t.me/{cfg.bot_username}?start=r{user.game_id}
 <code>·······························</code>
-{user.url}, твоя реферальная ссылка, можешь поделиться и получить {freward(column, summ)}
+{user.url}, твоя реферальная ссылка, можешь поделиться и получить {freward(column, int(summ))}
 
 👥 <i>Твои рефералы</i>
 <b>• {data[1]} чел.</b>
 ✨ <i>Заработано с рефералов:</i>
-<b>• {freward(column, data[2])}</b>'''
-    await message.answer(text)
+<b>• {freward(column, int(data[2]))}</b>'''
+        
+        await message.answer(text)
+    except Exception as e:
+        print(f"Ошибка в ref_cmd: {e}")
+        await message.answer(f"{user.url}, произошла ошибка {lose}")
 
 @antispam
 @admin_only(private=True)
 async def ref_settings_cmd(message: types.Message, user: BFGuser):
     """Команда /refsetting для администраторов"""
-    summ, column = await db.get_summ()
-    top = await db.get_rtop()
-    await message.answer(
-        f'{user.url}, текущая награда за реферала - {freward(column, summ)}',
-        reply_markup=settings_kb(top)
-    )
+    win, lose = BFGconst.emj()
+    
+    try:
+        summ, column = await db.get_summ()
+        await message.answer(
+            f'{user.url}, текущая награда за реферала - {freward(column, int(summ))}',
+            reply_markup=settings_kb()
+        )
+    except Exception as e:
+        print(f"Ошибка в ref_settings_cmd: {e}")
+        await message.answer(f"{user.url}, произошла ошибка {lose}")
 
 # ==================== ОБРАБОТЧИКИ КОЛБЭКОВ ====================
 async def ref_dell_callback(call: types.CallbackQuery):
-    """Удаление сообщения с настройками"""
+    """Закрыть меню настроек"""
     try:
         await call.message.delete()
-    except Exception:
+    except:
         pass
     await call.answer()
 
@@ -254,7 +198,7 @@ async def ref_edit_prize_callback(call: types.CallbackQuery):
     await call.answer()
 
 async def ref_set_prize_callback(call: types.CallbackQuery, state: FSMContext):
-    """Выбор конкретной валюты и запрос суммы"""
+    """Выбор конкретной валюты"""
     prize = call.data.split('_')[1]
     await call.message.edit_text(
         f'👥 Введите сумму награды ({CONFIG_VALUES[prize][3]}):\n\n<i>Для отмены введите "-"</i>'
@@ -267,56 +211,27 @@ async def enter_summ_handler(message: types.Message, state: FSMContext):
     """Ввод суммы награды"""
     if message.text == '-':
         await state.clear()
-        await message.answer('Отменено.')
+        await message.answer('❌ Отменено.')
         return
 
     try:
         summ = int(message.text)
-    except ValueError:
-        await message.answer('Введите целое число.')
+    except:
+        await message.answer('❌ Введите целое число.')
         return
 
     if summ <= 0:
-        await message.answer('Ты серьёзно?')
+        await message.answer('❌ Ты серьёзно?')
         return
 
     data = await state.get_data()
     await db.upd_settings(summ, data['column'])
     await state.clear()
+    
+    win, lose = BFGconst.emj()
     await message.answer(
-        f'✅ Установлена новая награда за реферала: {freward(data["column"], summ)}'
+        f'{win} Установлена новая награда за реферала: {freward(data["column"], summ)}'
     )
-
-async def ref_edit_top_callback(call: types.CallbackQuery):
-    """Включение/выключение топа рефералов в основной топ-клавиатуре"""
-    top = await db.get_rtop()
-    new_top = 1 if top == 0 else 0
-    await db.upd_rtop(new_top)
-    await call.message.edit_reply_markup(reply_markup=settings_kb(new_top))
-    await call.answer()
-
-@antispam_earning
-async def ref_top_callback(call: types.CallbackQuery, user: BFGuser):
-    """Показ топа рефералов"""
-    top = await db.get_top()
-    tab = call.data.split('|')[2]
-
-    if tab == 'ref':
-        return
-
-    text = f"{user.url}, топ 10 игроков бота по рефералам:\n"
-    emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "1️⃣0️⃣"]
-
-    for i, player in enumerate(top[:10], start=1):
-        emj = emojis[i - 1]
-        text += f"{emj} {player[2]} — {player[1]}👥\n"
-
-    await call.message.edit_text(
-        text=text,
-        reply_markup=kb.top(user.id, 'ref'),
-        disable_web_page_preview=True
-    )
-    await call.answer()
 
 # ==================== ОБРАБОТЧИК СОБЫТИЯ СТАРТА ====================
 async def on_start_event(event_data: dict):
@@ -346,14 +261,14 @@ async def on_start_event(event_data: dict):
         if user_exists:
             return
 
-        # Начисляем награду пригласившему
         real_id = real_id_row[0]
-        referrer = BFGuser(not_class=real_id)
-        await referrer.update()
-
-        # Обновляем баланс пригласившего (eval осторожно, но в исходном коде так)
-        # В реальном проекте лучше использовать прямые функции
-        await eval(CONFIG_VALUES[column][0]).upd(summ, '+')
+        
+        # Начисляем награду пригласившему
+        if column == 'balance':
+            cursor = main_cursor
+            cursor.execute('UPDATE users SET balance = balance + ? WHERE user_id = ?', (summ, real_id))
+            cursor.connection.commit()
+        # Для других валют можно добавить аналогично
 
         # Записываем реферала в нашу базу
         await db.new_ref(real_id, summ)
@@ -369,16 +284,15 @@ async def on_start_event(event_data: dict):
 # ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
 def register_handlers(dp: Dispatcher):
     """Регистрация всех обработчиков для aiogram 3.x"""
-    # Команды
-    dp.message.register(ref_cmd, F.text.lower().in_(['реф', '/ref']))
-    dp.message.register(ref_settings_cmd, F.text == '/refsetting')
+    # Команды через StartsWith
+    dp.message.register(ref_cmd, StartsWith('реф'))
+    dp.message.register(ref_cmd, StartsWith('/ref'))
+    dp.message.register(ref_settings_cmd, StartsWith('/refsetting'))
 
-    # Колбэки настроек
+    # Колбэки
     dp.callback_query.register(ref_dell_callback, F.data == 'ref-dell')
     dp.callback_query.register(ref_edit_prize_callback, F.data == 'ref-edit-prize')
     dp.callback_query.register(ref_set_prize_callback, F.data.startswith('ref-set-prize_'))
-    dp.callback_query.register(ref_edit_top_callback, F.data.startswith('ref-edit-top'))
-    dp.callback_query.register(ref_top_callback, F.data.startswith('ref-top'))
-    # FSM обработчик
-    dp.message.register(enter_summ_handler, SetRefSummState.summ)
 
+    # FSM
+    dp.message.register(enter_summ_handler, SetRefSummState.summ)
