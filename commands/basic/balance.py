@@ -190,8 +190,6 @@ async def get_id_cmd(message: types.Message, user: BFGuser):
             f"🆔 <b>Telegram ID:</b> <code>{user.id}</code>\n"
             f"🎮 <b>Игровой ID:</b> <code>{game_id}</code>\n"
             f"<code>═══════════════════</code>\n"
-            f"📝 Чтобы узнать ID другого пользователя, "
-            f"ответьте на его сообщение командой /id",
             parse_mode="HTML"
         )
 
