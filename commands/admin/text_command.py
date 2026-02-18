@@ -24,16 +24,41 @@ async def sql(message: types.Message):
 @admin_only()
 async def ban(message: types.Message):
     try:
-        user_id, time_str, *reason = message.get_args().split()
-        time_s = sum(int(value) * {'д': 86400, 'ч': 3600, 'м': 60}[unit] for value, unit in re.findall(r'(\d+)([дчм])', time_str))
+        args = message.get_args().split()
+        if len(args) < 2:
+            await message.reply("Используйте: /banb [игровой id] [время] [причина]")
+            return
+            
+        game_id, time_str = args[0], args[1]
+        reason = ' '.join(args[2:]) if len(args) > 2 else 'Не указана'
+        
+        # Конвертируем время
+        time_s = sum(int(value) * {'д': 86400, 'ч': 3600, 'м': 60}[unit] 
+                    for value, unit in re.findall(r'(\d+)([дчм])', time_str))
         time_s = int(time.time()) + time_s
-        reason = ' '.join(reason) if reason else 'Не указана'
-    except:
-        await message.reply("Используйте: /banb [игровой id] [время] [причина]")
+        
+    except Exception as e:
+        await message.reply(f"Ошибка формата: {e}\nИспользуйте: /banb [игровой id] [время] [причина]")
         return
     
-    await db.new_ban(user_id, time_s, reason)
-    await message.answer(f'📛 Пользователь {user_id} заблокирован на {time_str}\nПричина: <i>{reason}</i>')
+    # Проверяем, существует ли пользователь с таким game_id
+    user_data = cursor.execute(
+        "SELECT user_id, name FROM users WHERE game_id = ?", 
+        (int(game_id),)
+    ).fetchone()
+    
+    if not user_data:
+        await message.answer(f"❌ Пользователь с игровым ID <b>{game_id}</b> не найден.")
+        return
+    
+    telegram_id, name = user_data
+    
+    # Баним
+    await db.new_ban(telegram_id, time_s, reason)
+    await message.answer(
+        f'📛 Пользователь <b>{name}</b> (ID: {game_id}) заблокирован на {time_str}\n'
+        f'Причина: <i>{reason}</i>'
+    )
 
 
 @admin_only()
