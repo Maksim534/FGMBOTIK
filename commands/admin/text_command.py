@@ -59,7 +59,7 @@ async def ban(message: types.Message):
         
         # Рассчитываем время разблокировки
         unban_time = int(time.time()) + total_seconds
-        moscow_time = datetime.fromtimestamp(unban_time) + timedelta(hours=3)
+        moscow_time = datetime.fromtimestamp(unban_time) + timedelta(hours=2)
         unban_date = moscow_time.strftime('%Y-%m-%d %H:%M:%S')  # 👈 ИСПРАВЛЕНО
         
     except Exception as e:
