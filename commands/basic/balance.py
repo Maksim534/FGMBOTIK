@@ -141,86 +141,63 @@ async def profil_back(call: types.CallbackQuery, user: BFGuser):
     text = await creat_help_msg("{0}, ваш профиль:", user)
     await call.message.edit_text(text=text, reply_markup=kb.profile(call.from_user.id))
 
+
 @antispam
-async def find_id_cmd(message: types.Message, user: BFGuser):
-    """Команда /айди - поиск информации о пользователе по ID"""
+async def get_id_cmd(message: types.Message, user: BFGuser):
+    """Команда /id - показывает ID пользователя (по реплаю или свой)"""
     win, lose = BFGconst.emj()
     
-    # Проверяем наличие аргумента
-    args = message.text.split()
-    if len(args) < 2:
-        await message.answer(
-            f"{user.url}, укажите ID для поиска.\n"
-            f"📌 Примеры:\n"
-            f"• `/айди 105` - поиск по игровому ID\n"
-            f"• `/айди 123456789` - поиск по Telegram ID",
-            parse_mode="Markdown"
-        )
-        return
-    
-    try:
-        search_id = int(args[1])
-    except ValueError:
-        await message.answer(f"{user.url}, ID должен быть числом.")
-        return
-    
-    # Пытаемся найти пользователя
-    user_info = None
-    found_by = None
-    
-    # Сначала ищем по game_id (игровой ID)
-    result = cursor.execute(
-        "SELECT user_id, game_id, name FROM users WHERE game_id = ?", 
-        (search_id,)
-    ).fetchone()
-    
-    if result:
-        user_info = result
-        found_by = "game_id"
-    else:
-        # Если не нашли по game_id, ищем по user_id (Telegram ID)
-        result = cursor.execute(
-            "SELECT user_id, game_id, name FROM users WHERE user_id = ?", 
-            (search_id,)
+    # Если это ответ на сообщение - показываем ID того, на кого ответили
+    if message.reply_to_message:
+        target_user = message.reply_to_message.from_user
+        target_id = target_user.id
+        target_name = target_user.full_name
+        
+        # Ищем игровой ID в базе
+        game_id_data = cursor.execute(
+            "SELECT game_id FROM users WHERE user_id = ?", 
+            (target_id,)
         ).fetchone()
         
-        if result:
-            user_info = result
-            found_by = "user_id"
+        if game_id_data:
+            game_id = game_id_data[0]
+            await message.answer(
+                f"{user.url}, информация о пользователе {target_name}:\n\n"
+                f"🆔 <b>Telegram ID:</b> <code>{target_id}</code>\n"
+                f"🎮 <b>Игровой ID:</b> <code>{game_id}</code>\n"
+                f"<code>═══════════════════</code>\n"
+                f"📝 Чтобы получить информацию о другом пользователе, "
+                f"ответьте на его сообщение командой /id",
+                parse_mode="HTML"
+            )
+        else:
+            await message.answer(
+                f"{user.url}, пользователь {target_name} не зарегистрирован в боте.",
+                parse_mode="HTML"
+            )
     
-    if not user_info:
+    # Если команда без реплая - показываем свой ID
+    else:
+        # Получаем свой игровой ID
+        game_id_data = cursor.execute(
+            "SELECT game_id FROM users WHERE user_id = ?", 
+            (user.id,)
+        ).fetchone()
+        game_id = game_id_data[0] if game_id_data else "не найден"
+        
         await message.answer(
-            f"{user.url}, пользователь с ID <b>{search_id}</b> не найден.\n"
-            f"Проверьте правильность ввода.",
+            f"{user.url}, ваш профиль:\n\n"
+            f"🆔 <b>Telegram ID:</b> <code>{user.id}</code>\n"
+            f"🎮 <b>Игровой ID:</b> <code>{game_id}</code>\n"
+            f"<code>═══════════════════</code>\n"
+            f"📝 Чтобы узнать ID другого пользователя, "
+            f"ответьте на его сообщение командой /id",
             parse_mode="HTML"
         )
-        return
-    
-    telegram_id, game_id, name = user_info
-    
-    # Формируем информативное сообщение
-    search_method = "🔍 Найден по игровому ID" if found_by == "game_id" else "🔍 Найден по Telegram ID"
-    
-    response = (
-        f"{user.url}, информация о пользователе:\n\n"
-        f"{search_method}\n"
-        f"<code>═══════════════════</code>\n"
-        f"👤 <b>Имя:</b> {name}\n"
-        f"🆔 <b>Telegram ID:</b> <code>{telegram_id}</code>\n"
-        f"🎮 <b>Игровой ID:</b> <code>{game_id}</code>\n"
-        f"<code>═══════════════════</code>\n"
-    )
-    
-    # Если пользователь ищет самого себя, добавим подсказку
-    if telegram_id == user.id:
-        response += f"\n✨ Это вы! Эти ID可以使用 для ссылок и переводов."
-    
-    await message.answer(response, parse_mode="HTML")
 
 
 def reg(dp: Dispatcher):
-    dp.message.register(find_id_cmd, StartsWith("/айди"))
-    dp.message.register(find_id_cmd, StartsWith("/id"))
+    dp.message.register(get_id_cmd, StartsWith("айди"))
     dp.message.register(balance_cmd, TextIn("б", "баланс"))
     dp.message.register(btc_cmd, TextIn("биткоины"))
     dp.message.register(profil_cmd, StartsWith("профиль"))
