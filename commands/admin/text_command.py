@@ -60,12 +60,11 @@ async def ban(message: types.Message):
         # Рассчитываем время разблокировки
         unban_time = int(time.time()) + total_seconds
         moscow_time = datetime.fromtimestamp(unban_time) + timedelta(hours=3)
-unban_date = moscow_time.strftime('%Y-%m-%d %H:%M:%S')
+        unban_date = moscow_time.strftime('%Y-%m-%d %H:%M:%S')  # 👈 ИСПРАВЛЕНО
         
     except Exception as e:
         await message.reply(f"❌ Ошибка: {e}")
         return
-    
     # Проверяем существование пользователя
     user_data = cursor.execute(
         "SELECT user_id, name FROM users WHERE game_id = ?", 
