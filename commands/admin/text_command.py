@@ -1,6 +1,6 @@
 import time
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from aiogram import types, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -59,7 +59,8 @@ async def ban(message: types.Message):
         
         # Рассчитываем время разблокировки
         unban_time = int(time.time()) + total_seconds
-        unban_date = datetime.fromtimestamp(unban_time).strftime('%Y-%m-%d %H:%M:%S')
+        moscow_time = datetime.fromtimestamp(unban_time) + timedelta(hours=3)
+unban_date = moscow_time.strftime('%Y-%m-%d %H:%M:%S')
         
     except Exception as e:
         await message.reply(f"❌ Ошибка: {e}")
