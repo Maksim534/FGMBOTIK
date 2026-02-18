@@ -97,15 +97,14 @@ async def zap_sql(query: str) -> str | None:
     
     
 async def new_ban(user_id: int, time_s: int, reason: str) -> None:
-    user_id = cursor.execute(f"SELECT user_id FROM users WHERE game_id = ?", (user_id,)).fetchone()
-    if user_id:
-        res = cursor.execute(f"SELECT * FROM ban_list WHERE user_id = ?", (user_id[0],)).fetchone()
-        if res:
-            cursor.execute('DELETE FROM ban_list WHERE user_id = ?', (user_id[0],))
-            conn.commit()
-            
-        cursor.execute('INSERT INTO ban_list (user_id, time, reason) VALUES (?, ?, ?)', (user_id[0], time_s, reason))
-        conn.commit()
+    # user_id здесь уже должен быть Telegram ID
+    res = cursor.execute(f"SELECT * FROM ban_list WHERE user_id = ?", (user_id,)).fetchone()
+    if res:
+        cursor.execute('DELETE FROM ban_list WHERE user_id = ?', (user_id,))
+    
+    cursor.execute('INSERT INTO ban_list (user_id, time, reason) VALUES (?, ?, ?)', 
+                  (user_id, time_s, reason))
+    conn.commit()
 
 
 async def unban_user(user_id: int) -> None:
