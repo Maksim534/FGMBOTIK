@@ -34,6 +34,7 @@ MODULES = [
     'commands.games.main',
     'commands.games.miracles',
     'commands.games.refferals',
+    'commands.games.mines',
     'commands.basic.bank.main',
     'commands.entertaining.case.main',
     'commands.entertaining.earnings.garden.potions',
