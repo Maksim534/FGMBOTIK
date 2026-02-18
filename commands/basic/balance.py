@@ -51,8 +51,13 @@ async def profil_cmd(message: types.Message, user: BFGuser):
     # Разбираем аргументы команды
     args = message.text.split()
     
-    # Если есть второй аргумент (ID)
+    # Если есть второй аргумент (ID) - пытаемся показать чужой профиль
     if len(args) >= 2:
+        # Проверяем, является ли пользователь администратором (статус 4)
+        if user.status != 4:
+            await message.answer(f"❌ Эта команда доступна только администраторам.")
+            return
+            
         try:
             target_id = int(args[1])
             
@@ -69,14 +74,14 @@ async def profil_cmd(message: types.Message, user: BFGuser):
             text = await creat_help_msg("Профиль игрока {0}:", target_user)
             msg = await message.answer(
                 text, 
-                reply_markup=kb.profile(target_user.user_id)  # Важно: используем ID целевого пользователя
+                reply_markup=kb.profile(target_user.user_id)
             )
             
         except ValueError:
             await message.answer("❌ Неверный формат ID. ID должен быть числом.")
             return
     else:
-        # Если аргументов нет - показываем свой профиль
+        # Если аргументов нет - показываем свой профиль (доступно всем)
         text = await creat_help_msg("{0}, ваш профиль:", user)
         msg = await message.answer(text, reply_markup=kb.profile(user.user_id))
     
