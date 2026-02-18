@@ -149,7 +149,72 @@ async def unban(message: types.Message):
         f'🆔 Игровой ID: {game_id}'
     )
     
+@admin_only()
+async def take_the_money(message: types.Message):
+    """Команда 'забрать' - забирает деньги у пользователя (ответом на сообщение)"""
+    admin_id = message.from_user.id
+    admin_url = await url_name(admin_id)
+
+    # Проверяем, что это ответ на сообщение
+    if not message.reply_to_message:
+        await message.answer(f'{admin_url}, чтобы забрать деньги нужно ответить на сообщение пользователя.')
+        return
     
+    try:
+        target_user_id = message.reply_to_message.from_user.id
+        target_url = await url_name(target_user_id)
+    except Exception as e:
+        await message.answer(f'{admin_url}, ошибка получения пользователя.')
+        return
+
+    # Получаем сумму
+    try:
+        parts = message.text.split()
+        if len(parts) < 2:
+            await message.answer(f'{admin_url}, вы не ввели сумму которую хотите забрать.')
+            return
+            
+        summ_str = parts[1].replace('е', 'e').replace(' ', '')
+        summ = int(float(summ_str))
+        
+        if summ <= 0:
+            await message.answer(f'{admin_url}, сумма должна быть больше 0.')
+            return
+            
+    except ValueError:
+        await message.answer(f'{admin_url}, введите корректную сумму.')
+        return
+    except Exception as e:
+        await message.answer(f'{admin_url}, ошибка в формате суммы.')
+        return
+
+    # Проверяем баланс пользователя
+    balance = cursor.execute(
+        "SELECT balance FROM users WHERE user_id = ?", 
+        (target_user_id,)
+    ).fetchone()
+    
+    if not balance:
+        await message.answer(f'{admin_url}, пользователь не найден в базе данных.')
+        return
+    
+    current_balance = int(balance[0])
+    if current_balance < summ:
+        await message.answer(
+            f'{admin_url}, у пользователя {target_url} недостаточно денег.\n'
+            f'💰 Баланс: {tr(current_balance)}$'
+        )
+        return
+
+    # Забираем деньги
+    await db.take_the_money(target_user_id, summ)
+    
+    await message.answer(
+        f'{admin_url}, вы забрали {tr(summ)}$ у пользователя {target_url}\n'
+        f'💰 Новый баланс: {tr(current_balance - summ)}$'
+    )
+
+
 @admin_only()
 async def reset_the_money(message: types.Message):
     """Команда 'обнулить' - полностью обнуляет прогресс пользователя (по реплаю или по ID)"""
@@ -244,6 +309,7 @@ def reg(dp: Dispatcher):
     dp.message.register(sql, Command("sql"))
     dp.message.register(ban, Command("banb"))
     dp.message.register(unban, Command("unbanb"))
+    dp.message.register(take_the_money, StartsWith("забрать"))
     dp.message.register(reset_the_money, StartsWith("обнулить"))
     
     # Добавьте эти две строки для колбэков подтверждения
