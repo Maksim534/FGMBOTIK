@@ -48,25 +48,38 @@ async def creat_help_msg(profil, user: BFGuser):
 
 @antispam
 async def profil_cmd(message: types.Message, user: BFGuser):
-    profil = "{0}, ваш профиль:"
-
-    if len(message.text.split()) >= 2:
+    # Разбираем аргументы команды
+    args = message.text.split()
+    
+    # Если есть второй аргумент (ID)
+    if len(args) >= 2:
         try:
-            user_id = int(message.text.split()[1])
-            if user.status != 4:
-                await message.answer(f"❌ Вы не администратор чтобы просматривать профили.")
+            target_id = int(args[1])
+            
+            # Проверяем, существует ли пользователь с таким ID
+            if not await chek_user(target_id):
+                await message.answer(f"❌ Игрок с ID <b>{target_id}</b> не найден. Перепроверьте ID.")
                 return
-
-            if not (await chek_user(user_id)):
-                await message.answer(f"❌ Данного игрока не существует. Перепроверьте указанный <b>Telegram ID</b>")
-                return
-
-            profil = "Профиль игрока {0}:"
-        except:
-            pass
-
-    text = await creat_help_msg(profil, user)
-    msg = await message.answer(text, reply_markup=kb.profile(user.user_id))
+            
+            # Получаем данные целевого пользователя
+            target_user = BFGuser(not_class=target_id)
+            await target_user.update()
+            
+            # Показываем профиль целевого пользователя
+            text = await creat_help_msg("Профиль игрока {0}:", target_user)
+            msg = await message.answer(
+                text, 
+                reply_markup=kb.profile(target_user.user_id)  # Важно: используем ID целевого пользователя
+            )
+            
+        except ValueError:
+            await message.answer("❌ Неверный формат ID. ID должен быть числом.")
+            return
+    else:
+        # Если аргументов нет - показываем свой профиль
+        text = await creat_help_msg("{0}, ваш профиль:", user)
+        msg = await message.answer(text, reply_markup=kb.profile(user.user_id))
+    
     await new_earning_msg(msg.chat.id, msg.message_id)
 
 
