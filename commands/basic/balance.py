@@ -141,8 +141,46 @@ async def profil_back(call: types.CallbackQuery, user: BFGuser):
     text = await creat_help_msg("{0}, ваш профиль:", user)
     await call.message.edit_text(text=text, reply_markup=kb.profile(call.from_user.id))
 
+@antispam
+async def find_id_cmd(message: types.Message, user: BFGuser):
+    """Команда /айди [игровой ID] - поиск Telegram ID по игровому ID"""
+    win, lose = BFGconst.emj()
+    
+    # Проверяем наличие аргумента
+    args = message.text.split()
+    if len(args) < 2:
+        await message.answer(f"{user.url}, укажите игровой ID. Пример: /айди 105")
+        return
+    
+    try:
+        game_id = int(args[1])
+    except ValueError:
+        await message.answer(f"{user.url}, игровой ID должен быть числом. Пример: /айди 105")
+        return
+    
+    # Ищем пользователя по game_id
+    result = cursor.execute(
+        "SELECT user_id, name FROM users WHERE game_id = ?", 
+        (game_id,)
+    ).fetchone()
+    
+    if not result:
+        await message.answer(f"{user.url}, пользователь с игровым ID <b>{game_id}</b> не найден.")
+        return
+    
+    user_id, name = result
+    
+    # Отправляем результат
+    await message.answer(
+        f"{user.url}, информация по ID <b>{game_id}</b>:\n\n"
+        f"👤 Имя: {name}\n"
+        f"🆔 Telegram ID: <code>{user_id}</code>"
+    )
+
 
 def reg(dp: Dispatcher):
+    dp.message.register(find_id_cmd, StartsWith("/айди"))
+    dp.message.register(find_id_cmd, StartsWith("/id"))
     dp.message.register(balance_cmd, TextIn("б", "баланс"))
     dp.message.register(btc_cmd, TextIn("биткоины"))
     dp.message.register(profil_cmd, StartsWith("профиль"))
