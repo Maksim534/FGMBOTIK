@@ -422,7 +422,7 @@ async def mines_ignore_callback(call: types.CallbackQuery):
 
 # ==================== ПРОВЕРКА НЕАКТИВНЫХ ИГР ====================
 async def check_mines_games():
-    """Проверка неактивных игр"""
+    """Проверка неактивных игр (каждые 30 секунд)"""
     while True:
         current_time = time.time()
         to_remove = []
@@ -438,7 +438,6 @@ async def check_mines_games():
             if current_time > game.last_time + 180:
                 to_remove.append(user_id)
                 try:
-                    # Возвращаем ставку
                     await gXX(user_id, game.summ, 1)
                     await bot.send_message(
                         game.chat_id,
@@ -464,16 +463,10 @@ else:
 # ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
 def reg(dp: Dispatcher):
     """Регистрация всех обработчиков"""
-    # Команды
     dp.message.register(mines_cmd, StartsWith('мины'))
     dp.message.register(mines_cmd, StartsWith('/mines'))
-    
-    # Колбэки выбора мин
     dp.callback_query.register(mines_choose_callback, F.data.startswith('mines_choose_'))
     dp.callback_query.register(mines_cancel_callback, F.data.startswith('mines_cancel'))
-    
-    # Игровые колбэки
     dp.callback_query.register(mines_open_callback, F.data.startswith('mines_open_'))
     dp.callback_query.register(mines_take_callback, F.data.startswith('mines_take'))
     dp.callback_query.register(mines_ignore_callback, F.data == 'ignore')
-
