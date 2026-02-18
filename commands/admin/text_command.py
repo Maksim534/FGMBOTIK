@@ -140,8 +140,8 @@ async def unban(message: types.Message):
         await message.answer(f"👤 {name} (ID: {game_id}) не находится в бане.")
         return
     
-    # Разбаниваем
-    await db.unban_user(telegram_id)  # Передаём Telegram ID
+    # Разбаниваем - передаём game_id
+    await db.unban_user(int(game_id))
     
     await message.answer(
         f'🛡 <b>Пользователь разблокирован</b>\n'
