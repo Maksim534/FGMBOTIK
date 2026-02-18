@@ -1,7 +1,7 @@
 from aiogram import Dispatcher, types
 
 from assets.antispam import antispam, new_earning_msg, antispam_earning
-from commands.db import getpofildb, chek_user
+from commands.db import getpofildb, chek_user, cursor
 from commands.basic.property import lists
 from filters.custom import TextIn, StartsWith
 from user import BFGuser, BFGconst
