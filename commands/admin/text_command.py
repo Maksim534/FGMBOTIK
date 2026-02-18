@@ -244,7 +244,6 @@ def reg(dp: Dispatcher):
     dp.message.register(sql, Command("sql"))
     dp.message.register(ban, Command("banb"))
     dp.message.register(unban, Command("unbanb"))
-    dp.message.register(take_the_money, StartsWith("забрать"))
     dp.message.register(reset_the_money, StartsWith("обнулить"))
     
     # Добавьте эти две строки для колбэков подтверждения
