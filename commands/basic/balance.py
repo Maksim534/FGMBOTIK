@@ -143,39 +143,79 @@ async def profil_back(call: types.CallbackQuery, user: BFGuser):
 
 @antispam
 async def find_id_cmd(message: types.Message, user: BFGuser):
-    """Команда /айди [игровой ID] - поиск Telegram ID по игровому ID"""
+    """Команда /айди - поиск информации о пользователе по ID"""
     win, lose = BFGconst.emj()
     
     # Проверяем наличие аргумента
     args = message.text.split()
     if len(args) < 2:
-        await message.answer(f"{user.url}, укажите игровой ID. Пример: /айди 105")
+        await message.answer(
+            f"{user.url}, укажите ID для поиска.\n"
+            f"📌 Примеры:\n"
+            f"• `/айди 105` - поиск по игровому ID\n"
+            f"• `/айди 123456789` - поиск по Telegram ID",
+            parse_mode="Markdown"
+        )
         return
     
     try:
-        game_id = int(args[1])
+        search_id = int(args[1])
     except ValueError:
-        await message.answer(f"{user.url}, игровой ID должен быть числом. Пример: /айди 105")
+        await message.answer(f"{user.url}, ID должен быть числом.")
         return
     
-    # Ищем пользователя по game_id
+    # Пытаемся найти пользователя
+    user_info = None
+    found_by = None
+    
+    # Сначала ищем по game_id (игровой ID)
     result = cursor.execute(
-        "SELECT user_id, name FROM users WHERE game_id = ?", 
-        (game_id,)
+        "SELECT user_id, game_id, name FROM users WHERE game_id = ?", 
+        (search_id,)
     ).fetchone()
     
-    if not result:
-        await message.answer(f"{user.url}, пользователь с игровым ID <b>{game_id}</b> не найден.")
+    if result:
+        user_info = result
+        found_by = "game_id"
+    else:
+        # Если не нашли по game_id, ищем по user_id (Telegram ID)
+        result = cursor.execute(
+            "SELECT user_id, game_id, name FROM users WHERE user_id = ?", 
+            (search_id,)
+        ).fetchone()
+        
+        if result:
+            user_info = result
+            found_by = "user_id"
+    
+    if not user_info:
+        await message.answer(
+            f"{user.url}, пользователь с ID <b>{search_id}</b> не найден.\n"
+            f"Проверьте правильность ввода.",
+            parse_mode="HTML"
+        )
         return
     
-    user_id, name = result
+    telegram_id, game_id, name = user_info
     
-    # Отправляем результат
-    await message.answer(
-        f"{user.url}, информация по ID <b>{game_id}</b>:\n\n"
-        f"👤 Имя: {name}\n"
-        f"🆔 Telegram ID: <code>{user_id}</code>"
+    # Формируем информативное сообщение
+    search_method = "🔍 Найден по игровому ID" if found_by == "game_id" else "🔍 Найден по Telegram ID"
+    
+    response = (
+        f"{user.url}, информация о пользователе:\n\n"
+        f"{search_method}\n"
+        f"<code>═══════════════════</code>\n"
+        f"👤 <b>Имя:</b> {name}\n"
+        f"🆔 <b>Telegram ID:</b> <code>{telegram_id}</code>\n"
+        f"🎮 <b>Игровой ID:</b> <code>{game_id}</code>\n"
+        f"<code>═══════════════════</code>\n"
     )
+    
+    # Если пользователь ищет самого себя, добавим подсказку
+    if telegram_id == user.id:
+        response += f"\n✨ Это вы! Эти ID可以使用 для ссылок и переводов."
+    
+    await message.answer(response, parse_mode="HTML")
 
 
 def reg(dp: Dispatcher):
