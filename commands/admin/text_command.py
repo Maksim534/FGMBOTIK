@@ -306,7 +306,7 @@ async def reset_cancel_callback(call: types.CallbackQuery):
     await call.answer()
 
 @admin_only()
-async def reset_confirm_callback(call: types.CallbackQuery, user: BFGuser):
+async def reset_confirm_callback(call: types.CallbackQuery):  # 👈 Убрали user
     """Подтверждение обнуления пользователя"""
     try:
         # Получаем ID из callback_data (формат: confirm_reset_123456789)
