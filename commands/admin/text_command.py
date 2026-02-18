@@ -305,6 +305,31 @@ async def reset_cancel_callback(call: types.CallbackQuery):
     await call.message.edit_text('❌ Обнуление отменено.')
     await call.answer()
 
+@admin_only()
+async def reset_confirm_callback(call: types.CallbackQuery, user: BFGuser):
+    """Подтверждение обнуления пользователя"""
+    target_user_id = int(call.data.split('_')[2])
+    
+    # Получаем game_id пользователя для красивого вывода
+    game_id_data = cursor.execute(
+        "SELECT game_id FROM users WHERE user_id = ?", 
+        (target_user_id,)
+    ).fetchone()
+    target_game_id = game_id_data[0] if game_id_data else "?"
+    
+    # Обнуляем пользователя
+    await db.reset_the_money(target_user_id)
+    
+    target_url = await url_name(target_user_id)
+    await call.message.edit_text(
+        f'✅ Пользователь успешно обнулён!\n'
+        f'👤 Имя: {target_url}\n'
+        f'🆔 Игровой ID: {target_game_id}\n'
+        f'🆔 Telegram ID: <code>{target_user_id}</code>\n\n'
+        f'Все его данные сброшены до начальных значений.'
+    )
+    await call.answer()
+
 def reg(dp: Dispatcher):
     dp.message.register(sql, Command("sql"))
     dp.message.register(ban, Command("banb"))
