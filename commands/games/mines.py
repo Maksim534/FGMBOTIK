@@ -390,7 +390,7 @@ async def mines_take_callback(call: types.CallbackQuery, user: BFGuser):
         await call.answer('Игра уже завершена!')
         return
     
-    win, lose = BFGconst.emj()
+    # Забираем выигрыш
     win_sum = await game.take_win()
     
     await call.message.edit_text(
@@ -402,6 +402,7 @@ async def mines_take_callback(call: types.CallbackQuery, user: BFGuser):
     
     games.pop(user_id, None)
     await call.answer()
+
 
 @antispam_earning
 async def mines_cancel_callback(call: types.CallbackQuery, user: BFGuser):
@@ -421,7 +422,7 @@ async def mines_ignore_callback(call: types.CallbackQuery):
 
 # ==================== ПРОВЕРКА НЕАКТИВНЫХ ИГР ====================
 async def check_mines_games():
-    """Проверка неактивных игр (каждые 30 секунд)"""
+    """Проверка неактивных игр"""
     while True:
         current_time = time.time()
         to_remove = []
@@ -429,12 +430,12 @@ async def check_mines_games():
         for user_id, game in list(games.items()):
             # Пропускаем временные данные
             if isinstance(user_id, str) and user_id.startswith('temp_'):
-                if current_time > game.get('time', 0) + 120:  # 2 минуты
+                if current_time > game.get('time', 0) + 120:
                     to_remove.append(user_id)
                 continue
             
             # Проверяем активные игры
-            if current_time > game.last_time + 180:  # 3 минуты бездействия
+            if current_time > game.last_time + 180:
                 to_remove.append(user_id)
                 try:
                     # Возвращаем ставку
