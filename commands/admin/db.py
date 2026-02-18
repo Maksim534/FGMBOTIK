@@ -107,11 +107,20 @@ async def new_ban(user_id: int, time_s: int, reason: str) -> None:
     conn.commit()
 
 
-async def unban_user(user_id: int) -> None:
-    user_id = cursor.execute(f"SELECT user_id FROM users WHERE game_id = ?", (user_id,)).fetchone()
-    if user_id:
-        cursor.execute('DELETE FROM ban_list WHERE user_id = ?', (user_id[0],))
+async def unban_user(game_id: int) -> None:
+    """Разблокировка пользователя по game_id"""
+    # Ищем пользователя по game_id
+    user_data = cursor.execute(
+        "SELECT user_id FROM users WHERE game_id = ?", 
+        (game_id,)
+    ).fetchone()
+    
+    if user_data:
+        telegram_id = user_data[0]
+        cursor.execute('DELETE FROM ban_list WHERE user_id = ?', (telegram_id,))
         conn.commit()
+        return True
+    return False
         
     
 async def take_the_money(user_id: int, summ: str) -> None:
