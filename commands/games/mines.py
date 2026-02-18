@@ -404,13 +404,26 @@ async def mines_take_callback(call: types.CallbackQuery, user: BFGuser):
     await call.answer()
 
 
-# Колбэк для игнорирования (для открытых клеток)
+@antispam_earning
+async def mines_cancel_callback(call: types.CallbackQuery, user: BFGuser):
+    """Отмена выбора мин"""
+    user_id = call.from_user.id
+    temp_key = f"temp_{user_id}"
+    
+    if temp_key in games:
+        del games[temp_key]
+    
+    await call.message.edit_text(f"{user.url}, выбор отменён.")
+    await call.answer()
+
+
 async def mines_ignore_callback(call: types.CallbackQuery):
+    """Игнорирование нажатий на открытые клетки"""
     await call.answer()
 
 
 async def check_mines_games():
-    """Проверка неактивных игр"""
+    """Проверка неактивных игр (каждые 30 секунд)"""
     while True:
         current_time = time.time()
         to_remove = []
@@ -441,12 +454,14 @@ async def check_mines_games():
         
         await asyncio.sleep(30)
 
+
 # Запуск фоновой проверки
 loop = asyncio.get_event_loop()
 if not loop.is_running():
     loop.create_task(check_mines_games())
 else:
     asyncio.create_task(check_mines_games())
+
 
 # ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
 def reg(dp: Dispatcher):
