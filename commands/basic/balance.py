@@ -48,40 +48,54 @@ async def creat_help_msg(profil, user: BFGuser):
 
 @antispam
 async def profil_cmd(message: types.Message, user: BFGuser):
-    # Разбираем аргументы команды
     args = message.text.split()
     
-    # Если есть второй аргумент (ID) - пытаемся показать чужой профиль
+    # Если есть аргументы - пытаемся показать чужой профиль
     if len(args) >= 2:
-        # Проверяем, является ли пользователь администратором (статус 4)
+        # Проверка прав администратора (если нужно)
         if user.status != 4:
-            await message.answer(f"❌ Эта команда доступна только администраторам.")
+            await message.answer("❌ Эта команда доступна только администраторам.")
             return
             
         try:
-            target_id = int(args[1])
-            
-            # Проверяем, существует ли пользователь с таким ID
-            if not await chek_user(target_id):
-                await message.answer(f"❌ Игрок с ID <b>{target_id}</b> не найден. Перепроверьте ID.")
+            search_id = int(args[1])
+            target_user_id = None
+
+            # 1. Пробуем найти по game_id
+            result = cursor.execute(
+                "SELECT user_id FROM users WHERE game_id = ?", 
+                (search_id,)
+            ).fetchone()
+
+            if result:
+                target_user_id = result[0]
+            else:
+                # 2. Если не нашли, пробуем найти по user_id
+                result = cursor.execute(
+                    "SELECT user_id FROM users WHERE user_id = ?", 
+                    (search_id,)
+                ).fetchone()
+                if result:
+                    target_user_id = search_id  # search_id и есть user_id
+
+            # Если пользователь не найден ни по одному ID
+            if not target_user_id:
+                await message.answer(f"❌ Пользователь с ID <b>{search_id}</b> не найден.")
                 return
-            
+
             # Получаем данные целевого пользователя
-            target_user = BFGuser(not_class=target_id)
+            target_user = BFGuser(not_class=target_user_id)
             await target_user.update()
             
-            # Показываем профиль целевого пользователя
+            # Показываем профиль
             text = await creat_help_msg("Профиль игрока {0}:", target_user)
-            msg = await message.answer(
-                text, 
-                reply_markup=kb.profile(target_user.user_id)
-            )
+            msg = await message.answer(text, reply_markup=kb.profile(target_user.user_id))
             
         except ValueError:
-            await message.answer("❌ Неверный формат ID. ID должен быть числом.")
+            await message.answer("❌ Неверный формат. ID должен быть числом.")
             return
     else:
-        # Если аргументов нет - показываем свой профиль (доступно всем)
+        # Нет аргументов - показываем свой профиль
         text = await creat_help_msg("{0}, ваш профиль:", user)
         msg = await message.answer(text, reply_markup=kb.profile(user.user_id))
     
