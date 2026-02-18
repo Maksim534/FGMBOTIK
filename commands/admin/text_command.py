@@ -1,14 +1,15 @@
 import time
 import re
-
-from aiogram import types, Dispatcher
+from aiogram import types, Dispatcher, F
 from aiogram.filters import Command
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from assets.transform import transform_int as tr
 from assets.antispam import admin_only
 from commands.admin import db
-from commands.db import url_name
+from commands.db import url_name, cursor
 from filters.custom import StartsWith
+from user import BFGuser
 
 
 @admin_only()
@@ -149,19 +150,130 @@ async def unban(message: types.Message):
     
     
 @admin_only()
-async def reset_the_money(message: types.Message):
-    user_id = message.from_user.id
-    url = await url_name(user_id)
+async def take_the_money(message: types.Message):
+    """Команда 'забрать' - забирает деньги у пользователя (ответом на сообщение)"""
+    admin_id = message.from_user.id
+    admin_url = await url_name(admin_id)
 
+    # Проверяем, что это ответ на сообщение
+    if not message.reply_to_message:
+        await message.answer(f'{admin_url}, чтобы забрать деньги нужно ответить на сообщение пользователя.')
+        return
+    
     try:
-        r_user_id = message.reply_to_message.from_user.id
-        r_url = await url_name(user_id)
-    except:
-        await message.answer(f'{url}, чтобы выдать деньги нужно ответить на сообщение пользователя.')
+        target_user_id = message.reply_to_message.from_user.id
+        target_url = await url_name(target_user_id)
+    except Exception as e:
+        await message.answer(f'{admin_url}, ошибка получения пользователя.')
         return
 
-    await db.reset_the_money(r_user_id)
-    await message.answer(f'{url}, пользователь {r_url} обнулен!')
+    # Получаем сумму
+    try:
+        parts = message.text.split()
+        if len(parts) < 2:
+            await message.answer(f'{admin_url}, вы не ввели сумму которую хотите забрать.')
+            return
+            
+        summ_str = parts[1].replace('е', 'e').replace(' ', '')
+        summ = int(float(summ_str))
+        
+        if summ <= 0:
+            await message.answer(f'{admin_url}, сумма должна быть больше 0.')
+            return
+            
+    except ValueError:
+        await message.answer(f'{admin_url}, введите корректную сумму.')
+        return
+    except Exception as e:
+        await message.answer(f'{admin_url}, ошибка в формате суммы.')
+        return
+
+    # Проверяем баланс пользователя
+    balance = cursor.execute(
+        "SELECT balance FROM users WHERE user_id = ?", 
+        (target_user_id,)
+    ).fetchone()
+    
+    if not balance:
+        await message.answer(f'{admin_url}, пользователь не найден в базе данных.')
+        return
+    
+    current_balance = int(balance[0])
+    if current_balance < summ:
+        await message.answer(
+            f'{admin_url}, у пользователя {target_url} недостаточно денег.\n'
+            f'💰 Баланс: {tr(current_balance)}$'
+        )
+        return
+
+    # Забираем деньги
+    await db.take_the_money(target_user_id, summ)
+    
+    await message.answer(
+        f'{admin_url}, вы забрали {tr(summ)}$ у пользователя {target_url}\n'
+        f'💰 Новый баланс: {tr(current_balance - summ)}$'
+    )
+
+
+@admin_only()
+async def reset_the_money(message: types.Message):
+    """Команда 'обнулить' - полностью обнуляет прогресс пользователя"""
+    admin_id = message.from_user.id
+    admin_url = await url_name(admin_id)
+
+    # Проверяем, что это ответ на сообщение
+    if not message.reply_to_message:
+        await message.answer(f'{admin_url}, чтобы обнулить пользователя нужно ответить на его сообщение.')
+        return
+    
+    try:
+        target_user_id = message.reply_to_message.from_user.id
+        target_url = await url_name(target_user_id)
+    except Exception as e:
+        await message.answer(f'{admin_url}, ошибка получения пользователя.')
+        return
+
+    # Запрашиваем подтверждение
+    markup = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="✅ Да, обнулить", callback_data=f"confirm_reset_{target_user_id}"),
+            InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_reset")
+        ]
+    ])
+    
+    await message.answer(
+        f'{admin_url}, вы действительно хотите ПОЛНОСТЬЮ ОБНУЛИТЬ пользователя {target_url}?\n\n'
+        f'⚠️ Это действие удалит:\n'
+        f'• Все деньги и банковские счета\n'
+        f'• Всю недвижимость и имущество\n'
+        f'• Весь прогресс в шахте, ферме, бизнесе\n'
+        f'• Энергию, опыт и рейтинг\n\n'
+        f'<b>Это действие необратимо!</b>',
+        reply_markup=markup
+    )
+
+
+@admin_only()
+async def reset_confirm_callback(call: types.CallbackQuery, user: BFGuser):
+    """Подтверждение обнуления пользователя"""
+    target_user_id = int(call.data.split('_')[2])
+    
+    # Обнуляем пользователя
+    await db.reset_the_money(target_user_id)
+    
+    target_url = await url_name(target_user_id)
+    await call.message.edit_text(
+        f'✅ Пользователь {target_url} успешно обнулён!\n'
+        f'👤 Все его данные сброшены до начальных значений.'
+    )
+    await call.answer()
+
+
+@admin_only()
+async def reset_cancel_callback(call: types.CallbackQuery):
+    """Отмена обнуления"""
+    await call.message.edit_text('❌ Обнуление отменено.')
+    await call.answer()
 
 
 def reg(dp: Dispatcher):
@@ -170,3 +282,7 @@ def reg(dp: Dispatcher):
     dp.message.register(unban, Command("unbanb"))
     dp.message.register(take_the_money, StartsWith("забрать"))
     dp.message.register(reset_the_money, StartsWith("обнулить"))
+    
+    # Добавьте эти две строки для колбэков подтверждения
+    dp.callback_query.register(reset_confirm_callback, F.data.startswith("confirm_reset_"))
+    dp.callback_query.register(reset_cancel_callback, F.data == "cancel_reset")
