@@ -10,6 +10,7 @@ from assets.classes import CustomEvent
 from assets import keyboards as kb
 import config as cfg
 from user import BFGuser
+from datetime import datetime, timedelta  # Добавьте timedelta если его нет
 
 CONFIG = {
     "hello_text": f'''🤖 Добро пожаловать на борт, Кто-то! Меня зовут FGM, твой верный игровой бот.
@@ -33,8 +34,11 @@ async def on_start(message: types.Message):
     ban = await getban(message.from_user.id)
     
     if ban:
-        dtime = datetime.fromtimestamp(ban[1]).strftime('%Y-%m-%d в %H:%M:%S')
-        await message.answer(f'⛔️ Вы заблокированы в боте до <b>{dtime}</b>\nПричина: <i>{ban[2]}</i>')
+        # Принудительно добавляем +3 часа к времени сервера
+        moscow_time = datetime.fromtimestamp(ban[1]) + timedelta(hours=2)
+        dtime = moscow_time.strftime('%Y-%m-%d в %H:%M:%S')
+        
+        await message.answer(f'⛔️ Вы заблокированы в боте до <b>{dtime} МСК</b>\nПричина: <i>{ban[2]}</i>')
         return
     
     sticker = random.choice(CONFIG['sticker_id'])
