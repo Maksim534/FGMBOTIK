@@ -24,22 +24,34 @@ async def sql(message: types.Message):
 @admin_only()
 async def ban(message: types.Message):
     try:
-        args = message.get_args().split()
-        if len(args) < 2:
+        # Правильный способ получить аргументы в aiogram 3.x
+        parts = message.text.split()
+        if len(parts) < 3:  # /banb ID время
             await message.reply("Используйте: /banb [игровой id] [время] [причина]")
             return
             
-        game_id, time_str = args[0], args[1]
-        reason = ' '.join(args[2:]) if len(args) > 2 else 'Не указана'
+        game_id = parts[1]
+        time_str = parts[2]
+        reason = ' '.join(parts[3:]) if len(parts) > 3 else 'Не указана'
         
-        # Конвертируем время
-        time_s = sum(int(value) * {'д': 86400, 'ч': 3600, 'м': 60}[unit] 
-                    for value, unit in re.findall(r'(\d+)([дчм])', time_str))
+        # Конвертируем время (дни, часы, минуты)
+        time_s = 0
+        for value, unit in re.findall(r'(\d+)([дчм])', time_str):
+            multiplier = {'д': 86400, 'ч': 3600, 'м': 60}.get(unit, 0)
+            time_s += int(value) * multiplier
+        
+        if time_s == 0:
+            await message.reply("❌ Неверный формат времени. Пример: 7д, 5ч, 30м")
+            return
+            
         time_s = int(time.time()) + time_s
         
     except Exception as e:
-        await message.reply(f"Ошибка формата: {e}\nИспользуйте: /banb [игровой id] [время] [причина]")
+        await message.reply(f"❌ Ошибка формата: {e}\nИспользуйте: /banb [игровой id] [время] [причина]")
         return
+    
+    # Импортируем cursor из commands.db
+    from commands.db import cursor
     
     # Проверяем, существует ли пользователь с таким game_id
     user_data = cursor.execute(
