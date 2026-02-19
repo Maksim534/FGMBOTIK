@@ -53,7 +53,6 @@ def top(user_id: int, tab: int) -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="💰 Топ денег", callback_data=f"top-balance|{user_id}|{tab}"),
     )
     keyboard.row(
-        InlineKeyboardButton(text="🧰 Топ ферм", callback_data=f"top-cards|{user_id}|{tab}"),
         InlineKeyboardButton(text="🗄 Топ бизнесов", callback_data=f"top-bsterritory|{user_id}|{tab}"),
     )
     keyboard.row(
