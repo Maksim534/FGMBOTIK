@@ -15,6 +15,8 @@ import config as cfg
 from assets.antispam import antispam_earning
 import time
 
+# Словарь для хранения времени последней поездки на такси
+last_taxi_time = {}  # {user_id: timestamp}
 
 @antispam
 async def helicopters_list(message: types.Message, user: BFGuser):
@@ -289,6 +291,20 @@ async def taxi_cmd(message: types.Message, user: BFGuser):
         await message.answer(f"{user.url}, у вас нет автомобиля {lose}")
         return
     
+    # Проверка времени последней поездки
+    current_time = time.time()
+    last_time = last_taxi_time.get(user.id, 0)
+    time_diff = current_time - last_time
+    cooldown = 1800  # 30 минут в секундах
+    
+    if time_diff < cooldown:
+        wait_minutes = int((cooldown - time_diff) // 60)
+        wait_seconds = int((cooldown - time_diff) % 60)
+        await message.answer(
+            f"{user.url}, ⏳ следующая поездка будет доступна через {wait_minutes} мин {wait_seconds} сек! {lose}"
+        )
+        return
+    
     current_fuel = await db.get_fuel(user.id)
     
     if current_fuel < 10:
@@ -304,6 +320,9 @@ async def taxi_cmd(message: types.Message, user: BFGuser):
     
     await user.balance.upd(earnings, '+')
     
+    # Запоминаем время поездки
+    last_taxi_time[user.id] = current_time
+    
     # Показываем обновлённую информацию о машине
     await show_updated_car(message, user, f"🚖 Поездка завершена! Заработано: {tr(earnings)}$")
 
@@ -314,6 +333,19 @@ async def show_updated_car(message: types.Message, user: BFGuser, success_messag
     fuel = await db.get_fuel(user.id)
     car_price = await db.get_car_price(user.id)
     taxi_earning = int(car_price * random.uniform(0.01, 0.03))
+    
+    # Проверка времени до следующей поездки
+    current_time = time.time()
+    last_time = last_taxi_time.get(user.id, 0)
+    time_diff = current_time - last_time
+    cooldown = 1800  # 30 минут
+    
+    if time_diff < cooldown:
+        wait_minutes = int((cooldown - time_diff) // 60)
+        wait_seconds = int((cooldown - time_diff) % 60)
+        taxi_status = f"⏳ Доступно через {wait_minutes} мин {wait_seconds} сек"
+    else:
+        taxi_status = "✅ Доступно сейчас"
     
     keyboard = InlineKeyboardBuilder()
     keyboard.row(
@@ -340,7 +372,8 @@ async def show_updated_car(message: types.Message, user: BFGuser, success_messag
 
 ⛽ <b>Топливо:</b> {fuel}%
 {fuel_bar}
-💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$"""
+💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$
+🚖 <b>Статус такси:</b> {taxi_status}"""
     
     if success_message:
         txt = f"✅ {success_message}\n\n{txt}"
@@ -359,6 +392,7 @@ async def show_updated_car(message: types.Message, user: BFGuser, success_messag
             reply_markup=keyboard.as_markup()
         )
 
+    
 @antispam
 async def my_house(message: types.Message, user: BFGuser):
     win, lose = BFGconst.emj()
