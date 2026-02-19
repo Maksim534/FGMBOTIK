@@ -215,10 +215,8 @@ async def takeoff_depozit_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-    # Вместо StartsWith используем lambda для более гибкой проверки
-    dp.message.register(put_bank_cmd, lambda msg: msg.text and msg.text.startswith(('банк положить', 'банк положить ')))
-    dp.message.register(takeoff_bank_cmd, lambda msg: msg.text and msg.text.startswith(('банк снять', 'банк снять ')))
-    dp.message.register(put_depozit_cmd, lambda msg: msg.text and msg.text.startswith(('депозит положить', 'депозит положить ')))
-    dp.message.register(takeoff_depozit_cmd, lambda msg: msg.text and msg.text.startswith(('депозит снять', 'депозит снять ')))
-    dp.message.register(bank_cmd, TextIn("банк"))
+    dp.message.register(put_bank_cmd, StartsWith("банк положить"))  # 👈 Используем StartsWith
+    dp.message.register(takeoff_bank_cmd, StartsWith("банк снять"))
+    dp.message.register(put_depozit_cmd, StartsWith("депозит положить"))
+    dp.message.register(takeoff_depozit_cmd, StartsWith("депозит снять"))
     dp.message.register(bank_cmd, TextIn("банк"))
