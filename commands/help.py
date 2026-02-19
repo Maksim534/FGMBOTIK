@@ -200,7 +200,7 @@ async def help_callback(call: types.CallbackQuery, user: BFGuser):
 
 def reg(dp: Dispatcher):
     dp.message.register(help_adm, Command("help_adm"))
-    dp.message.register(help_cmd, TextIn("/help", "помощь"))
-    dp.message.register(help_game_msg, TextIn("игры"))
+    dp.message.register(help_cmd, TextInMessage("/help", "помощь"))  # 👈 Изменено
+    dp.message.register(help_game_msg, TextInMessage("игры"))  # 👈 Изменено
     dp.callback_query.register(help_back, StartsWith("help_back"))
     dp.callback_query.register(help_callback, StartsWith("help_"))
