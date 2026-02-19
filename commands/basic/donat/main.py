@@ -272,14 +272,11 @@ def reg(dp: Dispatcher):
     # Для main.py
     dp.message.register(donat_cmd, TextIn("донат"))
     dp.callback_query.register(our_store_cmd, CallbackStartsWith("our-store"))
-    dp.callback_query.register(donat_menu_cmd, lambda call: call.data.startswith("donat-menu"))
+    dp.callback_query.register(donat_menu_cmd, CallbackStartsWith("donat-menu"))  # 👈 исправлено
     
-    # ... остальные регистрации сообщений ...
-
-
     # Для stars.py
-    dp.callback_query.register(stars_donat_cmd, lambda call: call.data.startswith("donat-stars"))
-    dp.callback_query.register(check_keyboard_amount_cmd, lambda call: call.data.startswith("select-stars"))
-    dp.callback_query.register(buy_stars_cmd, lambda call: call.data.startswith("buy-stars"))
-    dp.callback_query.register(refund_cmd, lambda call: call.data.startswith("refund"))
-    dp.callback_query.register(start_refund_cmd, lambda call: call.data.startswith("start-refund"))
+    dp.callback_query.register(stars_donat_cmd, CallbackStartsWith("donat-stars"))  # 👈 исправлено
+    dp.callback_query.register(check_keyboard_amount_cmd, CallbackStartsWith("select-stars"))  # 👈 исправлено
+    dp.callback_query.register(buy_stars_cmd, CallbackStartsWith("buy-stars"))  # 👈 исправлено
+    dp.callback_query.register(refund_cmd, CallbackStartsWith("refund"))  # 👈 исправлено
+    dp.callback_query.register(start_refund_cmd, CallbackStartsWith("start-refund"))  # 👈 исправлено
