@@ -305,6 +305,7 @@ async def taxi_callback(call: types.CallbackQuery, user: BFGuser):
 
 
 async def update_car_message(message: types.Message, user: BFGuser):
+    """Обновление сообщения с машиной"""
     try:
         hdata = cars.get(user.property.car.get())
         fuel = await db.get_fuel(user.id)
@@ -339,6 +340,7 @@ async def update_car_message(message: types.Message, user: BFGuser):
         print(f"❌ Ошибка в update_car_message: {e}")
 
 
+        
 @antispam
 async def my_house(message: types.Message, user: BFGuser):
     win, lose = BFGconst.emj()
