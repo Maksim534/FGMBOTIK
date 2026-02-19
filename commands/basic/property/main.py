@@ -9,6 +9,7 @@ from user import BFGuser, BFGconst
 import random
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+import config as cfg
 
 # Добавьте эти импорты в начало файла
 from assets.antispam import antispam_earning
@@ -209,11 +210,18 @@ async def my_car(message: types.Message, user: BFGuser):
     # Рассчитываем заработок от такси (1-3% от стоимости машины)
     taxi_earning = int(car_price * random.uniform(0.01, 0.03))
     
-    # Создаём клавиатуру
+    # Создаём inline-кнопки, которые будут вставлять команды
     keyboard = InlineKeyboardBuilder()
     keyboard.row(
-        InlineKeyboardButton(text="⛽ Заправить", callback_data=f"refuel_{user.id}"),
-        InlineKeyboardButton(text="🚖 Таксовать", callback_data=f"taxi_{user.id}")
+        InlineKeyboardButton(
+            text="⛽ Заправить",
+            switch_inline_query_current_chat=f"заправить"
+        ),
+        InlineKeyboardButton(
+            text="🚖 Таксовать",
+            switch_inline_query_current_chat=f"таксовать"
+        ),
+        width=2
     )
     
     # Индикатор топлива
@@ -238,19 +246,19 @@ async def my_car(message: types.Message, user: BFGuser):
     )
 
 
-@antispam_earning
-async def refuel_callback(call: types.CallbackQuery, user: BFGuser):
-    """Заправка автомобиля"""
+# Новая команда для заправки
+@antispam
+async def refuel_cmd(message: types.Message, user: BFGuser):
     win, lose = BFGconst.emj()
     
     if int(user.property.car) == 0:
-        await call.answer("У вас нет автомобиля!", show_alert=True)
+        await message.answer(f"{user.url}, у вас нет автомобиля {lose}")
         return
     
     current_fuel = await db.get_fuel(user.id)
     
     if current_fuel >= 100:
-        await call.answer("Бак уже полный!", show_alert=True)
+        await message.answer(f"{user.url}, бак уже полный! {lose}")
         return
     
     # Стоимость заправки зависит от цены машины
@@ -261,32 +269,30 @@ async def refuel_callback(call: types.CallbackQuery, user: BFGuser):
     cost = needed * cost_per_percent
     
     if int(user.balance) < cost:
-        await call.answer(f"Недостаточно денег! Нужно {tr(cost)}$", show_alert=True)
+        await message.answer(f"{user.url}, недостаточно денег! Нужно {tr(cost)}$ {lose}")
         return
     
     # Списываем деньги и добавляем топливо
     await user.balance.upd(cost, '-')
     await db.update_fuel(user.id, needed)
     
-    await call.answer(f"✅ Заправлено на {needed}% за {tr(cost)}$", show_alert=True)
-    
-    # Обновляем сообщение
-    await update_car_message(call.message, user)
+    # Показываем обновлённую информацию о машине
+    await show_updated_car(message, user, f"✅ Заправлено на {needed}% за {tr(cost)}$")
 
 
-@antispam_earning
-async def taxi_callback(call: types.CallbackQuery, user: BFGuser):
-    """Работа в такси"""
+# Новая команда для такси
+@antispam
+async def taxi_cmd(message: types.Message, user: BFGuser):
     win, lose = BFGconst.emj()
     
     if int(user.property.car) == 0:
-        await call.answer("У вас нет автомобиля!", show_alert=True)
+        await message.answer(f"{user.url}, у вас нет автомобиля {lose}")
         return
     
     current_fuel = await db.get_fuel(user.id)
     
     if current_fuel < 10:
-        await call.answer("Недостаточно топлива! Нужно минимум 10%", show_alert=True)
+        await message.answer(f"{user.url}, недостаточно топлива! Нужно минимум 10% {lose}")
         return
     
     # Тратим 10% топлива
@@ -298,30 +304,34 @@ async def taxi_callback(call: types.CallbackQuery, user: BFGuser):
     
     await user.balance.upd(earnings, '+')
     
-    await call.answer(f"🚖 Поездка завершена! Заработано: {tr(earnings)}$", show_alert=True)
+    # Показываем обновлённую информацию о машине
+    await show_updated_car(message, user, f"🚖 Поездка завершена! Заработано: {tr(earnings)}$")
+
+
+async def show_updated_car(message: types.Message, user: BFGuser, success_message: str = None):
+    """Показывает обновлённую информацию о машине"""
+    hdata = cars.get(user.property.car.get())
+    fuel = await db.get_fuel(user.id)
+    car_price = await db.get_car_price(user.id)
+    taxi_earning = int(car_price * random.uniform(0.01, 0.03))
     
-    # Обновляем сообщение
-    await update_car_message(call.message, user)
-
-
-async def update_car_message(message: types.Message, user: BFGuser):
-    """Обновление сообщения с машиной"""
-    try:
-        hdata = cars.get(user.property.car.get())
-        fuel = await db.get_fuel(user.id)
-        car_price = await db.get_car_price(user.id)
-        taxi_earning = int(car_price * random.uniform(0.01, 0.03))
-        
-        keyboard = InlineKeyboardBuilder()
-        keyboard.row(
-            InlineKeyboardButton(text="⛽ Заправить", callback_data=f"refuel_{user.id}"),
-            InlineKeyboardButton(text="🚖 Таксовать", callback_data=f"taxi_{user.id}")
-        )
-        
-        fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
-        
-        txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
-        
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(
+            text="⛽ Заправить",
+            switch_inline_query_current_chat=f"заправить"
+        ),
+        InlineKeyboardButton(
+            text="🚖 Таксовать",
+            switch_inline_query_current_chat=f"таксовать"
+        ),
+        width=2
+    )
+    
+    fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
+    
+    txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
+    
 🚗 <b>Характеристики:</b>
 ⛽️ Максимальная скорость: {hdata[1]} км/ч
 🐎 Лошадиных сил: {hdata[2]}
@@ -331,14 +341,23 @@ async def update_car_message(message: types.Message, user: BFGuser):
 ⛽ <b>Топливо:</b> {fuel}%
 {fuel_bar}
 💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$"""
-
-        await message.edit_caption(
+    
+    if success_message:
+        txt = f"✅ {success_message}\n\n{txt}"
+    
+    # Если это ответ на сообщение (новая команда)
+    if message.reply_to_message:
+        await message.reply_photo(
+            photo=hdata[4],
             caption=txt,
             reply_markup=keyboard.as_markup()
         )
-    except Exception as e:
-        print(f"❌ Ошибка в update_car_message: {e}")
-
+    else:
+        await message.answer_photo(
+            photo=hdata[4],
+            caption=txt,
+            reply_markup=keyboard.as_markup()
+        )
 
 @antispam
 async def my_house(message: types.Message, user: BFGuser):
@@ -675,5 +694,5 @@ def reg(dp: Dispatcher):
     dp.message.register(sell_yahta, TextIn("продать яхту"))
     dp.message.register(sell_plane, TextIn("продать самолет", "продать самолёт"))
 
-    dp.callback_query.register(refuel_callback, lambda call: call.data.startswith("refuel_"))
-    dp.callback_query.register(taxi_callback, lambda call: call.data.startswith("taxi_"))
+    dp.message.register(refuel_cmd, StartsWith("заправить"))
+    dp.message.register(taxi_cmd, StartsWith("таксовать"))
