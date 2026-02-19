@@ -37,17 +37,15 @@ def balance_keyboard(user_id: int) -> InlineKeyboardMarkup:
     """Создаёт клавиатуру для быстрых действий с балансом"""
     builder = InlineKeyboardBuilder()
     
-    bot_mention = f"@{cfg.bot_username}"
-    
     # Первый ряд: две кнопки (банк)
     builder.row(
         InlineKeyboardButton(
             text="🏦 Банк положить",
-            switch_inline_query_current_chat=f"{bot_mention} банк положить "
+            switch_inline_query_current_chat=f"банк положить "
         ),
         InlineKeyboardButton(
             text="🏧 Банк снять",
-            switch_inline_query_current_chat=f"{bot_mention} банк снять "
+            switch_inline_query_current_chat=f"банк снять "
         ),
         width=2
     )
@@ -56,7 +54,7 @@ def balance_keyboard(user_id: int) -> InlineKeyboardMarkup:
     builder.row(
         InlineKeyboardButton(
             text="🏛 Банк (информация)",
-            switch_inline_query_current_chat=f"{bot_mention} банк"
+            switch_inline_query_current_chat=f"банк"
         ),
         width=1
     )
