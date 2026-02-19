@@ -54,7 +54,7 @@ async def transfer_cmd(message: types.Message, user: BFGuser):
     
     target_user_id = None
     target_url = None
-
+    
     # Случай 1: Перевод по реплаю (ответ на сообщение)
     if message.reply_to_message:
         target_user_id = message.reply_to_message.from_user.id
@@ -118,6 +118,21 @@ async def transfer_cmd(message: types.Message, user: BFGuser):
         return
 
     if int(user.balance) >= summ:
+        # Отправляем уведомление получателю
+        try:
+            sender_name = message.from_user.full_name
+            await message.bot.send_message(
+                target_user_id,
+                f"💸 <b>Вам перевели деньги!</b>\n\n"
+                f"👤 Отправитель: {sender_name}\n"
+                f"💰 Сумма: {tr(summ)}$\n\n"
+                f"💵 Ваш новый баланс скоро обновится.",
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            # Если не удалось отправить уведомление
+            print(f"Не удалось отправить уведомление пользователю {target_user_id}: {e}")
+        
         await message.answer(f"Вы передали {tr(summ)}$ игроку {target_url} {win}")
         await getperevod(summ, user_id, target_user_id)
         await new_log(f"#перевод\n{user_id}\nСумма: {tr(summ)}\nПередал: {target_user_id}", "money_transfers")
