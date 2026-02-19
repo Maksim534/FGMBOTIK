@@ -3,17 +3,26 @@ import config as cfg
 from aiogram.filters import BaseFilter
 from aiogram.types import Message, CallbackQuery
 
-class TextIn(BaseFilter):
+class TextInMessage(BaseFilter):
     def __init__(self, *values: str) -> None:
         self.values = [v.lower() for v in values]
 
-    async def __call__(self, obj: Union[Message, CallbackQuery]) -> bool:
-        text = None
-        if isinstance(obj, Message):
-            text = obj.text
-        elif isinstance(obj, CallbackQuery):
-            text = obj.data
-        return text and text.lower() in self.values
+    async def __call__(self, message: Message) -> bool:
+        if not message.text:
+            return False
+        return message.text.lower() in self.values
+
+
+class TextInCallback(BaseFilter):
+    def __init__(self, *values: str) -> None:
+        self.values = [v.lower() for v in values]
+
+    async def __call__(self, call: CallbackQuery) -> bool:
+        if not call.data:
+            return False
+        return call.data.lower() in self.values
+
+
 
 
 class StartsWith(BaseFilter):
