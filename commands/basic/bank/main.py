@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from aiogram import Dispatcher, types
 
+from commands.basic.bank.keyboards import bank_actions_kb
 from assets.antispam import antispam
 from commands.basic.bank.db import *
 from assets.transform import transform_int as tr
@@ -64,7 +65,8 @@ async def bank_cmd(message: types.Message, user: BFGuser):
 💵 текущий депозит: {user.depozit.tr()}$
 ⏳ доступно к снятию: {timedepozit}
 
-''')  # 👈 Кнопки удалены
+👇 <b>Нажмите на кнопку и допишите сумму:</b>
+''', reply_markup=bank_actions_kb(user.id))
 
 
 @antispam
