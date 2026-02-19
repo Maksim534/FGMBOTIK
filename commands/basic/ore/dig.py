@@ -259,6 +259,8 @@ ruds = ["железо", "золото", "алмазы", "аметисты", "а�
 
 
 def reg(dp: Dispatcher):
+    # ... существующие регистрации ...
+    dp.callback_query.register(dig_callback, StartsWith("dig_"))
     dp.message.register(mine_cmd, TextIn("шахта"))
     dp.message.register(energy_cmd, TextIn("энергия"))
     dp.message.register(price_cmd, TextIn("курс руды"))
