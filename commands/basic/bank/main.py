@@ -71,15 +71,22 @@ async def bank_cmd(message: types.Message, user: BFGuser):
 
 @antispam
 async def put_bank_cmd(message: types.Message, user: BFGuser):
+    print(f"📝 put_bank_cmd вызвана с текстом: '{message.text}'")  # Отладка
     win, lose = BFGconst.emj()
 
     try:
         msg = message.text.split()
+        print(f"📝 Разбивка: {msg}")  # Отладка
         if len(msg) < 3:
+            print("❌ Меньше 3 слов")  # Отладка
             return
         summ = await get_summ(msg, user.balance)
-    except:
+        print(f"📝 Сумма: {summ}")  # Отладка
+    except Exception as e:
+        print(f"❌ Ошибка в try: {e}")  # Отладка
         return
+
+    # ... остальной код
 
     summ, balance = Decimal(str(summ)), Decimal(str(user.balance))
 
