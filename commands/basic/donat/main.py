@@ -9,11 +9,8 @@ from user import BFGuser, BFGconst
 from assets import keyboards as kb
 import config as cfg
 from commands.basic.donat.stars import (
-    donat_cmd as stars_donat_cmd,
+    donat_cmd as stars_donat_cmd,  # 👈 Переименовали в stars_donat_cmd
     check_keyboard_amount_cmd,
-    buy_stars_cmd,
-    refund_cmd,
-    start_refund_cmd
 )
 
 CONFIG = {
@@ -277,7 +274,7 @@ def reg(dp: Dispatcher):
 
 
     # Для stars.py
-    dp.callback_query.register(donat_cmd, lambda call: call.data.startswith("donat-stars"))
+    dp.callback_query.register(stars_donat_cmd, lambda call: call.data.startswith("donat-stars"))
     dp.callback_query.register(check_keyboard_amount_cmd, lambda call: call.data.startswith("select-stars"))
     dp.callback_query.register(buy_stars_cmd, lambda call: call.data.startswith("buy-stars"))
     dp.callback_query.register(refund_cmd, lambda call: call.data.startswith("refund"))
