@@ -1,5 +1,6 @@
 from aiogram import Dispatcher, types
 from aiogram.fsm.context import FSMContext
+from filters.callback import CallbackStartsWith
 
 from assets.antispam import antispam, new_earning, antispam_earning
 from assets.transform import transform_int as tr
@@ -270,7 +271,7 @@ async def buy_energy(message: types.Message, user: BFGuser):
 def reg(dp: Dispatcher):
     # Для main.py
     dp.message.register(donat_cmd, TextIn("донат"))
-    dp.callback_query.register(our_store_cmd, lambda call: call.data.startswith("our-store"))
+    dp.callback_query.register(our_store_cmd, CallbackStartsWith("our-store"))
     dp.callback_query.register(donat_menu_cmd, lambda call: call.data.startswith("donat-menu"))
     
     # ... остальные регистрации сообщений ...
