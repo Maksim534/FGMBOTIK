@@ -305,22 +305,22 @@ async def taxi_callback(call: types.CallbackQuery, user: BFGuser):
 
 
 async def update_car_message(message: types.Message, user: BFGuser):
-    """Обновление сообщения с машиной"""
-    hdata = cars.get(user.property.car.get())
-    fuel = await db.get_fuel(user.id)
-    car_price = await db.get_car_price(user.id)
-    taxi_earning = int(car_price * random.uniform(0.01, 0.03))
-    
-    keyboard = InlineKeyboardBuilder()
-    keyboard.row(
-        InlineKeyboardButton(text="⛽ Заправить", callback_data=f"refuel_{user.id}"),
-        InlineKeyboardButton(text="🚖 Таксовать", callback_data=f"taxi_{user.id}")
-    )
-    
-    fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
-    
-    txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
-    
+    try:
+        hdata = cars.get(user.property.car.get())
+        fuel = await db.get_fuel(user.id)
+        car_price = await db.get_car_price(user.id)
+        taxi_earning = int(car_price * random.uniform(0.01, 0.03))
+        
+        keyboard = InlineKeyboardBuilder()
+        keyboard.row(
+            InlineKeyboardButton(text="⛽ Заправить", callback_data=f"refuel_{user.id}"),
+            InlineKeyboardButton(text="🚖 Таксовать", callback_data=f"taxi_{user.id}")
+        )
+        
+        fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
+        
+        txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
+        
 🚗 <b>Характеристики:</b>
 ⛽️ Максимальная скорость: {hdata[1]} км/ч
 🐎 Лошадиных сил: {hdata[2]}
@@ -331,11 +331,12 @@ async def update_car_message(message: types.Message, user: BFGuser):
 {fuel_bar}
 💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$"""
 
-    await message.edit_caption(
-        caption=txt,
-        reply_markup=keyboard.as_markup()
-    )
-
+        await message.edit_caption(
+            caption=txt,
+            reply_markup=keyboard.as_markup()
+        )
+    except Exception as e:
+        print(f"❌ Ошибка в update_car_message: {e}")
 
 
 @antispam
