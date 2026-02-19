@@ -49,9 +49,9 @@ class StartsWith(BaseFilter):
         text = original_text.lower()
         bot_username = f"@{cfg.bot_username.lower()}"
         
-        # Если текст начинается с @бота, то для проверки используем текст без него
+        # Если текст начинается с @бота, проверяем текст без упоминания
         if text.startswith(bot_username):
-            # Убираем @username и следующий пробел для проверки, НО НЕ МЕНЯЕМ message.text
+            # Убираем @username и следующий пробел ДЛЯ ПРОВЕРКИ
             text_to_check = original_text[len(bot_username):].lstrip().lower()
         else:
             text_to_check = text
