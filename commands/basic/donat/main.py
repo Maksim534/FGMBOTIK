@@ -8,6 +8,13 @@ from filters.custom import TextIn, StartsWith
 from user import BFGuser, BFGconst
 from assets import keyboards as kb
 import config as cfg
+from commands.basic.donat.stars import (
+    donat_cmd as stars_donat_cmd,
+    check_keyboard_amount_cmd,
+    buy_stars_cmd,
+    refund_cmd,
+    start_refund_cmd
+)
 
 CONFIG = {
     "money_for_bcoins": 10_000_000,  # "обменять" (цена)
