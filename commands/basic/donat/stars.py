@@ -209,15 +209,11 @@ async def start_refund_cmd(call: types.CallbackQuery, user: BFGuser):
 
 def reg(dp: Dispatcher):
     dp.message.register(help_cmd, Command("paysupport"))
-
-    dp.callback_query.register(donat_cmd, StartsWith("donat-stars"))
-
-    dp.callback_query.register(check_keyboard_amount_cmd, StartsWith("select-stars"))
+    dp.callback_query.register(donat_cmd, lambda call: call.data.startswith("donat-stars"))
+    dp.callback_query.register(check_keyboard_amount_cmd, lambda call: call.data.startswith("select-stars"))
     dp.message.register(check_amount_cmd, InvoiceState.amount)
-
-    dp.callback_query.register(buy_stars_cmd, StartsWith("buy-stars"))
+    dp.callback_query.register(buy_stars_cmd, lambda call: call.data.startswith("buy-stars"))
     dp.pre_checkout_query.register(on_pre_checkout_query)
     dp.message.register(on_successful_payment, F.successful_payment)
-
-    dp.callback_query.register(refund_cmd, StartsWith("refund"))
-    dp.callback_query.register(start_refund_cmd, StartsWith("start-refund"))
+    dp.callback_query.register(refund_cmd, lambda call: call.data.startswith("refund"))
+    dp.callback_query.register(start_refund_cmd, lambda call: call.data.startswith("start-refund"))
