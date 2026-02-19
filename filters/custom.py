@@ -41,25 +41,22 @@ class StartsWith(BaseFilter):
     def __init__(self, *prefixes: str):
         self.prefixes = [p.lower() for p in prefixes]
 
-    async def __call__(self, event: Union[Message, CallbackQuery]) -> bool:
-        # Определяем, с чем работаем
-        if isinstance(event, Message):
-            if not event.text:
-                return False
-            text = event.text
-            print(f"📝 Message в StartsWith: {text[:50]}")  # Отладка
-        elif isinstance(event, CallbackQuery):
-            if not event.data:
-                return False
-            text = event.data
-            print(f"🔄 Callback в StartsWith: {text[:50]}")  # Отладка
-        else:
+    async def __call__(self, message: Message) -> bool:
+        if not message.text:
             return False
-
-        text = text.lower()
+        
+        original_text = message.text
+        text = original_text.lower()
+        bot_username = f"@{cfg.bot_username.lower()}"
+        
+        # Если текст начинается с @бота, проверяем текст без упоминания
+        if text.startswith(bot_username):
+            text_to_check = original_text[len(bot_username):].lstrip().lower()
+        else:
+            text_to_check = text
         
         # Проверяем все префиксы
         for prefix in self.prefixes:
-            if text.startswith(prefix.lower()):
+            if text_to_check.startswith(prefix.lower()):
                 return True
         return False
