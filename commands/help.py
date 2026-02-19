@@ -2,7 +2,7 @@ from aiogram import types, Dispatcher
 from aiogram.filters import Command
 
 from assets.antispam import antispam, admin_only, antispam_earning, new_earning_msg
-from filters.custom import TextIn, StartsWith
+from filters.custom import TextInMessage, TextInCallback, StartsWith
 from user import BFGuser
 from assets import keyboards as kb
 import config as cfg
