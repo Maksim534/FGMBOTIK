@@ -4,6 +4,8 @@ from aiogram import types, Dispatcher
 
 from aiogram.types import CallbackQuery
 from assets.antispam import antispam_earning
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from assets.transform import transform_int as tr
 from filters.custom import TextIn, StartsWith
 from user import BFGuser, BFGconst
