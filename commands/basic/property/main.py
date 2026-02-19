@@ -177,7 +177,7 @@ async def my_helicopter(message: types.Message, user: BFGuser):
 
     txt = f"""{user.url}, информация о вашем вертолёте "{hdata[0]}"
 ⛽️ Максимальная скорость: {hdata[1]} км/ч
-🐎 Лошадиных сил: {hdata[2]}"""
+🐎 Лошадиных сил: {hdata[2]}""
 
     await message.answer_photo(photo=hdata[3], caption=txt)
 
