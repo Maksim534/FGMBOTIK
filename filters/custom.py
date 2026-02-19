@@ -29,17 +29,19 @@ class StartsWith(BaseFilter):
         if not message.text:
             return False
         
-        text = message.text.lower()
+        original_text = message.text
+        text = original_text.lower()
         bot_username = f"@{cfg.bot_username.lower()}"
         
         # Если сообщение начинается с @бота, убираем его
         if text.startswith(bot_username):
-            text = text[len(bot_username):].strip()
-            # Обновляем текст сообщения для дальнейшей обработки
-            message.text = message.text[len(bot_username):].strip()
+            # Убираем @username и следующие за ним пробелы
+            clean_text = original_text[len(bot_username):].lstrip()
+            message.text = clean_text  # Обновляем текст сообщения
+            text = clean_text.lower()
         
         # Проверяем все префиксы
         for prefix in self.prefixes:
-            if text.startswith(prefix):
+            if text.startswith(prefix.lower()):
                 return True
         return False
