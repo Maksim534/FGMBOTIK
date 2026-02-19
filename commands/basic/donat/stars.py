@@ -14,6 +14,7 @@ from states.stars import InvoiceState
 from user import BFGuser
 from utils.settings import get_setting
 from bot import bot
+from filters.callback import CallbackStartsWith
 
 
 @antispam
@@ -209,11 +210,11 @@ async def start_refund_cmd(call: types.CallbackQuery, user: BFGuser):
 
 def reg(dp: Dispatcher):
     dp.message.register(help_cmd, Command("paysupport"))
-    dp.callback_query.register(donat_cmd, lambda call: call.data.startswith("donat-stars"))
-    dp.callback_query.register(check_keyboard_amount_cmd, lambda call: call.data.startswith("select-stars"))
+    dp.callback_query.register(donat_cmd, CallbackStartsWith("donat-stars"))  # 👈 исправлено
+    dp.callback_query.register(check_keyboard_amount_cmd, CallbackStartsWith("select-stars"))  # 👈 исправлено
     dp.message.register(check_amount_cmd, InvoiceState.amount)
-    dp.callback_query.register(buy_stars_cmd, lambda call: call.data.startswith("buy-stars"))
+    dp.callback_query.register(buy_stars_cmd, CallbackStartsWith("buy-stars"))  # 👈 исправлено
     dp.pre_checkout_query.register(on_pre_checkout_query)
     dp.message.register(on_successful_payment, F.successful_payment)
-    dp.callback_query.register(refund_cmd, lambda call: call.data.startswith("refund"))
-    dp.callback_query.register(start_refund_cmd, lambda call: call.data.startswith("start-refund"))
+    dp.callback_query.register(refund_cmd, CallbackStartsWith("refund"))  # 👈 исправлено
+    dp.callback_query.register(start_refund_cmd, CallbackStartsWith("start-refund"))  # 👈 исправлено
