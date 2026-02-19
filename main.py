@@ -35,7 +35,7 @@ MODULES = [
     'commands.games.miracles',
     'commands.games.refferals',
     'commands.basic.bank.main',
-    'commands.basic.keyboards',
+    'commands.basic.bank.keyboards',
     'commands.entertaining.case.main',
     'commands.entertaining.earnings.garden.potions',
     'commands.basic.transfer',
