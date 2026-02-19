@@ -2,12 +2,28 @@ import random
 
 from aiogram import types, Dispatcher
 
+from aiogram.types import CallbackQuery
+from assets.antispam import antispam_earning
 from assets.transform import transform_int as tr
 from filters.custom import TextIn, StartsWith
 from user import BFGuser, BFGconst
 from assets.antispam import antispam
 from commands.basic.ore import db
 
+# Хранилище последней руды пользователя
+last_ore = {}  # {user_id: "название_руды"}
+
+def get_dig_keyboard(ore: str) -> InlineKeyboardMarkup:
+    """Создаёт кнопку для повторного копания той же руды"""
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    from aiogram.utils.keyboard import InlineKeyboardBuilder
+    
+    builder = InlineKeyboardBuilder()
+    builder.row(InlineKeyboardButton(
+        text=f"⛏ Копать {ore}",
+        switch_inline_query_current_chat=f"копать {ore}"
+    ))
+    return builder.as_markup()
 
 @antispam
 async def energy_cmd(message: types.Message, user: BFGuser):
@@ -170,18 +186,27 @@ async def dig_mine_cmd(message: types.Message, user: BFGuser):
 
     if ruda in ruda_data:
         eng_ruda, min_i, op, min_expe = ruda_data[ruda]
+        
+        # Проверка на минимальный опыт
         if user.expe.get() < min_expe:
             await message.answer(f"{user.url}, чтобы копать {ruda} вам требуется {tr(min_expe)} опыта {lose}")
             return
 
+        # Запоминаем последнюю руду пользователя
+        last_ore[user.id] = ruda
+
+        # Копаем руду
         i = random.randint(min_i, min_i + 5) * coff
         await db.dig_ore(i, user.user_id, eng_ruda, op)
         opit = user.expe.get() + op
 
-        await message.answer(f"{user.url}, +{i} {ruda}.\n💡 Энергия: {user.energy.get() - 1}, опыт: {tr(opit)}\n\n{ads}")
+        # Отправляем сообщение с кнопкой
+        await message.answer(
+            f"{user.url}, +{i} {ruda}.\n💡 Энергия: {user.energy.get() - 1}, опыт: {tr(opit)}\n\n{ads}",
+            reply_markup=get_dig_keyboard(ruda)
+        )
     else:
-        await message.answer(f"{user.url}, данной руды не существует {lose}")    
-
+        await message.answer(f"{user.url}, данной руды не существует {lose}")
 
 @antispam
 async def sell_cmd(message: types.Message, user: BFGuser):
