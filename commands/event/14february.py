@@ -153,6 +153,63 @@ class Database:
 db = Database()
 
 # ==================== ОБРАБОТЧИКИ КОМАНД ====================
+
+@antispam_earning
+async def my_valentine_menu_callback(call: types.CallbackQuery, user: BFGuser):
+    """Возврат в главное меню валентинок"""
+    text = await get_my_valentine_text(user.id)
+    await call.message.edit_caption(caption=text, reply_markup=valentine_menu(user.id))
+    await call.answer()
+
+@antispam_earning
+async def my_valentine_list_callback(call: types.CallbackQuery, user: BFGuser):
+    """Просмотр списка полученных валентинок"""
+    data_parts = call.data.split('_')
+    page = int(data_parts[3])
+    valentines = await db.get_user_valentines(user.id)
+
+    if not valentines:
+        await call.message.edit_caption(
+            caption='💔 У вас пока нет полученных валентинок.',
+            reply_markup=back_to_menu_kb(user.id)
+        )
+        await call.answer()
+        return
+
+    total_pages = (len(valentines) + 4) // 5
+    if page < 1 or page > total_pages:
+        page = 1
+
+    v = valentines[page - 1]
+    sender_id, anonymous, msg_text = v
+    sender_name = "Аноним" if anonymous else f"ID {sender_id}"  # Здесь можно использовать get_name
+
+    text = f'''<b>💌 Валентинка #{page}</b>\n\n<b>От:</b> {sender_name}\n<b>Сообщение:</b> "{msg_text}"'''
+    await call.message.edit_caption(
+        caption=text,
+        reply_markup=my_valentine_pagination_kb(user.id, page, total_pages)
+    )
+    await call.answer()
+
+@antispam_earning
+async def valentine_top_callback(call: types.CallbackQuery, user: BFGuser):
+    """Топ полученных валентинок"""
+    top_users = await db.get_top_valentine()
+    if not top_users:
+        await call.message.edit_caption(caption='📊 Топ пока пуст.', reply_markup=back_to_menu_kb(user.id))
+        await call.answer()
+        return
+
+    text = "🏆 <b>Топ полученных валентинок</b>\n\n"
+    emojis = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+    for i, (uid, count) in enumerate(top_users[:10]):
+        text += f"{emojis[i]} ID {uid} — {count} 💌\n"
+
+    await call.message.edit_caption(caption=text, reply_markup=back_to_menu_kb(user.id))
+    await call.answer()
+
+
+
 @antispam
 async def valentine_cmd(message: types.Message, user: BFGuser):
     """Главное меню праздника"""
@@ -400,21 +457,21 @@ async def valentine_top_callback(call: types.CallbackQuery, user: BFGuser):
     await call.answer()
 
 # ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
+# ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
 def reg(dp: Dispatcher):
+    # Команды
     dp.message.register(valentine_cmd, F.text.lower().in_(["валентинка", "/valentine"]))
-    dp.message.register(get_valentine_cmd, F.text.lower() == "/get_valentine") # Замените на нужную команду
-    dp.message.register(give_valentine_cmd, F.text.lower().startswith("/send_valentine")) # Замените на нужную команду
-    dp.message.register(my_valentine_cmd, F.text.lower() == "/my_valentine") # Замените на нужную команду
+    dp.message.register(get_valentine_cmd, F.text.lower() == "/get_valentine")
+    dp.message.register(give_valentine_cmd, F.text.lower().startswith("/send_valentine"))
+    dp.message.register(my_valentine_cmd, F.text.lower() == "/my_valentine")
 
-    # FSM
+    # FSM (состояния)
     dp.message.register(receive_valentine_message, ValentineState.message)
 
-    # Колбэки
+    # Колбэки от кнопок
     dp.callback_query.register(send_valentine_callback, F.data.startswith("send_valentine_"))
     dp.callback_query.register(my_valentine_menu_callback, F.data.startswith("my_valentine_menu_"))
     dp.callback_query.register(my_valentine_list_callback, F.data.startswith("my_valentine_list_"))
     dp.callback_query.register(valentine_top_callback, F.data.startswith("valentine_top_"))
 
-    # Добавьте регистрацию для колбэков, связанных со свиданиями, если они будут реализованы
-    # dp.callback_query.register(...)
-
+# ==================== ОПИСАНИЕ МОДУЛЯ ====================
