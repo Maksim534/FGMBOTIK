@@ -7,8 +7,9 @@ from commands.entertaining.earnings.business import db
 from filters.custom import TextIn, StartsWith
 from user import BFGuser, BFGconst
 
-# Максимальный уровень территории бизнеса
-MAX_BSTERRITORY = 15
+# Максимальные уровни
+MAX_TERRITORY = 15      # Максимальная территория участка
+MAX_BSTERRITORY = 15    # Максимальная территория бизнеса
 
 @antispam
 async def business_info(message: types.Message, user: BFGuser):
