@@ -9,8 +9,11 @@ from user import BFGuser, BFGconst
 from assets import keyboards as kb
 import config as cfg
 from commands.basic.donat.stars import (
-    donat_cmd as stars_donat_cmd,  # 👈 Переименовали в stars_donat_cmd
+    donat_cmd as stars_donat_cmd,
     check_keyboard_amount_cmd,
+    buy_stars_cmd,
+    refund_cmd,
+    start_refund_cmd
 )
 
 CONFIG = {
