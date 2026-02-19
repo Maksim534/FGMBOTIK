@@ -434,9 +434,10 @@ async def my_plane(message: types.Message, user: BFGuser):
 
     txt = f"""{user.url}, информация о вашем самолёте "{hdata[0]}"
 ⛽️ Максимальная скорость: {hdata[1]} км/ч
-🐎 Лошадиных сил: {hdata[2]}"""
+💪 Мощность: {hdata[2]}
+🛫 Дальность полета: {hdata[3]} км"""
 
-    await message.answer_photo(photo=hdata[3], caption=txt)
+    await message.answer_photo(photo=hdata[4], caption=txt)
 
 
 @antispam
