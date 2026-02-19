@@ -10,6 +10,7 @@ from assets.transform import transform_int as tr
 from filters.custom import TextIn, StartsWith
 from user import BFGuser, BFGconst
 from assets.antispam import antispam
+import config as cfg
 from commands.basic.ore import db
 
 # Хранилище последней руды пользователя
