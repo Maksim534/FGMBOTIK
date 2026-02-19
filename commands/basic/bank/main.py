@@ -243,4 +243,4 @@ def reg(dp: Dispatcher):
     dp.message.register(takeoff_bank_cmd, StartsWith("банк снять"))
     dp.message.register(put_depozit_cmd, StartsWith("депозит положить"))
     dp.message.register(takeoff_depozit_cmd, StartsWith("депозит снять"))
-    dp.message.register(bank_cmd, TextIn("банк"))
+    dp.message.register(bank_cmd, StartsWith("банк"))
