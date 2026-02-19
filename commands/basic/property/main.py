@@ -340,25 +340,6 @@ async def update_car_message(message: types.Message, user: BFGuser):
         print(f"❌ Ошибка в update_car_message: {e}")
 
 
-def reg(dp: Dispatcher):
-    dp.message.register(helicopters_list, TextIn("вертолёты"))
-    dp.message.register(cars_list, TextIn("машины"))
-    dp.message.register(house_list, TextIn("дома"))
-    dp.message.register(yahta_list, TextIn("яхты"))
-    dp.message.register(phone_list, TextIn("телефоны"))
-    dp.message.register(yahts_list, TextIn("яхты"))
-    dp.message.register(plane_list, TextIn("самолеты"))
-    dp.message.register(my_helicopter, TextIn("мой вертолёт"))
-    dp.message.register(my_phone, TextIn("мой телефон"))
-    dp.message.register(my_car, TextIn("моя машина"))
-    dp.message.register(my_house, TextIn("мой дом"))
-    dp.message.register(my_yahta, TextIn("моя яхта"))
-    dp.message.register(my_plane, TextIn("мой самолёт"))
-    
-    # Колбэки для автомобиля
-    dp.callback_query.register(refuel_callback, lambda call: call.data.startswith("refuel_"))
-    dp.callback_query.register(taxi_callback, lambda call: call.data.startswith("taxi_"))
-
 @antispam
 async def my_house(message: types.Message, user: BFGuser):
     win, lose = BFGconst.emj()
@@ -664,7 +645,8 @@ async def sell_plane(message: types.Message, user: BFGuser):
     await db.sell_property(user.user_id, "plane", summ)
 
 
-def reg(dp: Dispatcher):
+def reg(dp: Dispatcher):    
+    # Колбэки для автомобиля
     dp.message.register(helicopters_list, TextIn("вертолеты", "вертолёты"))
     dp.message.register(cars_list, TextIn("машины"))
     dp.message.register(yahta_list, TextIn("дома"))
@@ -692,3 +674,6 @@ def reg(dp: Dispatcher):
     dp.message.register(sell_house, TextIn("продать дом"))
     dp.message.register(sell_yahta, TextIn("продать яхту"))
     dp.message.register(sell_plane, TextIn("продать самолет", "продать самолёт"))
+
+    dp.callback_query.register(refuel_callback, lambda call: call.data.startswith("refuel_"))
+    dp.callback_query.register(taxi_callback, lambda call: call.data.startswith("taxi_"))
