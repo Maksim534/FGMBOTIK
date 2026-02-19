@@ -42,7 +42,7 @@ MODULES = [
     'commands.basic.rpmod',
     'commands.main',
     'commands.moderation',
-    'commands.event.14february',
+    'commands.event.february',
 ]
 
 
