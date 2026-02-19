@@ -10,20 +10,55 @@ from assets import keyboards as kb
 
 @antispam
 async def balance_cmd(message: types.Message, user: BFGuser):
-    await message.answer(f"""
-👫  Имя: {user.name}
-💵  Наличные: {user.balance.tr()}$
-💴  Йены: {user.yen.tr()}¥
-🏦  Банковский счет: {user.bank.tr()}$
-🌐  Криптовалюта: {user.btc.tr()}🌐
+    await message.answer(
+        f"""
+👫 <b>Имя:</b> {user.name}
+💵 <b>Наличные:</b> {user.balance.tr()}$
+💴 <b>Йены:</b> {user.yen.tr()}¥
+🏦 <b>Банковский счет:</b> {user.bank.tr()}$
+🌐 <b>Криптовалюта:</b> {user.btc.tr()}🌐
 
+{BFGconst.ads}
 
-{BFGconst.ads}""")
+""",
+        reply_markup=balance_keyboard(user.id),
+        parse_mode="HTML"
+    )
 
 
 @antispam
 async def btc_cmd(message: types.Message, user: BFGuser):
     await message.answer(f"{user.url}, на вашем балансе {user.btc.tr()} BTC 🌐")
+
+def balance_keyboard(user_id: int) -> InlineKeyboardMarkup:
+    """Создаёт клавиатуру для быстрых действий с балансом"""
+    builder = InlineKeyboardBuilder()
+    
+    bot_mention = f"@{cfg.bot_username}"
+    
+    # Первый ряд: две кнопки (банк)
+    builder.row(
+        InlineKeyboardButton(
+            text="🏦 Банк положить",
+            switch_inline_query_current_chat=f"{bot_mention} банк положить "
+        ),
+        InlineKeyboardButton(
+            text="🏧 Банк снять",
+            switch_inline_query_current_chat=f"{bot_mention} банк снять "
+        ),
+        width=2
+    )
+    
+    # Второй ряд: одна кнопка (банк)
+    builder.row(
+        InlineKeyboardButton(
+            text="🏛 Банк (информация)",
+            switch_inline_query_current_chat=f"{bot_mention} банк"
+        ),
+        width=1
+    )
+    
+    return builder.as_markup()
 
 
 async def creat_help_msg(profil, user: BFGuser):
