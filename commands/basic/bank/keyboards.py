@@ -3,33 +3,29 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 import config as cfg
 
 def bank_actions_kb(user_id: int) -> InlineKeyboardMarkup:
-    """Клавиатура для банковских операций с вставкой команды"""
+    """Клавиатура для банковских операций"""
     builder = InlineKeyboardBuilder()
     
-    bot_mention = f"@{cfg.bot_username}"
-    
-    # Первый ряд: кнопки для пополнения (слева и справа)
     builder.row(
         InlineKeyboardButton(
             text="💰 Банк положить",
-            switch_inline_query_current_chat=f"{bot_mention} банк положить "
+            switch_inline_query_current_chat="банк положить "  # 👈 Без @
         ),
         InlineKeyboardButton(
             text="💸 Банк снять",
-            switch_inline_query_current_chat=f"{bot_mention} банк снять "
+            switch_inline_query_current_chat="банк снять "  # 👈 Без @
         ),
         width=2
     )
     
-    # Второй ряд: кнопки для депозита
     builder.row(
         InlineKeyboardButton(
             text="📈 Депозит положить",
-            switch_inline_query_current_chat=f"{bot_mention} депозит положить "
+            switch_inline_query_current_chat="депозит положить "  # 👈 Без @
         ),
         InlineKeyboardButton(
             text="📉 Депозит снять",
-            switch_inline_query_current_chat=f"{bot_mention} депозит снять "
+            switch_inline_query_current_chat="депозит снять "  # 👈 Без @
         ),
         width=2
     )
