@@ -457,15 +457,14 @@ async def valentine_top_callback(call: types.CallbackQuery, user: BFGuser):
     await call.answer()
 
 # ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
-# ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
 def reg(dp: Dispatcher):
-    # Команды
+    # Основные команды
     dp.message.register(valentine_cmd, F.text.lower().in_(["валентинка", "/valentine"]))
     dp.message.register(get_valentine_cmd, F.text.lower() == "/get_valentine")
     dp.message.register(give_valentine_cmd, F.text.lower().startswith("/send_valentine"))
     dp.message.register(my_valentine_cmd, F.text.lower() == "/my_valentine")
 
-    # FSM (состояния)
+    # FSM (состояние ввода текста)
     dp.message.register(receive_valentine_message, ValentineState.message)
 
     # Колбэки от кнопок
@@ -473,5 +472,11 @@ def reg(dp: Dispatcher):
     dp.callback_query.register(my_valentine_menu_callback, F.data.startswith("my_valentine_menu_"))
     dp.callback_query.register(my_valentine_list_callback, F.data.startswith("my_valentine_list_"))
     dp.callback_query.register(valentine_top_callback, F.data.startswith("valentine_top_"))
+
+# ==================== ОПИСАНИЕ МОДУЛЯ ====================
+MODULE_DESCRIPTION = {
+    'name': '💘 14 Февраля',
+    'description': 'Мероприятие, посвящённое Дню Святого Валентина.'
+}
 
 # ==================== ОПИСАНИЕ МОДУЛЯ ====================
