@@ -5,6 +5,7 @@ from aiogram import Dispatcher, types
 from commands.basic.bank.keyboards import bank_actions_kb
 from assets.antispam import antispam
 from commands.basic.bank.db import *
+import cofing as cfg
 from assets.transform import transform_int as tr
 from filters.custom import StartsWith, TextIn
 from user import BFGuser, BFGconst
