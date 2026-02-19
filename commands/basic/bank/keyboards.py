@@ -8,7 +8,7 @@ def bank_actions_kb(user_id: int) -> InlineKeyboardMarkup:
     # Кнопки с префиллом команд
     builder.row(InlineKeyboardButton(
         text="💰 Положить в банк", 
-        switch_inline_query_current_chat="банк положить "
+        switch_inline_query_current_chat="банк положить"
     ))
     
     builder.row(InlineKeyboardButton(
