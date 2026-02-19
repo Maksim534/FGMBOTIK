@@ -280,3 +280,9 @@ def reg(dp: Dispatcher):
     dp.callback_query.register(buy_stars_cmd, CallbackStartsWith("buy-stars"))  # 👈 исправлено
     dp.callback_query.register(refund_cmd, CallbackStartsWith("refund"))  # 👈 исправлено
     dp.callback_query.register(start_refund_cmd, CallbackStartsWith("start-refund"))  # 👈 исправлено
+    dp.message.register(status_list, TextIn("статусы"))
+    dp.message.register(my_status, TextIn("мой статус"))
+    dp.message.register(buy_status, StartsWith("купить привилегию"))
+    dp.message.register(exchange_value, StartsWith("обменять"))
+    dp.message.register(buy_limit, StartsWith("купить лимит"))
+    dp.message.register(buy_energy, StartsWith("купить флягу"))
