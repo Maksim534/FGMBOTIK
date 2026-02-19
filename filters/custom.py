@@ -47,12 +47,12 @@ class StartsWith(BaseFilter):
             if not event.text:
                 return False
             text = event.text
-            print(f"📝 Message: {text[:50]}")  # Отладка (можно убрать)
+            print(f"📝 Message в StartsWith: {text[:50]}")  # Отладка
         elif isinstance(event, CallbackQuery):
             if not event.data:
                 return False
             text = event.data
-            print(f"🔄 Callback: {text[:50]}")  # Отладка (можно убрать)
+            print(f"🔄 Callback в StartsWith: {text[:50]}")  # Отладка
         else:
             return False
 
