@@ -7,6 +7,8 @@ from commands.entertaining.earnings.business import db
 from filters.custom import TextIn, StartsWith
 from user import BFGuser, BFGconst
 
+# Максимальный уровень территории бизнеса
+MAX_BSTERRITORY = 15
 
 @antispam
 async def business_info(message: types.Message, user: BFGuser):
@@ -39,13 +41,22 @@ async def upd_business_text(call: types.CallbackQuery | types.Message, user: BFG
 
     dox = int(400000 * business.bsterritory.get() / 15)
     ch = int(50000 * (1 + 0.15) ** (business.territory.get() - 4))
-    ch2 = int(40000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
+    
+    current_bsterritory = business.bsterritory.get()
+    
+    # Стоимость следующего улучшения бизнеса
+    if current_bsterritory < MAX_BSTERRITORY:
+        ch2 = int(40000 * (1 + 0.15) ** (current_bsterritory - 1))
+        next_level_text = f"🆙 до {current_bsterritory + 1} м²: {tr(ch2)}$"
+    else:
+        next_level_text = "✅ Достигнут максимум!"
 
     txt = f'''{user.url}, информация о вашем бизнесе "Бизнес":
-🧱 Территория: {business.territory.tr()} м²
-🆙 для следующего уровня: {tr(ch)}$
-🏢 Территория бизнеса: {business.bsterritory.tr()} м²
-🆙 для следующего уровня: {tr(ch2)}$
+🧱 Территория участка: {business.territory.tr()} м²
+🆙 следующая: {tr(ch)}$
+
+🏢 Территория бизнеса: {current_bsterritory}/{MAX_BSTERRITORY} м²
+{next_level_text}
 
 💷 Доход: {tr(dox)}$
 💸 Налоги: {business.nalogs.tr()}$/5.000.000$
@@ -105,18 +116,36 @@ async def buy_bsterritory(call: types.CallbackQuery, user: BFGuser):
     if not business:
         return
 
-    if business.territory.get() <= business.bsterritory.get():
-        await call.answer(f'{user.name}, чтобы увеличить бизнес для начала увеличьте его территорию {lose}')
+    # Проверка на максимальный уровень
+    current_level = business.bsterritory.get()
+    if current_level >= MAX_BSTERRITORY:
+        await call.answer(
+            f'{user.name}, вы уже достигли максимального уровня территории бизнеса ({MAX_BSTERRITORY} м²)! {lose}',
+            show_alert=True
+        )
         return
 
-    ch = int(40000 * (1 + 0.15) ** (business.bsterritory.get() - 1))
+    if business.territory.get() <= current_level:
+        await call.answer(
+            f'{user.name}, чтобы увеличить бизнес для начала увеличьте его территорию {lose}',
+            show_alert=True
+        )
+        return
+
+    ch = int(40000 * (1 + 0.15) ** (current_level - 1))
 
     if int(user.balance) < ch:
-        await call.answer(f'{user.name}, у вас недостаточно денег на балансе чтобы увеличить бизнес {lose}')
+        await call.answer(
+            f'{user.name}, у вас недостаточно денег на балансе чтобы увеличить бизнес. Нужно {tr(ch)}$ {lose}',
+            show_alert=True
+        )
         return
 
     await db.buy_bsterritory(user.id, ch)
-    await call.answer(f'{user.name}, вы успешно увеличили бизнес на 1 м² за {tr(ch)}$ {win}')
+    await call.answer(
+        f'{user.name}, вы успешно увеличили бизнес до {current_level + 1} м² за {tr(ch)}$ {win}',
+        show_alert=True
+    )
     await upd_business_text(call, user)
 
 
