@@ -4,6 +4,7 @@ from aiogram import Dispatcher, types
 
 from assets.antispam import antispam
 from commands.basic.keyboards import bank_actions_kb
+# или если файл называется иначе, укажите правильное имя
 from commands.basic.bank.db import *
 from assets.transform import transform_int as tr
 from filters.custom import StartsWith, TextIn
