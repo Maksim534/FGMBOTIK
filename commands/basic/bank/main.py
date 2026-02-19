@@ -64,7 +64,8 @@ async def bank_cmd(message: types.Message, user: BFGuser):
 💵 текущий депозит: {user.depozit.tr()}$
 ⏳ доступно к снятию: {timedepozit}
 
-{BFGconst.ads}''')
+👇 <b>Выберите действие:</b>
+''', reply_markup=bank_actions_kb(user.id))
 
 
 @antispam
