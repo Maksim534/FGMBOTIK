@@ -156,6 +156,18 @@ async def dig_mine_cmd(message: types.Message, user: BFGuser):
     ads = BFGconst.ads
     win, lose = BFGconst.emj()
 
+    # НОВЫЙ КОД: Обработка упоминания бота в начале сообщения
+    text = message.text
+    bot_username = f"@{cfg.bot_username.lower()}"
+    
+    # Если сообщение начинается с @бота, убираем его
+    if text.lower().startswith(bot_username):
+        # Убираем @username и возможный пробел после него
+        text = text[len(bot_username):].lstrip()
+    
+    txt = text.split()
+    # КОНЕЦ НОВОГО КОДА
+
     if int(user.energy) <= 0:
         await message.answer(f"{user.url}, у вас недостаточно энергии для копки {lose}")
         return
@@ -163,13 +175,13 @@ async def dig_mine_cmd(message: types.Message, user: BFGuser):
     status_limits = {0: 1, 1: 2, 2: 3, 3: 5, 4: 10}
     coff = status_limits.get(user.status, status_limits[0])
 
-    txt = message.text.split()
-    
+    # Далее ваш существующий код...
     if len(txt) < 2:
         await message.answer(f"{user.url}, данной руды не существует {lose}")
         return
  
     ruda = txt[1].lower()
+    # ... остальная часть функции
 
     ruda_data = {
         "железо": ("iron", 40, 1, 0),
