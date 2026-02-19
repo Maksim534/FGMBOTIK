@@ -261,14 +261,17 @@ async def buy_energy(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
+    # Для main.py
     dp.message.register(donat_cmd, TextIn("донат"))
+    dp.callback_query.register(our_store_cmd, lambda call: call.data.startswith("our-store"))
+    dp.callback_query.register(donat_menu_cmd, lambda call: call.data.startswith("donat-menu"))
+    
+    # ... остальные регистрации сообщений ...
 
-    dp.callback_query.register(our_store_cmd, StartsWith("our-store"))
-    dp.callback_query.register(donat_menu_cmd, StartsWith("donat-menu"))
 
-    dp.message.register(status_list, TextIn("статусы"))
-    dp.message.register(my_status, TextIn("мой статус"))
-    dp.message.register(buy_status, StartsWith("купить привилегию"))
-    dp.message.register(exchange_value, StartsWith("обменять"))
-    dp.message.register(buy_limit, StartsWith("купить лимит"))
-    dp.message.register(buy_energy, StartsWith("купить флягу"))
+    # Для stars.py
+    dp.callback_query.register(donat_cmd, lambda call: call.data.startswith("donat-stars"))
+    dp.callback_query.register(check_keyboard_amount_cmd, lambda call: call.data.startswith("select-stars"))
+    dp.callback_query.register(buy_stars_cmd, lambda call: call.data.startswith("buy-stars"))
+    dp.callback_query.register(refund_cmd, lambda call: call.data.startswith("refund"))
+    dp.callback_query.register(start_refund_cmd, lambda call: call.data.startswith("start-refund"))
