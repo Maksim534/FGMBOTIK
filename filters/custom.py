@@ -49,15 +49,19 @@ class StartsWith(BaseFilter):
         text = original_text.lower()
         bot_username = f"@{cfg.bot_username.lower()}"
         
+        print(f"🔍 StartsWith проверяет: '{original_text}'")  # Отладка
+        
         # Если текст начинается с @бота, проверяем текст без упоминания
         if text.startswith(bot_username):
-            # Убираем @username и следующий пробел ДЛЯ ПРОВЕРКИ
             text_to_check = original_text[len(bot_username):].lstrip().lower()
+            print(f"  👉 С @бота, проверяем: '{text_to_check}'")
         else:
             text_to_check = text
+            print(f"  👉 Без @бота, проверяем: '{text_to_check}'")
         
         # Проверяем все префиксы
         for prefix in self.prefixes:
+            print(f"  🤔 Сравниваем с префиксом '{prefix}': {text_to_check.startswith(prefix.lower())}")
             if text_to_check.startswith(prefix.lower()):
                 return True
         return False
