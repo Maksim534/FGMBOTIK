@@ -6,6 +6,13 @@ from commands.basic.property.lists import *
 from assets.transform import transform_int as tr
 from filters.custom import TextIn, StartsWith
 from user import BFGuser, BFGconst
+import random
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+# Добавьте эти импорты в начало файла
+from assets.antispam import antispam_earning
+import time
 
 
 @antispam
@@ -196,13 +203,139 @@ async def my_car(message: types.Message, user: BFGuser):
         return
 
     hdata = cars.get(user.property.car.get())
-
+    fuel = await db.get_fuel(user.id)
+    car_price = await db.get_car_price(user.id)
+    
+    # Рассчитываем заработок от такси (1-3% от стоимости машины)
+    taxi_earning = int(car_price * random.uniform(0.01, 0.03))
+    
+    # Создаём клавиатуру
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(text="⛽ Заправить", callback_data=f"refuel_{user.id}"),
+        InlineKeyboardButton(text="🚖 Таксовать", callback_data=f"taxi_{user.id}")
+    )
+    
+    # Индикатор топлива
+    fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
+    
     txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
+    
+🚗 <b>Характеристики:</b>
 ⛽️ Максимальная скорость: {hdata[1]} км/ч
 🐎 Лошадиных сил: {hdata[2]}
-⏱ Разгон до 100 за {hdata[3]} сек"""
+⏱ Разгон до 100 за {hdata[3]} сек
+💰 Стоимость: {tr(car_price)}$
 
-    await message.answer_photo(photo=hdata[4], caption=txt)
+⛽ <b>Топливо:</b> {fuel}%
+{fuel_bar}
+💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$"""
+
+    await message.answer_photo(
+        photo=hdata[4], 
+        caption=txt,
+        reply_markup=keyboard.as_markup()
+    )
+
+
+@antispam_earning
+async def refuel_callback(call: types.CallbackQuery, user: BFGuser):
+    """Заправка автомобиля"""
+    win, lose = BFGconst.emj()
+    
+    if int(user.property.car) == 0:
+        await call.answer("У вас нет автомобиля!", show_alert=True)
+        return
+    
+    current_fuel = await db.get_fuel(user.id)
+    
+    if current_fuel >= 100:
+        await call.answer("Бак уже полный!", show_alert=True)
+        return
+    
+    # Стоимость заправки зависит от цены машины
+    car_price = await db.get_car_price(user.id)
+    # 1% топлива стоит 0.1% от стоимости машины
+    cost_per_percent = int(car_price * 0.001)
+    needed = 100 - current_fuel
+    cost = needed * cost_per_percent
+    
+    if int(user.balance) < cost:
+        await call.answer(f"Недостаточно денег! Нужно {tr(cost)}$", show_alert=True)
+        return
+    
+    # Списываем деньги и добавляем топливо
+    await user.balance.upd(cost, '-')
+    await db.update_fuel(user.id, needed)
+    
+    await call.answer(f"✅ Заправлено на {needed}% за {tr(cost)}$", show_alert=True)
+    
+    # Обновляем сообщение
+    await update_car_message(call.message, user)
+
+
+@antispam_earning
+async def taxi_callback(call: types.CallbackQuery, user: BFGuser):
+    """Работа в такси"""
+    win, lose = BFGconst.emj()
+    
+    if int(user.property.car) == 0:
+        await call.answer("У вас нет автомобиля!", show_alert=True)
+        return
+    
+    current_fuel = await db.get_fuel(user.id)
+    
+    if current_fuel < 10:
+        await call.answer("Недостаточно топлива! Нужно минимум 10%", show_alert=True)
+        return
+    
+    # Тратим 10% топлива
+    await db.update_fuel(user.id, -10)
+    
+    # Заработок зависит от цены машины (1-3%)
+    car_price = await db.get_car_price(user.id)
+    earnings = int(car_price * random.uniform(0.01, 0.03))
+    
+    await user.balance.upd(earnings, '+')
+    
+    await call.answer(f"🚖 Поездка завершена! Заработано: {tr(earnings)}$", show_alert=True)
+    
+    # Обновляем сообщение
+    await update_car_message(call.message, user)
+
+
+async def update_car_message(message: types.Message, user: BFGuser):
+    """Обновление сообщения с машиной"""
+    hdata = cars.get(user.property.car.get())
+    fuel = await db.get_fuel(user.id)
+    car_price = await db.get_car_price(user.id)
+    taxi_earning = int(car_price * random.uniform(0.01, 0.03))
+    
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(text="⛽ Заправить", callback_data=f"refuel_{user.id}"),
+        InlineKeyboardButton(text="🚖 Таксовать", callback_data=f"taxi_{user.id}")
+    )
+    
+    fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
+    
+    txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
+    
+🚗 <b>Характеристики:</b>
+⛽️ Максимальная скорость: {hdata[1]} км/ч
+🐎 Лошадиных сил: {hdata[2]}
+⏱ Разгон до 100 за {hdata[3]} сек
+💰 Стоимость: {tr(car_price)}$
+
+⛽ <b>Топливо:</b> {fuel}%
+{fuel_bar}
+💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$"""
+
+    await message.edit_caption(
+        caption=txt,
+        reply_markup=keyboard.as_markup()
+    )
+
 
 
 @antispam
@@ -512,6 +645,9 @@ async def sell_plane(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
+    # ... существующие регистрации ...
+    dp.callback_query.register(refuel_callback, lambda call: call.data.startswith("refuel_"))
+    dp.callback_query.register(taxi_callback, lambda call: call.data.startswith("taxi_"))
     dp.message.register(helicopters_list, TextIn("вертолеты", "вертолёты"))
     dp.message.register(cars_list, TextIn("машины"))
     dp.message.register(house_list, TextIn("дома"))
