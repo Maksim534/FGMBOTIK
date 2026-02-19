@@ -2,13 +2,13 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 def bank_actions_kb(user_id: int) -> InlineKeyboardMarkup:
-    """Клавиатура для банковских операций"""
+    """Клавиатура для банковских операций без упоминания бота"""
     builder = InlineKeyboardBuilder()
     
-    # Кнопки с префиллом команд
+    # Кнопки с префиллом команд (без @username)
     builder.row(InlineKeyboardButton(
         text="💰 Положить в банк", 
-        switch_inline_query_current_chat="банк положить"
+        switch_inline_query_current_chat="банк положить "
     ))
     
     builder.row(InlineKeyboardButton(
