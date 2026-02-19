@@ -5,7 +5,7 @@ async def auto_fuel():
     """Уменьшение топлива у всех машин каждые 10 минут"""
     while True:
         try:
-            cursor.execute("UPDATE property SET fuel = max(0, fuel - 1) WHERE car > 0 AND fuel > 0")
+            cursor.execute("UPDATE property SET fuel = max(0, fuel - 20) WHERE car > 0 AND fuel > 0")
             conn.commit()
             print("⛽ Топливо уменьшено у всех машин")
         except Exception as e:
