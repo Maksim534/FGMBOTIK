@@ -40,7 +40,7 @@ async def upd_ferma_text(call: types.CallbackQuery | types.Message, user: BFGuse
 
     txt = f'''{user.url}, информация о вашей "Майнинг ферма":
 💷 Доход: {tr(dox)}฿/час
-📝 Видеокарты: {ferma.cards.tr()} шт./♾️ шт.
+📝 Видеокарты: {ferma.cards.tr()} шт./10 шт.
 🆙 для следующего уровня: {tr(ch)}$
 
 💸 Налоги: {ferma.nalogs.tr()}$/2.000.000$
@@ -81,14 +81,19 @@ async def buy_cards_cmd(call: types.CallbackQuery, user: BFGuser):
     if not ferma:
         return
 
+    # Проверка на максимальное количество видеокарт (10)
+    if ferma.cards.get() >= 10:
+        await call.answer(f'{user.name}, вы уже достигли максимального количества видеокарт (10 шт.) {lose}', show_alert=True)
+        return
+
     ch = int(200_000 * (1 + 0.65) ** (ferma.cards.get()))
     
     if int(user.balance) < ch:
-        await call.answer(f'{user.name}, у вас недостаточно денег для увеличения видеокарт. Её стоимость {tr(ch)}$ {lose}')
+        await call.answer(f'{user.name}, у вас недостаточно денег для увеличения видеокарт. Её стоимость {tr(ch)}$ {lose}', show_alert=True)
         return
     
     await db.buy_cards(user.id, ch)
-    await call.answer(f'{user.name}, вы успешно увеличили количество видеокарт в ферме за {tr(ch)}$ {win}')
+    await call.answer(f'{user.name}, вы успешно увеличили количество видеокарт в ферме за {tr(ch)}$ {win}', show_alert=True)
     await upd_ferma_text(call, user)
 
 
