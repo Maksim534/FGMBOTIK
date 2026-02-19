@@ -74,7 +74,7 @@ async def bank_cmd(message: types.Message, user: BFGuser):
 async def put_bank_cmd(message: types.Message, user: BFGuser):
     win, lose = BFGconst.emj()
 
-    # Получаем текст и убираем @username если есть
+    # Очистка от @username
     text = message.text
     bot_username = f"@{cfg.bot_username}"
     if text.startswith(bot_username):
@@ -82,16 +82,11 @@ async def put_bank_cmd(message: types.Message, user: BFGuser):
     
     try:
         msg = text.split()
-        print(f"📝 Разбивка после очистки: {msg}")  # Отладка
         if len(msg) < 3:
             return
         summ = await get_summ(msg, user.balance)
-    except Exception as e:
-        print(f"❌ Ошибка в try: {e}")
+    except:
         return
-
-    # ... остальной код без изменений
-
 
     summ, balance = Decimal(str(summ)), Decimal(str(user.balance))
 
@@ -112,8 +107,14 @@ async def put_bank_cmd(message: types.Message, user: BFGuser):
 async def takeoff_bank_cmd(message: types.Message, user: BFGuser):
     win, lose = BFGconst.emj()
 
+    # Очистка от @username
+    text = message.text
+    bot_username = f"@{cfg.bot_username}"
+    if text.startswith(bot_username):
+        text = text[len(bot_username):].lstrip()
+    
     try:
-        msg = message.text.split()
+        msg = text.split()
         if len(msg) < 3:
             return
         summ = await get_summ(msg, user.bank)
@@ -140,8 +141,14 @@ async def put_depozit_cmd(message: types.Message, user: BFGuser):
     p, c, st = await bank_pc(user.status)
     win, lose = BFGconst.emj()
 
+    # Очистка от @username
+    text = message.text
+    bot_username = f"@{cfg.bot_username}"
+    if text.startswith(bot_username):
+        text = text[len(bot_username):].lstrip()
+    
     try:
-        msg = message.text.split()
+        msg = text.split()
         if len(msg) < 3:
             return
         summ = await get_summ(msg, user.balance)
@@ -178,6 +185,12 @@ async def takeoff_depozit_cmd(message: types.Message, user: BFGuser):
     win, lose = BFGconst.emj()
     balance = int(user.depozit)
 
+    # Очистка от @username
+    text = message.text
+    bot_username = f"@{cfg.bot_username}"
+    if text.startswith(bot_username):
+        text = text[len(bot_username):].lstrip()
+
     timedepozit = datetime.fromtimestamp(user.depozit_time)
     timedepozit += timedelta(days=3)
     dt = datetime.now().timestamp()
@@ -185,7 +198,7 @@ async def takeoff_depozit_cmd(message: types.Message, user: BFGuser):
     c, p = await dep_comsa(user.status)
 
     try:
-        msg = message.text.split()
+        msg = text.split()
         if len(msg) < 3:
             return
         summ = await get_summ(msg, balance)
