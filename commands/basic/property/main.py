@@ -229,7 +229,7 @@ async def my_car(message: types.Message, user: BFGuser):
 
 ⛽ <b>Топливо:</b> {fuel}%
 {fuel_bar}
-💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$"""
+💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$""
 
     await message.answer_photo(
         photo=hdata[4], 
@@ -302,7 +302,7 @@ async def taxi_callback(call: types.CallbackQuery, user: BFGuser):
     
     # Обновляем сообщение
     await update_car_message(call.message, user)
-
+    
 
 async def update_car_message(message: types.Message, user: BFGuser):
     """Обновление сообщения с машиной"""
@@ -330,7 +330,7 @@ async def update_car_message(message: types.Message, user: BFGuser):
 
 ⛽ <b>Топливо:</b> {fuel}%
 {fuel_bar}
-💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$"""
+💰 <b>Заработок за поездку:</b> {tr(taxi_earning)}$""
 
         await message.edit_caption(
             caption=txt,
@@ -383,7 +383,7 @@ async def my_plane(message: types.Message, user: BFGuser):
     txt = f"""{user.url}, информация о вашем самолёте "{hdata[0]}"
 ⛽️ Максимальная скорость: {hdata[1]} км/ч
 💪 Мощность: {hdata[2]}
-🛫 Дальность полета: {hdata[3]}"""
+🛫 Дальность полета: {hdata[3]}""
 
     await message.answer_photo(photo=hdata[4], caption=txt)
 
