@@ -1,9 +1,7 @@
 from typing import Union
 import config as cfg
-
 from aiogram.filters import BaseFilter
 from aiogram.types import Message, CallbackQuery
-
 
 class TextIn(BaseFilter):
     def __init__(self, *values: str) -> None:
@@ -11,14 +9,11 @@ class TextIn(BaseFilter):
 
     async def __call__(self, obj: Union[Message, CallbackQuery]) -> bool:
         text = None
-
         if isinstance(obj, Message):
             text = obj.text
         elif isinstance(obj, CallbackQuery):
             text = obj.data
-
         return text and text.lower() in self.values
-
 
 
 class StartsWith(BaseFilter):
@@ -33,15 +28,15 @@ class StartsWith(BaseFilter):
         text = original_text.lower()
         bot_username = f"@{cfg.bot_username.lower()}"
         
-        # Если сообщение начинается с @бота, убираем его
+        # Если сообщение начинается с @бота, убираем его из проверки, НО НЕ МЕНЯЕМ message.text
         if text.startswith(bot_username):
-            # Убираем @username и следующие за ним пробелы
-            clean_text = original_text[len(bot_username):].lstrip()
-            message.text = clean_text  # Обновляем текст сообщения
-            text = clean_text.lower()
+            # Просто проверяем текст после упоминания
+            text_without_mention = original_text[len(bot_username):].lstrip().lower()
+        else:
+            text_without_mention = text
         
         # Проверяем все префиксы
         for prefix in self.prefixes:
-            if text.startswith(prefix.lower()):
+            if text_without_mention.startswith(prefix.lower()):
                 return True
         return False
