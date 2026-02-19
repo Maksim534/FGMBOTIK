@@ -41,15 +41,25 @@ class StartsWith(BaseFilter):
     def __init__(self, *prefixes: str):
         self.prefixes = [p.lower() for p in prefixes]
 
-    async def __call__(self, message: Message) -> bool:
-        if not message.text:
+    async def __call__(self, event: Union[Message, CallbackQuery]) -> bool:
+        # Получаем текст в зависимости от типа события
+        if isinstance(event, Message):
+            if not event.text:
+                return False
+            text = event.text
+        elif isinstance(event, CallbackQuery):
+            if not event.data:
+                return False
+            # Для колбэков проверяем data, а не text
+            text = event.data
+        else:
             return False
-        
-        original_text = message.text
+
+        original_text = text
         text = original_text.lower()
         bot_username = f"@{cfg.bot_username.lower()}"
         
-        # Если сообщение начинается с @бота, убираем его из проверки
+        # Если текст начинается с @бота, убираем его из проверки
         if text.startswith(bot_username):
             text_without_mention = original_text[len(bot_username):].lstrip().lower()
         else:
