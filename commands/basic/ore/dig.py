@@ -259,6 +259,24 @@ async def sell_cmd(message: types.Message, user: BFGuser):
 ruds = ["железо", "золото", "алмазы", "аметисты", "аквамарины", "изумруды", "материю",
         "плазму", "никель", "титан", "кобальт", "эктоплазму", "палладий"]
 
+@antispam_earning
+async def dig_callback(call: types.CallbackQuery, user: BFGuser):
+    """Обработчик нажатия на кнопку копания"""
+    ore = call.data.split('_')[1]  # Получаем руду из callback_data (формат: dig_железо)
+    
+    # Создаём "виртуальное" сообщение для вызова функции копания
+    class FakeMessage:
+        def __init__(self, text, user_id, chat_id):
+            self.text = text
+            self.from_user = type('obj', (object,), {'id': user_id})
+            self.chat = type('obj', (object,), {'id': chat_id})
+    
+    fake_msg = FakeMessage(f"копать {ore}", user.id, call.message.chat.id)
+    
+    # Вызываем существующую функцию копания
+    await dig_mine_cmd(fake_msg, user)
+    await call.answer()
+
 
 def reg(dp: Dispatcher):
     # ... существующие регистрации ...
