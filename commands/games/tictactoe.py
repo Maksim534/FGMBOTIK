@@ -365,6 +365,6 @@ loop.create_task(check_game())
 
 
 def reg(dp: Dispatcher):
-    dp.message.register(tictactoe_cmd, StartsWith("/кн"))
+    dp.message.register(tictactoe_cmd, StartsWith("кн"))
     dp.callback_query.register(tictactoe_start_callback, F.data == "tictactoe_start")
     dp.callback_query.register(tictactoe_move_callback, F.data.startswith("tictactoe_move_"))
