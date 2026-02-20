@@ -13,6 +13,8 @@ from user import BFGuser, BFGconst
 from assets.keyboards.game import kwak_game
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+last_roulette_time = {}
+
 
 def get_summ(message: types.Message, balance: int, index: int) -> int:
     if message.text.lower().split()[index] in ['все', 'всё']:
@@ -556,15 +558,158 @@ else:
     asyncio.create_task(check_game())
 
 
-# Регистрация хэндлеров (aiogram 3.x)
-def register_frog_handlers(dp: Dispatcher):
-    dp.message.register(kwak_cmd, lambda message: message.text.lower().startswith('квак'))
-    dp.callback_query.register(kwak_callback, lambda call: call.data.startswith('kwak_'))
-    dp.callback_query.register(kwak_stop_callback, lambda call: call.data.startswith('kwak-stop'))
+
+
+# ==================== БЕСПЛАТНАЯ РУЛЕТКА ====================
+
+
+# Призы и их шансы (в сумме 100)
+ROULETTE_PRIZES = [
+    {"name": "💰 Деньги", "chance": 50, "min": 5_000_000, "max": 50_000_000},
+    {"name": "💡 Опыт", "chance": 15, "min": 1000, "max": 10000},
+    {"name": "👑 Рейтинг", "chance": 10, "min": 500, "max": 5000},
+    {"name": "🌐 Биткоины", "chance": 10, "min": 0.001, "max": 0.05},
+    {"name": "💳 B-Coins", "chance": 8, "min": 100, "max": 1000},
+    {"name": "⚡ Энергия", "chance": 5, "min": 5, "max": 20},
+    {"name": "💴 Йены", "chance": 1.5, "min": 1_000_000, "max": 10_000_000},
+    {"name": "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА", "chance": 0.5, "car_id": 101},  # ID машины из exclusive_cars
+]
+
+# Анимация вращения
+ROULETTE_ANIMATION = [
+    "🎰 [ ••• ] Крутим...",
+    "🎰 [ •• ] Крутим..",
+    "🎰 [ • ] Крутим.",
+    "🎰 [ ✦ ] Почти...",
+    "🎰 [ ✦✦ ] Ещё немного...",
+    "🎰 [ ✦✦✦ ] Стоп!",
+]
+
+def get_roulette_prize():
+    """Определяет приз на основе шансов"""
+    rand = random.uniform(0, 100)
+    cumulative = 0
+    
+    for prize in ROULETTE_PRIZES:
+        cumulative += prize["chance"]
+        if rand <= cumulative:
+            return prize
+    
+    return ROULETTE_PRIZES[0]
+
+
+@antispam
+async def roulette_cmd(message: types.Message, user: BFGuser):
+    """Команда рулетка - бесплатная игра с анимацией (раз в 24 часа)"""
+    win, lose = BFGconst.emj()
+    
+    # Проверка кулдауна (24 часа)
+    current_time = time.time()
+    last_time = last_roulette_time.get(user.id, 0)
+    time_diff = current_time - last_time
+    cooldown = 86400  # 24 часа в секундах
+    
+    if time_diff < cooldown:
+        hours = int((cooldown - time_diff) // 3600)
+        minutes = int(((cooldown - time_diff) % 3600) // 60)
+        await message.answer(
+            f"{user.url}, ⏳ рулетка ещё крутится!\n"
+            f"Следующий раз через {hours} ч {minutes} мин {lose}"
+        )
+        return
+    
+    # Отправляем первое сообщение
+    msg = await message.answer(
+        f"{user.url}, 🎰 <b>БЕСПЛАТНАЯ РУЛЕТКА ЗАПУЩЕНА!</b>\n\n"
+        f"{ROULETTE_ANIMATION[0]}",
+        parse_mode="HTML"
+    )
+    
+    # Анимация вращения
+    for frame in ROULETTE_ANIMATION[1:-1]:
+        await asyncio.sleep(0.5)
+        await msg.edit_text(
+            f"{user.url}, 🎰 <b>БЕСПЛАТНАЯ РУЛЕТКА ЗАПУЩЕНА!</b>\n\n"
+            f"{frame}",
+            parse_mode="HTML"
+        )
+    
+    await asyncio.sleep(0.5)
+    
+    # Получаем приз
+    prize = get_roulette_prize()
+    win_amount = 0
+    win_text = ""
+    
+    # Определяем выигрыш
+    if "car_id" in prize:  # Эксклюзивная машина
+        car_id = prize["car_id"]
+        car_name = exclusive_cars[car_id][0]
+        
+        # Выдаём машину (заменяем текущую, если есть)
+        await db.buy_property(user.id, car_id, "car", 0)  # 0 цена
+        
+        # Проверяем, была ли у игрока машина
+        old_car_id = user.property.car.get()
+        if old_car_id != 0:
+            # Получаем название старой машины
+            if old_car_id in exclusive_cars:
+                old_car_name = exclusive_cars[old_car_id][0]
+            else:
+                old_car_data = cars.get(old_car_id)
+                old_car_name = old_car_data[0] if old_car_data else "Неизвестно"
+            
+            win_text = f"✨ {prize['name']}: {car_name} ✨\n(старая машина '{old_car_name}' заменена!)"
+        else:
+            win_text = f"✨ {prize['name']}: {car_name} ✨"
+            
+    elif prize["name"] == "💰 Деньги":
+        win_amount = random.randint(prize["min"], prize["max"])
+        await user.balance.upd(win_amount, '+')
+        win_text = f"{prize['name']}: +{tr(win_amount)}$"
+    elif prize["name"] == "💡 Опыт":
+        win_amount = random.randint(prize["min"], prize["max"])
+        await user.exp.upd(win_amount, '+')
+        win_text = f"{prize['name']}: +{win_amount}"
+    elif prize["name"] == "👑 Рейтинг":
+        win_amount = random.randint(prize["min"], prize["max"])
+        await user.rating.upd(win_amount, '+')
+        win_text = f"{prize['name']}: +{win_amount}"
+    elif prize["name"] == "🌐 Биткоины":
+        win_amount = round(random.uniform(prize["min"], prize["max"]), 6)
+        await user.btc.upd(win_amount, '+')
+        win_text = f"{prize['name']}: +{win_amount}"
+    elif prize["name"] == "💳 B-Coins":
+        win_amount = random.randint(prize["min"], prize["max"])
+        await user.bcoins.upd(win_amount, '+')
+        win_text = f"{prize['name']}: +{win_amount}"
+    elif prize["name"] == "⚡ Энергия":
+        win_amount = random.randint(prize["min"], prize["max"])
+        await user.energy.upd(win_amount, '+')
+        win_text = f"{prize['name']}: +{win_amount}"
+    elif prize["name"] == "💴 Йены":
+        win_amount = random.randint(prize["min"], prize["max"])
+        await user.yen.upd(win_amount, '+')
+        win_text = f"{prize['name']}: +{tr(win_amount)}¥"
+    else:
+        win_text = f"{prize['name']}"
+    
+    # Запоминаем время
+    last_roulette_time[user.id] = current_time
+    
+    # Финальное сообщение
+    await msg.edit_text(
+        f"{user.url}, 🎰 <b>РУЛЕТКА ОСТАНОВИЛАСЬ!</b>\n\n"
+        f"🎯 <b>ВАШ ПРИЗ:</b>\n"
+        f"{win_text}\n\n"
+        f"⏳ Следующий раз через 24 часа",
+        parse_mode="HTML"
+    )
 
 
 
 def reg(dp: Dispatcher):
+    dp.message.register(roulette_cmd, StartsWith("рулетка"))
 	dp.message.register(kwak_cmd, StartsWith('квак'))
 	dp.callback_query.register(kwak_callback, lambda call: call.data.startswith('kwak_'))
 	dp.callback_query.register(kwak_stop_callback, lambda call: call.data.startswith('kwak-stop'))
