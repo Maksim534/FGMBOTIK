@@ -3,47 +3,25 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 import config as cfg
 
-# ==================== КЛАВИАТУРЫ ДЛЯ ПОМОЩИ ====================
 
 def help_menu(user_id: int) -> InlineKeyboardMarkup:
-    """Главное меню помощи (обновлённое)"""
-    builder = InlineKeyboardBuilder()
-    
-    # Основные категории (по 2 в ряд)
-    builder.row(
-        InlineKeyboardButton(text="💼 Экономика", callback_data=f"help_economy"),
-        InlineKeyboardButton(text="🎮 Игры", callback_data=f"help_games"),
-        width=2
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(text="💡 Основные", callback_data=f"help_osn|{user_id}"),
+        InlineKeyboardButton(text="🎲 Игры", callback_data=f"help_game|{user_id}"),
     )
-    builder.row(
-        InlineKeyboardButton(text="🎭 Развлечения", callback_data=f"help_entertainment"),
-        InlineKeyboardButton(text="⚔️ Кланы", callback_data=f"help_clans"),
-        width=2
+    keyboard.row(
+        InlineKeyboardButton(text="💥 Развлекательное", callback_data=f"help_rz|{user_id}"),
+        InlineKeyboardButton(text="🏰 Кланы", callback_data=f"help_clans|{user_id}"),
     )
-    builder.row(
-        InlineKeyboardButton(text="👑 Админ", callback_data=f"help_admin"),
-        width=1
-    )
-    builder.row(
-        InlineKeyboardButton(text="❌ Закрыть", callback_data="help_close"),
-        width=1
-    )
-    
-    return builder.as_markup()
+    return keyboard.as_markup()
 
 
 def help_back(user_id: int) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.row(
-        InlineKeyboardButton(
-            text="🔙 Назад в меню", 
-            callback_data="help_back"  # Должно быть именно так, без пробелов, без user_id
-        )
-    )
-    return builder.as_markup()
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(InlineKeyboardButton(text="Назад", callback_data=f"help_back|{user_id}"))
+    return keyboard.as_markup()
 
-
-# ==================== ОСТАЛЬНЫЕ КЛАВИАТУРЫ (БЕЗ ИЗМЕНЕНИЙ) ====================
 
 def start() -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardBuilder()
@@ -87,6 +65,7 @@ def top(user_id: int, tab: int) -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="🌌 Топ материальных кейсов", callback_data=f"top-case4|{user_id}|{tab}")
     )
     return keyboard.as_markup()
+
 
 
 def wedlock(user_id: int, r_id: int) -> InlineKeyboardMarkup:
