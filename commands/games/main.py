@@ -652,7 +652,7 @@ async def roulette_info_cmd(message: types.Message, user: BFGuser):
     keyboard.row(
         InlineKeyboardButton(
             text="🎰 Крутить рулетку",
-            switch_inline_query_current_chat=f"рулетка"
+            switch_inline_query_current_chat=f"крутить рулетку"
         )
     )
     
@@ -770,7 +770,7 @@ async def roulette_play_cmd(message: types.Message, user: BFGuser):
 
 def reg(dp: Dispatcher):
     dp.message.register(roulette_info_cmd, StartsWith("рулетка"))  # Информация и кнопка
-    dp.message.register(roulette_play_cmd, StartsWith("/рулетка"))  # Запуск игры (можно и так)
+    dp.message.register(roulette_play_cmd, StartsWith("крутить рулетку"))  # Запуск игры (можно и так)
     # Регистрация команд
     dp.message.register(darts_cmd, StartsWith("дартс"))
     dp.message.register(dice_cmd, StartsWith("кости"))
