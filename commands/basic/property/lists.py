@@ -2,7 +2,7 @@
 
 helicopters = {
     1: ("Воздушный шар", 60, 0, "https://te.legra.ph/file/94ba572f4892d55b67400.jpg", 100000),
-    2: ("Robinson R22", 190, 124, "https://imgfoto.host/i/yhngvn", 620000),
+    2: ("Robinson R22", 190, 124, "https://i.postimg.cc/d08xwTCB/86671-1670291808.jpg", 620000),
     3: ("Robinson R44 Raven", 240, 220, "https://imgfoto.host/i/yx5PIV", 850000),
     4: ("Bell 505 Jet Ranger X", 232, 505, "https://imgfoto.host/i/yx5Opn", 1550000),
     5: ("Airbus H125", 287, 847, "https://imgfoto.host/i/yx41By", 2100000),
