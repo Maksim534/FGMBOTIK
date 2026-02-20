@@ -300,6 +300,76 @@ async def give_valentine_cmd(message: types.Message, user: BFGuser):
 
     await message.answer(text=txt, reply_markup=select_mod(recipient_user_id))
 
+
+@antispam_earning
+async def send_valentine_callback(call: types.CallbackQuery, state: FSMContext):
+    """Обработка выбора режима отправки"""
+    data_parts = call.data.split('_')
+    recipient_id = int(data_parts[2])
+    anonymous = int(data_parts[3])
+
+    # Удаляем сообщение с кнопками
+    await call.message.delete()
+    
+    # Запрашиваем текст валентинки
+    await call.message.answer(
+        '<b>💌 Введите текст валентинки (до 50 символов), у вас есть 2 минуты:</b>',
+        parse_mode="HTML"
+    )
+
+    # Сохраняем данные в состоянии
+    await state.update_data(recipient_id=recipient_id, anonymous=anonymous)
+    await state.set_state(ValentineState.message)
+
+    # Запускаем таймер на 2 минуты
+    asyncio.create_task(reset_state_timeout(call.from_user.id, state))
+    await call.answer()
+
+
+async def reset_state_timeout(chat_id: int, state: FSMContext):
+    """Сброс состояния через 2 минуты бездействия"""
+    await asyncio.sleep(120)
+    current_state = await state.get_state()
+    if current_state == ValentineState.message.state:
+        await state.clear()
+        await bot.send_message(chat_id, "💘 <b>Время на отправку валентинки вышло</b>.")
+
+
+@antispam
+async def receive_valentine_message(message: types.Message, state: FSMContext):
+    """Получение текста валентинки и отправка"""
+    user_id = message.from_user.id
+
+    if len(message.text) > 50:
+        await message.answer('🚫 Текст валентинки должен содержать не более 50 символов.\n\n🔄 Попробуйте снова:')
+        return
+
+    user_info = await db.get_info(user_id)
+    if user_info[0] <= 0:
+        await message.answer('📭 У вас нет пустых валентинок!\nЗаработайте их в мини-игре.')
+        await state.clear()
+        return
+
+    data = await state.get_data()
+    recipient_id = data['recipient_id']
+    anonymous = data['anonymous']
+
+    # Отправляем валентинку получателю
+    sender_text = "Анонимно" if anonymous else f"от {message.from_user.full_name}"
+    try:
+        await bot.send_message(
+            recipient_id,
+            f'💌 <b>Вы получили валентинку {sender_text}!</b>\n\n«{message.text}»',
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        print(f"Не удалось отправить валентинку пользователю {recipient_id}: {e}")
+
+    await message.answer('✅ Вы успешно отправили валентинку!')
+    await db.new_valentine(user_id, recipient_id, anonymous, message.text)
+    give_valentine_time[user_id] = int(time.time())
+    await state.clear()
+
 # ==================== FSM И КОЛБЭКИ ====================
 async def reset_state_timeout(chat_id: int, state: FSMContext):
     """Сброс состояния через 2 минуты бездействия"""
@@ -308,6 +378,8 @@ async def reset_state_timeout(chat_id: int, state: FSMContext):
     if current_state == ValentineState.message.state:
         await state.clear()
         await bot.send_message(chat_id, "💘 <b>Время на отправку валентинки вышло</b>.")
+
+
 
 @antispam_earning
 async def send_valentine_callback(call: types.CallbackQuery, state: FSMContext):
@@ -458,25 +530,18 @@ async def valentine_top_callback(call: types.CallbackQuery, user: BFGuser):
 
 # ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
 def reg(dp: Dispatcher):
-    # Основные команды
     dp.message.register(valentine_cmd, F.text.lower().in_(["валентинка", "/valentine"]))
     dp.message.register(get_valentine_cmd, F.text.lower() == "/get_valentine")
     dp.message.register(give_valentine_cmd, F.text.lower().startswith("/send_valentine"))
     dp.message.register(my_valentine_cmd, F.text.lower() == "/my_valentine")
-
-    # FSM (состояние ввода текста)
-    dp.message.register(receive_valentine_message, ValentineState.message)
-
-    # Колбэки от кнопок
+    
+    # Новые обработчики для отправки
     dp.callback_query.register(send_valentine_callback, F.data.startswith("send_valentine_"))
+    dp.message.register(receive_valentine_message, ValentineState.message)
+    
     dp.callback_query.register(my_valentine_menu_callback, F.data.startswith("my_valentine_menu_"))
     dp.callback_query.register(my_valentine_list_callback, F.data.startswith("my_valentine_list_"))
     dp.callback_query.register(valentine_top_callback, F.data.startswith("valentine_top_"))
-
 # ==================== ОПИСАНИЕ МОДУЛЯ ====================
-MODULE_DESCRIPTION = {
-    'name': '💘 14 Февраля',
-    'description': 'Мероприятие, посвящённое Дню Святого Валентина.'
-}
 
-# ==================== ОПИСАНИЕ МОДУЛЯ ====================
+
