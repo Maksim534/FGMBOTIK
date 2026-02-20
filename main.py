@@ -17,6 +17,7 @@ MODULES = [
     'commands.admin.donat',
     'commands.admin.hosting',
     'commands.entertaining.earnings.farm.main',
+    'commands.entertaining.rp_couple',
     'commands.entertaining.earnings.business.main',
     'commands.entertaining.earnings.garden.main',
     'commands.basic.balance',
@@ -39,7 +40,6 @@ MODULES = [
     'commands.main',
     'commands.moderation',
     'commands.event.february',
-    'commands.entertaining.rp_couple',
 ]
 
 
