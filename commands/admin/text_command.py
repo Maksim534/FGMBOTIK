@@ -340,17 +340,64 @@ async def reset_confirm_callback(call: types.CallbackQuery):  # 👈 Убрал�
 async def give_exclusive_car(message: types.Message):
     """Выдать эксклюзивную машину игроку (по реплаю или ID)"""
     try:
-        # Получаем ID цели (из реплая или аргумента)
-        if message.reply_to_message:
-            target_id = message.reply_to_message.from_user.id
-        else:
-            target_id = int(message.text.split()[1])
+        parts = message.text.split()
         
-        car_id = int(message.text.split()[2])
+        # Проверяем минимальное количество аргументов
+        if len(parts) < 2:
+            await message.answer(
+                "❌ Используйте:\n"
+                "• `/eksotic [id_игрока] [id_машины]` — по ID\n"
+                "• `/eksotic [id_машины]` — ответом на сообщение",
+                parse_mode="HTML"
+            )
+            return
+        
+        # Случай 1: Выдача по реплаю (без ID игрока)
+        if message.reply_to_message:
+            if len(parts) < 2:
+                await message.answer("❌ Укажите ID машины!")
+                return
+            
+            target_id = message.reply_to_message.from_user.id
+            try:
+                car_id = int(parts[1])
+            except ValueError:
+                await message.answer("❌ ID машины должен быть числом!")
+                return
+        
+        # Случай 2: Выдача по ID игрока
+        else:
+            if len(parts) < 3:
+                await message.answer("❌ Укажите ID игрока и ID машины!\nПример: /eksotic 105 101")
+                return
+            
+            try:
+                target_id = int(parts[1])
+                car_id = int(parts[2])
+            except ValueError:
+                await message.answer("❌ ID должны быть числами!")
+                return
+        
+        # Проверяем существование exclusive_cars
+        try:
+            from commands.basic.property.lists import exclusive_cars
+        except ImportError:
+            await message.answer("❌ Ошибка загрузки списка эксклюзивных машин!")
+            return
         
         # Проверяем, что это эксклюзивная машина
         if car_id not in exclusive_cars:
             await message.answer("❌ Это не эксклюзивная машина!")
+            return
+        
+        # Проверяем, существует ли игрок
+        user_exists = cursor.execute(
+            "SELECT user_id FROM users WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        
+        if not user_exists:
+            await message.answer("❌ Игрок с таким ID не найден!")
             return
         
         # Проверяем, нет ли уже машины у игрока
@@ -371,7 +418,11 @@ async def give_exclusive_car(message: types.Message):
         conn.commit()
         
         car_name = exclusive_cars[car_id][0]
-        await message.answer(f"✅ Игроку выдана эксклюзивная машина: {car_name}")
+        await message.answer(
+            f"✅ Игроку <code>{target_id}</code> выдана эксклюзивная машина:\n"
+            f"🚗 <b>{car_name}</b> (ID: {car_id})",
+            parse_mode="HTML"
+        )
         
     except Exception as e:
         await message.answer(f"❌ Ошибка: {e}")
