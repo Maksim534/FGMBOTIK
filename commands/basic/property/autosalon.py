@@ -2,12 +2,12 @@ from aiogram import types, Dispatcher, F
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from assets.antispam import antispam
+from assets.antispam import antispam, antispam_carousel
 from commands.basic.property.lists import cars
 from assets.transform import transform_int as tr
 from filters.custom import StartsWith
 from user import BFGuser, BFGconst
-from assets.antispam import antispam, antispam_carousel
+import commands.basic.property.db as db
 
 # Словарь для хранения текущей страницы каждого пользователя
 user_car_page = {}  # {user_id: page_number}
@@ -81,31 +81,14 @@ def get_car_keyboard(user_id: int, current_page: int, total_cars: int) -> Inline
     return builder.as_markup()
 
 
-@antispam
-async def autosalon_cmd(message: types.Message, user: BFGuser):
-    """Команда /автосалон - просмотр доступных автомобилей"""
-    user_id = user.id
-    
-    # Начинаем с первой страницы
-    user_car_page[user_id] = 1
-    
-    # Получаем общее количество машин
-    total_cars = len(cars)
-    
-    # Показываем первую машину
-    await show_car(message, user, page=1, total_cars=total_cars)
-
-
-async def show_car(message: types.Message, user: BFGuser, page: int, total_cars: int, edit: bool = False):
-    """Показывает автомобиль на указанной странице"""
+async def update_car_message(message: types.Message, user: BFGuser, page: int, total_cars: int):
+    """Обновляет сообщение с новым фото и текстом (Вариант 2)"""
     
     # Получаем данные машины
     car_data = cars.get(page)
     if not car_data:
-        await message.answer(f"{user.url}, автомобиль с номером {page} не найден.")
         return
     
-    # Распаковываем данные
     name, speed, power, acceleration, photo_url, price = car_data
     
     # Формируем текст
@@ -117,7 +100,7 @@ async def show_car(message: types.Message, user: BFGuser, page: int, total_cars:
 🐎 Лошадиных сил: {power}
 ⏱ Разгон до 100 км/ч: {acceleration} сек
 
-💰 <b>Цена:</b> {tr(price)}$)
+💰 <b>Цена:</b> {tr(price)}$
 
 <i>Для покупки нажмите кнопку "Купить"</i>
 """
@@ -125,21 +108,57 @@ async def show_car(message: types.Message, user: BFGuser, page: int, total_cars:
     # Создаём клавиатуру
     keyboard = get_car_keyboard(user.id, page, total_cars)
     
-    if edit:
-        # Редактируем существующее сообщение
-        await message.edit_caption(
-            caption=text,
-            reply_markup=keyboard,
-            parse_mode="HTML"
-        )
-    else:
-        # Отправляем новое сообщение с фото
-        await message.answer_photo(
-            photo=photo_url,
-            caption=text,
-            reply_markup=keyboard,
-            parse_mode="HTML"
-        )
+    # Создаём медиа-объект с новым фото
+    media = types.InputMediaPhoto(
+        media=photo_url,
+        caption=text,
+        parse_mode="HTML"
+    )
+    
+    # Обновляем сообщение
+    await message.edit_media(media=media)
+    await message.edit_reply_markup(reply_markup=keyboard)
+
+
+@antispam
+async def autosalon_cmd(message: types.Message, user: BFGuser):
+    """Команда /автосалон - просмотр доступных автомобилей"""
+    user_id = user.id
+    
+    # Начинаем с первой страницы
+    user_car_page[user_id] = 1
+    
+    # Получаем общее количество машин
+    total_cars = len(cars)
+    
+    # Получаем данные первой машины
+    car_data = cars.get(1)
+    name, speed, power, acceleration, photo_url, price = car_data
+    
+    # Формируем текст
+    text = f"""
+🚗 <b>{name}</b>
+
+📊 <b>Характеристики:</b>
+⛽️ Максимальная скорость: {speed} км/ч
+🐎 Лошадиных сил: {power}
+⏱ Разгон до 100 км/ч: {acceleration} сек
+
+💰 <b>Цена:</b> {tr(price)}$
+
+<i>Для покупки нажмите кнопку "Купить"</i>
+"""
+    
+    # Создаём клавиатуру
+    keyboard = get_car_keyboard(user.id, 1, total_cars)
+    
+    # Отправляем сообщение с фото
+    await message.answer_photo(
+        photo=photo_url,
+        caption=text,
+        reply_markup=keyboard,
+        parse_mode="HTML"
+    )
 
 
 @antispam_carousel
@@ -164,8 +183,8 @@ async def autosalon_callback(call: types.CallbackQuery, user: BFGuser):
         # Получаем общее количество машин
         total_cars = len(cars)
         
-        # Обновляем сообщение
-        await show_car(call.message, user, page, total_cars, edit=True)
+        # Обновляем сообщение (Вариант 2)
+        await update_car_message(call.message, user, page, total_cars)
         await call.answer()
     
     elif action == "buy":
