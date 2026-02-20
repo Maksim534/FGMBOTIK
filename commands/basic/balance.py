@@ -81,7 +81,6 @@ async def creat_help_msg(profil, user: BFGuser):
 """
     await message.answer(text, parse_mode="HTML")
 
-"""
     return text
 
 
