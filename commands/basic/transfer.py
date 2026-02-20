@@ -54,17 +54,36 @@ async def transfer_cmd(message: types.Message, user: BFGuser):
     
     target_user_id = None
     target_url = None
+    summ_str = None
     
     # Случай 1: Перевод по реплаю (ответ на сообщение)
     if message.reply_to_message:
         target_user_id = message.reply_to_message.from_user.id
         target_url = await url_name(target_user_id)
+        
+        # Проверяем, не переводим ли мы сами себе
+        if user_id == target_user_id:
+            await message.reply(f"{user.url}, нельзя переводить деньги самому себе {lose}")
+            return
+        
+        # Получаем сумму из сообщения
+        try:
+            args = message.text.split()
+            if len(args) < 2:
+                await message.reply(
+                    f"{user.url}, укажите сумму. Пример: дать 1000000 (ответом на сообщение)"
+                )
+                return
+            summ_str = args[1]
+        except:
+            await message.reply(f"{user.url}, ошибка в формате команды {lose}")
+            return
     
     # Случай 2: Перевод по ID (игровому или Telegram)
     else:
         try:
             args = message.text.split()
-            if len(args) < 2:
+            if len(args) < 3:
                 await message.reply(
                     f"{user.url}, чтобы передать деньги нужно ответить на сообщение пользователя "
                     f"или указать ID. Пример: дать 105 1000000"
@@ -85,11 +104,7 @@ async def transfer_cmd(message: types.Message, user: BFGuser):
                 await message.reply(f"{user.url}, нельзя переводить деньги самому себе {lose}")
                 return
             
-            # Получаем сумму (она может быть вторым или третьим аргументом)
-            if len(args) >= 3:
-                summ_str = args[2]
-            else:
-                summ_str = args[1]  # Если ID не указан, но это уже обработано выше
+            summ_str = args[2]
                 
         except Exception as e:
             await message.reply(f"{user.url}, ошибка в формате команды {lose}")
