@@ -143,6 +143,12 @@ async def taxi_cmd(message: types.Message, user: BFGuser):
         await message.answer(f"{user.url}, у вас нет автомобиля {lose}")
         return
     
+    # Проверяем, что данные машины существуют
+    hdata = cars.get(user.property.car.get())
+    if not hdata:
+        await message.answer(f"{user.url}, данные вашего автомобиля не найдены {lose}")
+        return
+    
     current_time = time.time()
     last_time = last_taxi_time.get(user.id, 0)
     time_diff = current_time - last_time
@@ -170,7 +176,14 @@ async def taxi_cmd(message: types.Message, user: BFGuser):
 
 
 async def show_updated_car(message: types.Message, user: BFGuser, success_message: str = None):
+    # Получаем данные машины
     hdata = cars.get(user.property.car.get())
+    
+    # Защита от отсутствия данных
+    if not hdata:
+        await message.answer(f"{user.url}, данные вашего автомобиля не найдены.")
+        return
+    
     fuel = await db.get_fuel(user.id)
     car_price = await db.get_car_price(user.id)
     taxi_earning = int(car_price * random.uniform(0.01, 0.03))
@@ -196,12 +209,19 @@ async def show_updated_car(message: types.Message, user: BFGuser, success_messag
     
     fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
     
-    txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
+    # Распаковываем данные с защитой от None
+    name = hdata[0] if len(hdata) > 0 else "Неизвестно"
+    speed = hdata[1] if len(hdata) > 1 else 0
+    power = hdata[2] if len(hdata) > 2 else 0
+    acceleration = hdata[3] if len(hdata) > 3 else 0
+    photo = hdata[4] if len(hdata) > 4 else None
+    
+    txt = f"""{user.url}, информация о вашем автомобиле "{name}"
     
 🚗 <b>Характеристики:</b>
-⛽️ Максимальная скорость: {hdata[1]} км/ч
-🐎 Лошадиных сил: {hdata[2]}
-⏱ Разгон до 100 за {hdata[3]} сек
+⛽️ Максимальная скорость: {speed} км/ч
+🐎 Лошадиных сил: {power}
+⏱ Разгон до 100 за {acceleration} сек
 💰 Стоимость: {tr(car_price)}$
 
 ⛽ <b>Топливо:</b> {fuel}%
@@ -212,10 +232,12 @@ async def show_updated_car(message: types.Message, user: BFGuser, success_messag
     if success_message:
         txt = f"✅ {success_message}\n\n{txt}"
     
-    if message.reply_to_message:
-        await message.reply_photo(photo=hdata[4], caption=txt, reply_markup=keyboard.as_markup())
+    if not photo:
+        await message.answer(txt, reply_markup=keyboard.as_markup())
+    elif message.reply_to_message:
+        await message.reply_photo(photo=photo, caption=txt, reply_markup=keyboard.as_markup())
     else:
-        await message.answer_photo(photo=hdata[4], caption=txt, reply_markup=keyboard.as_markup())
+        await message.answer_photo(photo=photo, caption=txt, reply_markup=keyboard.as_markup())
 
 
 @antispam
