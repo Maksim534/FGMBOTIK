@@ -21,8 +21,9 @@ import config as cfg
 from assets.antispam import antispam_earning
 import time
 
-# Словарь для хранения времени последней поездки на такси
-last_taxi_time = {}
+# Словари для хранения времени
+last_taxi_time = {}      # для обычных машин (такси)
+last_race_time = {}      # для эксклюзивных машин (гонки)
 
 
 @antispam
@@ -64,31 +65,58 @@ async def my_car(message: types.Message, user: BFGuser):
 
     car_id = user.property.car.get()
     
-    # Сначала проверяем, может это эксклюзивная машина?
+    # Определяем тип машины
     if car_id in exclusive_cars:
         hdata = exclusive_cars.get(car_id)
-        # Для эксклюзивных машин добавляем особую отметку
         exclusive_tag = "✨ ЭКСКЛЮЗИВ ✨"
+        is_exclusive = True
     else:
         hdata = cars.get(car_id)
         exclusive_tag = ""
+        is_exclusive = False
     
-    fuel = await db.get_fuel(user.id)
-    car_price = await db.get_car_price(user.id)  # Эта функция должна работать и с эксклюзивными
+    if not hdata:
+        await message.answer(f"{user.url}, данные вашего автомобиля не найдены {lose}")
+        return
     
-    taxi_earning = int(car_price * random.uniform(0.01, 0.03))
+    fuel = await db.get_fuel(user.id) if not is_exclusive else 100  # У эксклюзивных всегда полный бак
+    car_price = await db.get_car_price(user.id)
     
+    # Создаём клавиатуру в зависимости от типа машины
     keyboard = InlineKeyboardBuilder()
-    keyboard.row(
-        InlineKeyboardButton(text="⛽ Заправить", switch_inline_query_current_chat=f"заправить"),
-        InlineKeyboardButton(text="🚖 Таксовать", switch_inline_query_current_chat=f"таксовать"),
-        width=2
-    )
+    
+    if is_exclusive:
+        # Эксклюзивные машины: только гонка (без заправки)
+        keyboard.row(
+            InlineKeyboardButton(text="🏁 Гонка", switch_inline_query_current_chat=f"гонка"),
+            width=1
+        )
+    else:
+        # Обычные машины: заправка + такси
+        keyboard.row(
+            InlineKeyboardButton(text="⛽ Заправить", switch_inline_query_current_chat=f"заправить"),
+            InlineKeyboardButton(text="🚖 Таксовать", switch_inline_query_current_chat=f"таксовать"),
+            width=2
+        )
     
     fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
     
-    txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}" {exclusive_tag}
-    
+    # Формируем текст в зависимости от типа машины
+    if is_exclusive:
+        txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}" {exclusive_tag}
+        
+🚗 <b>Характеристики:</b>
+⛽️ Максимальная скорость: {hdata[1]} км/ч
+🐎 Лошадиных сил: {hdata[2]}
+⏱ Разгон до 100 за {hdata[3]} сек
+💰 Стоимость: {tr(car_price)}$
+
+🏁 <b>Гоночный болид!</b>
+<i>Участвуйте в гонках и выигрывайте до 1 млрд $!</i>"""
+    else:
+        taxi_earning = int(car_price * random.uniform(0.01, 0.03))
+        txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
+        
 🚗 <b>Характеристики:</b>
 ⛽️ Максимальная скорость: {hdata[1]} км/ч
 🐎 Лошадиных сил: {hdata[2]}
@@ -108,10 +136,22 @@ async def my_car(message: types.Message, user: BFGuser):
 
 @antispam
 async def refuel_cmd(message: types.Message, user: BFGuser):
+    """Заправка автомобиля (только для обычных машин)"""
     win, lose = BFGconst.emj()
     
     if int(user.property.car) == 0:
         await message.answer(f"{user.url}, у вас нет автомобиля {lose}")
+        return
+    
+    car_id = user.property.car.get()
+    
+    # Эксклюзивные машины не заправляются
+    if car_id in exclusive_cars:
+        await message.answer(
+            f"{user.url}, эксклюзивные машины не нуждаются в заправке! ✨\n"
+            f"У них вечный двигатель! ⚡",
+            parse_mode="HTML"
+        )
         return
     
     current_fuel = await db.get_fuel(user.id)
@@ -137,14 +177,25 @@ async def refuel_cmd(message: types.Message, user: BFGuser):
 
 @antispam
 async def taxi_cmd(message: types.Message, user: BFGuser):
+    """Такси (только для обычных машин)"""
     win, lose = BFGconst.emj()
     
     if int(user.property.car) == 0:
         await message.answer(f"{user.url}, у вас нет автомобиля {lose}")
         return
     
-    # Проверяем, что данные машины существуют
-    hdata = cars.get(user.property.car.get())
+    car_id = user.property.car.get()
+    
+    # Эксклюзивные машины не таксуют
+    if car_id in exclusive_cars:
+        await message.answer(
+            f"{user.url}, эта машина — эксклюзив! ✨\n"
+            f"Она создана для гонок, а не для работы! 🏁",
+            parse_mode="HTML"
+        )
+        return
+    
+    hdata = cars.get(car_id)
     if not hdata:
         await message.answer(f"{user.url}, данные вашего автомобиля не найдены {lose}")
         return
@@ -152,7 +203,7 @@ async def taxi_cmd(message: types.Message, user: BFGuser):
     current_time = time.time()
     last_time = last_taxi_time.get(user.id, 0)
     time_diff = current_time - last_time
-    cooldown = 1800
+    cooldown = 1800  # 30 минут
     
     if time_diff < cooldown:
         wait_minutes = int((cooldown - time_diff) // 60)
@@ -175,53 +226,159 @@ async def taxi_cmd(message: types.Message, user: BFGuser):
     await show_updated_car(message, user, f"🚖 Поездка завершена! Заработано: {tr(earnings)}$")
 
 
-async def show_updated_car(message: types.Message, user: BFGuser, success_message: str = None):
-    # Получаем данные машины
-    hdata = cars.get(user.property.car.get())
+@antispam
+async def race_cmd(message: types.Message, user: BFGuser):
+    """Гонка на эксклюзивной машине"""
+    win, lose = BFGconst.emj()
     
-    # Защита от отсутствия данных
-    if not hdata:
-        await message.answer(f"{user.url}, данные вашего автомобиля не найдены.")
+    if int(user.property.car) == 0:
+        await message.answer(f"{user.url}, у вас нет автомобиля {lose}")
         return
     
-    fuel = await db.get_fuel(user.id)
-    car_price = await db.get_car_price(user.id)
-    taxi_earning = int(car_price * random.uniform(0.01, 0.03))
+    car_id = user.property.car.get()
     
+    # Проверяем, что это эксклюзивная машина
+    if car_id not in exclusive_cars:
+        await message.answer(f"{user.url}, эта команда только для эксклюзивных машин! ✨")
+        return
+    
+    # Проверка кулдауна (30 минут)
     current_time = time.time()
-    last_time = last_taxi_time.get(user.id, 0)
+    last_time = last_race_time.get(user.id, 0)
     time_diff = current_time - last_time
     cooldown = 1800
     
     if time_diff < cooldown:
         wait_minutes = int((cooldown - time_diff) // 60)
         wait_seconds = int((cooldown - time_diff) % 60)
-        taxi_status = f"⏳ Доступно через {wait_minutes} мин {wait_seconds} сек"
-    else:
-        taxi_status = "✅ Доступно сейчас"
+        await message.answer(
+            f"{user.url}, ⏳ двигатель остывает! Следующая гонка через {wait_minutes} мин {wait_seconds} сек! {lose}"
+        )
+        return
     
-    keyboard = InlineKeyboardBuilder()
-    keyboard.row(
-        InlineKeyboardButton(text="⛽ Заправить", switch_inline_query_current_chat=f"заправить"),
-        InlineKeyboardButton(text="🚖 Таксовать", switch_inline_query_current_chat=f"таксовать"),
-        width=2
+    # Эксклюзивные машины не тратят топливо
+    # Просто запоминаем время гонки
+    last_race_time[user.id] = current_time
+    
+    # Результаты гонки с фиксированными призами
+    race_results = [
+        {"place": "🏆 ЗОЛОТО!", "prize": 1_000_000_000, "desc": "Вы пришли к финишу первым! 🥇"},
+        {"place": "🥈 СЕРЕБРО!", "prize": 500_000_000, "desc": "Второе место! Неплохо! 🥈"},
+        {"place": "🥉 БРОНЗА!", "prize": 250_000_000, "desc": "Третье место! Тоже результат! 🥉"},
+        {"place": "⚡ РЕКОРД!", "prize": 750_000_000, "desc": "Новый рекорд трассы! ⚡"},
+        {"place": "💨 ЛУЧШИЙ КРУГ!", "prize": 300_000_000, "desc": "Техника на высоте! 💨"},
+        {"place": "🤝 НИЧЬЯ!", "prize": 100_000_000, "desc": "Разделили приз с соперником! 🤝"},
+        {"place": "🌟 КОНТРАКТ!", "prize": 600_000_000, "desc": "Вас заметили спонсоры! 🌟"},
+        {"place": "🔥 ДРАГ-РЕЙС!", "prize": 400_000_000, "desc": "Победа в драг-заезде! 🔥"},
+        {"place": "🌧 ГОСТЬ!", "prize": 200_000_000, "desc": "Гостевая победа под дождём! 🌧"},
+        {"place": "⭐ УЛИЧНАЯ!", "prize": 350_000_000, "desc": "Слава на ночных улицах! ⭐"},
+    ]
+    
+    result = random.choice(race_results)
+    earnings = result["prize"]
+    
+    # Начисляем деньги
+    await user.balance.upd(earnings, '+')
+    
+    # Получаем название машины
+    car_name = exclusive_cars[car_id][0]
+    
+    # Эффекты гонки
+    effects = [
+        "🚗 Машина в идеальном состоянии!",
+        "🔧 Пришлось заменить покрышки, но оно того стоило!",
+        "💥 Небольшой контакт, но вы в порядке!",
+        "✨ Нитро сработало идеально в нужный момент!",
+        "🎨 Новая аэрография от спонсоров!",
+        "⚙️ Двигатель работал как часы!",
+        "💨 Попутный ветер помог установить рекорд!",
+        "🎯 Идеальная траектория в каждом повороте!",
+        "🔩 Механики отлично подготовили машину!",
+        "🏁 Соперники кусают локти!",
+    ]
+    
+    await message.answer(
+        f"{user.url}, <b>ГОНКА ЗАВЕРШЕНА!</b> 🏁\n\n"
+        f"🚗 Автомобиль: <b>{car_name}</b>\n"
+        f"{result['place']} {result['desc']}\n"
+        f"✨ Эффект: {random.choice(effects)}\n\n"
+        f"💰 ВЫИГРЫШ: <b>{tr(earnings)}$</b>",
+        parse_mode="HTML"
     )
+    
+    # Обновляем сообщение с машиной (просто показываем информацию)
+    await show_updated_car(message, user)
+
+
+async def show_updated_car(message: types.Message, user: BFGuser, success_message: str = None):
+    """Обновляет сообщение с информацией о машине"""
+    car_id = user.property.car.get()
+    is_exclusive = car_id in exclusive_cars
+    
+    if is_exclusive:
+        hdata = exclusive_cars.get(car_id)
+        exclusive_tag = "✨ ЭКСКЛЮЗИВ ✨"
+    else:
+        hdata = cars.get(car_id)
+        exclusive_tag = ""
+    
+    if not hdata:
+        await message.answer(f"{user.url}, данные вашего автомобиля не найдены.")
+        return
+    
+    fuel = await db.get_fuel(user.id) if not is_exclusive else 100
+    car_price = await db.get_car_price(user.id)
+    
+    # Формируем клавиатуру
+    keyboard = InlineKeyboardBuilder()
+    
+    if is_exclusive:
+        keyboard.row(
+            InlineKeyboardButton(text="🏁 Гонка", switch_inline_query_current_chat=f"гонка"),
+            width=1
+        )
+    else:
+        keyboard.row(
+            InlineKeyboardButton(text="⛽ Заправить", switch_inline_query_current_chat=f"заправить"),
+            InlineKeyboardButton(text="🚖 Таксовать", switch_inline_query_current_chat=f"таксовать"),
+            width=2
+        )
     
     fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
     
-    # Распаковываем данные с защитой от None
-    name = hdata[0] if len(hdata) > 0 else "Неизвестно"
-    speed = hdata[1] if len(hdata) > 1 else 0
-    power = hdata[2] if len(hdata) > 2 else 0
-    acceleration = hdata[3] if len(hdata) > 3 else 0
-    photo = hdata[4] if len(hdata) > 4 else None
-    
-    txt = f"""{user.url}, информация о вашем автомобиле "{name}"
-    
+    if is_exclusive:
+        txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}" {exclusive_tag}
+        
 🚗 <b>Характеристики:</b>
-⛽️ Максимальная скорость: {speed} км/ч
-🐎 Лошадиных сил: {power}
-⏱ Разгон до 100 за {acceleration} сек
+⛽️ Максимальная скорость: {hdata[1]} км/ч
+🐎 Лошадиных сил: {hdata[2]}
+⏱ Разгон до 100 за {hdata[3]} сек
+💰 Стоимость: {tr(car_price)}$
+
+🏁 <b>Гоночный болид!</b>
+<i>Участвуйте в гонках и выигрывайте до 1 млрд $!</i>"""
+    else:
+        # Статус такси для обычных машин
+        current_time = time.time()
+        last_time = last_taxi_time.get(user.id, 0)
+        time_diff = current_time - last_time
+        cooldown = 1800
+        
+        if time_diff < cooldown:
+            wait_minutes = int((cooldown - time_diff) // 60)
+            wait_seconds = int((cooldown - time_diff) % 60)
+            taxi_status = f"⏳ Доступно через {wait_minutes} мин {wait_seconds} сек"
+        else:
+            taxi_status = "✅ Доступно сейчас"
+        
+        taxi_earning = int(car_price * random.uniform(0.01, 0.03))
+        
+        txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
+        
+🚗 <b>Характеристики:</b>
+⛽️ Максимальная скорость: {hdata[1]} км/ч
+🐎 Лошадиных сил: {hdata[2]}
+⏱ Разгон до 100 за {hdata[3]} сек
 💰 Стоимость: {tr(car_price)}$
 
 ⛽ <b>Топливо:</b> {fuel}%
@@ -232,12 +389,13 @@ async def show_updated_car(message: types.Message, user: BFGuser, success_messag
     if success_message:
         txt = f"✅ {success_message}\n\n{txt}"
     
+    photo = hdata[4] if len(hdata) > 4 else None
     if not photo:
-        await message.answer(txt, reply_markup=keyboard.as_markup())
+        await message.answer(txt, reply_markup=keyboard.as_markup(), parse_mode="HTML")
     elif message.reply_to_message:
-        await message.reply_photo(photo=photo, caption=txt, reply_markup=keyboard.as_markup())
+        await message.reply_photo(photo=photo, caption=txt, reply_markup=keyboard.as_markup(), parse_mode="HTML")
     else:
-        await message.answer_photo(photo=photo, caption=txt, reply_markup=keyboard.as_markup())
+        await message.answer_photo(photo=photo, caption=txt, reply_markup=keyboard.as_markup(), parse_mode="HTML")
 
 
 @antispam
@@ -386,7 +544,6 @@ async def sell_plane(message: types.Message, user: BFGuser):
     await message.answer(f"{user.url}, вы продали самолёт за {tr(price)}$ {win}")
 
 
-
 def reg(dp: Dispatcher):
     # Регистрация салонов
     autosalon_reg(dp)
@@ -403,15 +560,16 @@ def reg(dp: Dispatcher):
     dp.message.register(my_house, TextIn("мой дом"))
     dp.message.register(my_yahta, TextIn("моя яхта"))
     dp.message.register(my_plane, TextIn("мой самолёт"))
-
-    #продажа
+    
+    # Команды для автомобилей
+    dp.message.register(refuel_cmd, StartsWith("заправить"))
+    dp.message.register(taxi_cmd, StartsWith("таксовать"))
+    dp.message.register(race_cmd, StartsWith("гонка"))
+    
+    # Команды для продажи имущества
     dp.message.register(sell_helicopter, TextIn("продать вертолёт"))
     dp.message.register(sell_car, TextIn("продать машину"))
     dp.message.register(sell_house, TextIn("продать дом"))
     dp.message.register(sell_phone, TextIn("продать телефон"))
     dp.message.register(sell_yacht, TextIn("продать яхту"))
     dp.message.register(sell_plane, TextIn("продать самолёт"))
-    
-    # Команды для автомобиля
-    dp.message.register(refuel_cmd, StartsWith("заправить"))
-    dp.message.register(taxi_cmd, StartsWith("таксовать"))
