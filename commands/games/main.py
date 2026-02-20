@@ -709,16 +709,20 @@ async def roulette_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-    dp.message.register(roulette_cmd, StartsWith("рулетка"))
-	dp.message.register(kwak_cmd, StartsWith('квак'))
-	dp.callback_query.register(kwak_callback, lambda call: call.data.startswith('kwak_'))
-	dp.callback_query.register(kwak_stop_callback, lambda call: call.data.startswith('kwak-stop'))
-	dp.message.register(oxota, StartsWith("охота"))
-	dp.message.register(darts_cmd, StartsWith("дартс"))
-	dp.message.register(dice_cmd, StartsWith("кубик"))
-	dp.message.register(basketball_cmd, StartsWith("баскетбол"))
-	dp.message.register(football_cmd, StartsWith("футбол"))
-	dp.message.register(bowling_cmd, StartsWith("боулинг"))
-	dp.message.register(casino_cmd, StartsWith("казино"))
-	dp.message.register(spin_cmd, StartsWith("спин"))
-	dp.message.register(trade_cmd, StartsWith("трейд вверх", "трейд вниз"))
+    # Регистрация команд
+    dp.message.register(darts_cmd, StartsWith("дартс"))
+    dp.message.register(dice_cmd, StartsWith("кости"))
+    dp.message.register(basketball_cmd, StartsWith("баскетбол"))
+    dp.message.register(football_cmd, StartsWith("футбол"))
+    dp.message.register(bowling_cmd, StartsWith("боулинг"))
+    dp.message.register(casino_cmd, StartsWith("казино"))
+    dp.message.register(spin_cmd, StartsWith("спин"))
+    dp.message.register(trade_cmd, StartsWith("трейд"))
+    dp.message.register(oxota, StartsWith("охота"))
+    dp.message.register(crash, StartsWith("краш"))
+    dp.message.register(kwak_cmd, StartsWith("квак"))
+    dp.message.register(roulette_cmd, StartsWith("рулетка"))  # Новая команда
+
+    # Регистрация колбэков
+    dp.callback_query.register(kwak_callback, lambda call: call.data.startswith("kwak_"))
+    dp.callback_query.register(kwak_stop_callback, lambda call: call.data.startswith("kwak-stop"))
