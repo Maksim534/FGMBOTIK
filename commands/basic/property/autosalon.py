@@ -7,6 +7,7 @@ from commands.basic.property.lists import cars
 from assets.transform import transform_int as tr
 from filters.custom import StartsWith
 from user import BFGuser, BFGconst
+from assets.antispam import antispam, antispam_earning
 
 # Словарь для хранения текущей страницы каждого пользователя
 user_car_page = {}  # {user_id: page_number}
@@ -116,9 +117,7 @@ async def show_car(message: types.Message, user: BFGuser, page: int, total_cars:
 🐎 Лошадиных сил: {power}
 ⏱ Разгон до 100 км/ч: {acceleration} сек
 
-💰 <b>Цена:</b> {tr(price)}$
-
-📸 <b>Фото:</b> [Нажмите чтобы посмотреть]({photo_url})
+💰 <b>Цена:</b> {tr(price)}$)
 
 <i>Для покупки нажмите кнопку "Купить"</i>
 """
@@ -143,7 +142,7 @@ async def show_car(message: types.Message, user: BFGuser, page: int, total_cars:
         )
 
 
-@antispam
+@antispam_earning
 async def autosalon_callback(call: types.CallbackQuery, user: BFGuser):
     """Обработчик нажатий на кнопки автосалона"""
     data = call.data.split('_')
