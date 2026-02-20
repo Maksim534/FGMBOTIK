@@ -6,7 +6,8 @@ async def auto_fuel():
     while True:
         try:
             cursor.execute("UPDATE property SET fuel = max(0, fuel - 1) WHERE car > 0 AND fuel > 0")
-            conn.commit()# 10 минут
+            conn.commit()
+            await asyncio.sleep(600)# 10 минут
 
 # Запуск в основном файле
 async def start_auto_fuel():
