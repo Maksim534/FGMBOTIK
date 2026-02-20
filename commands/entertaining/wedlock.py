@@ -12,24 +12,73 @@ from assets.gettime import get_ptime
 
 @antispam
 async def my_wedlock(message: types.message, user: BFGuser):
-	data = await get_wedlock(user.id)
-	win, lose = BFGconst.emj()
-	
-	if not data:
-		await message.answer(f'{user.url}, к сожалению вы не состоите в браке {lose}')
-		return
+    data = await get_wedlock(user.id)
+    win, lose = BFGconst.emj()
+    
+    if not data:
+        await message.answer(f'{user.url}, к сожалению вы не состоите в браке {lose}')
+        return
 
-	name1 = await get_name(data[0])
-	name2 = await get_name(data[1])
+    name1 = await get_name(data[0])
+    name2 = await get_name(data[1])
+    partner_id = data[0] if data[1] == user.id else data[1]
 
-	name1 = f'<a href="tg://openmessage?user_id={data[0]}">{name1}</a>'
-	name2 = f'<a href="tg://openmessage?user_id={data[1]}">{name2}</a>'
+    name1 = f'<a href="tg://openmessage?user_id={data[0]}">{name1}</a>'
+    name2 = f'<a href="tg://openmessage?user_id={data[1]}">{name2}</a>'
 
-	dt = datetime.fromtimestamp(data[2]).strftime('%d.%m.%y в %H:%M:%S')
-	dt_delta = get_ptime(data[2])
+    dt = datetime.fromtimestamp(data[2]).strftime('%d.%m.%y в %H:%M:%S')
+    dt_delta = get_ptime(data[2])
+    
+    # Получаем информацию об уровне отношений
+    level_info = await get_couple_level(user.id, partner_id)
+    current_level = level_info["level"]
+    total_sparks = level_info["total_sparks"]
+    level_name = LEVEL_NAMES[current_level]
+    
+    # Информация о следующем уровне
+    next_level = current_level + 1 if current_level < 5 else 5
+    sparks_to_next = (next_level * 10) - total_sparks if current_level < 5 else 0
+    
+    # Прогресс-бар
+    if current_level < 5:
+        progress = int((total_sparks - (current_level - 1) * 10) / 10 * 10)
+        progress_bar = "🟩" * progress + "⬜" * (10 - progress)
+    else:
+        progress_bar = "🟩" * 10
 
-	await message.answer(f'Брак между {name1} и {name2}:\n🗓 Зарегестрирован: {dt}\n👩‍❤️‍👨 Существует: {dt_delta}')
+    response = f"""💍 <b>Ваш брак</b> 💍
 
+{name1} 💞 {name2}
+
+🗓 Зарегистрирован: {dt}
+👩‍❤️‍👨 Существует: {dt_delta}
+
+📊 <b>Уровень отношений:</b> {level_name}
+🔥 <b>Всего искр:</b> {total_sparks}
+📈 <b>Прогресс:</b> {progress_bar}
+"""
+
+    if current_level < 5:
+        response += f"➡️ <b>До {LEVEL_NAMES[next_level]}:</b> {sparks_to_next} искр\n"
+    else:
+        response += f"🏆 <b>Максимальный уровень!</b>\n"
+    
+    response += f"""
+💬 <b>RP-команды для пары:</b>
+
+<code>.отн список</code> — все доступные действия
+<code>.мой уровень</code> — детальная статистика
+<code>.отн [действие]</code> — проявить чувства
+
+💡 <i>Как улучшать отношения?</i>
+• Используйте RP-команды в общих чатах
+• Каждое действие даёт 1-3 🔥 искры
+• Искры можно получать раз в 15 минут
+• Собирайте искры и открывайте новые действия!
+
+✨ <b>Доступно на {level_name}:</b> {', '.join(list(get_available_actions(current_level).keys())[:5])}..."""
+
+    await message.answer(response, parse_mode="HTML")
 
 @antispam
 async def wedlock(message: types.message, user: BFGuser):
