@@ -17,7 +17,6 @@ async def balance_cmd(message: types.Message, user: BFGuser):
         f"""
 👫 <b>Имя:</b> <code>{user.name}</code>
 💵 <b>Наличные:</b> <code>{user.balance.tr()}$</code>
-💴 <b>Йены:</b> <code>{user.yen.tr()}¥</code>
 🏦 <b>Банковский счет:</b> <code>{user.bank.tr()}$</code>
 🌐 <b>Криптовалюта:</b> <code>{user.btc.tr()}🌐</code>
 
