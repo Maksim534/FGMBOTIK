@@ -8,7 +8,7 @@ from commands.entertaining.earnings.tree.db import autotree
 from commands.basic.ore.db import auto_energy, auto_rate_btc_new
 from commands.basic.bank.db import autobank 
 from commands.db import reset_limit, update_ads_const
-from assets.auto_fuel import start_auto_fuel
+from assets.auto_fuel import auto_fuel 
 
 from bot import bot
 import config as cfg
@@ -32,7 +32,7 @@ async def autocommands() -> None:
 async def autocommands2() -> None:
     """Каждые 15 минут"""
     await auto_energy()
-    await start_auto_fuel()
+    await auto_fuel()
 
 
 async def autocommands3() -> None:
