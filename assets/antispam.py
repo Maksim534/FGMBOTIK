@@ -173,6 +173,54 @@ async def check_ban(user_id: int) -> bool:
         return True
     return False
 
+def antispam_carousel(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        call = None
+
+        for arg in args:
+            if isinstance(arg, types.CallbackQuery):
+                call = arg
+                break
+        if not call and 'call' in kwargs:
+            call = kwargs['call']
+
+        if not call:
+            raise ValueError("antispam_carousel: argument not found call: CallbackQuery")
+
+        uid = int(call.from_user.id)
+        mid = call.data.split("|")
+        mid = mid[1] if len(mid) > 1 else None
+
+        if mid and uid != int(mid):
+            await bot.answer_callback_query(call.id, text="❌ Это не Ваша кнопка!")
+            return
+
+        ban = await check_ban(uid)
+        if ban:
+            return
+
+        # Простая проверка на спам (1 секунда)
+        current_time = time.time()
+        last_time = getattr(wrapper, 'last_call', {}).get(uid, 0)
+        
+        if current_time - last_time < 1:
+            await bot.answer_callback_query(call.id, text="⏳ Не так быстро! (1 сек)")
+            return
+        
+        wrapper.last_call = getattr(wrapper, 'last_call', {})
+        wrapper.last_call[uid] = current_time
+
+        sig = inspect.signature(func)
+        if "user" in sig.parameters and "user" not in kwargs:
+            user = BFGuser(call=call)
+            await user.update()
+            kwargs["user"] = user
+
+        return await func(*args, **kwargs)
+
+    return wrapper
+
 
 async def new_earning_msg(chat_id: int, message_id: int) -> None:
     earning_msg[chat_id, message_id] = (0, time.time()-2)
