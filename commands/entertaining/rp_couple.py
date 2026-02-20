@@ -185,6 +185,7 @@ async def rp_couple_cmd(message: types.Message, user: BFGuser):
             level_up_text += f"\n✨ Новые действия: {', '.join(new_actions)}"
     
     # Финальное сообщение (действие показываем всегда)
+    response = f"💞"
     response += f"{action_text}"
     response += sparks_message
     response += level_up_text
