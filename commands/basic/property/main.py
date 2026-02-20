@@ -459,7 +459,7 @@ async def sell_helicopter(message: types.Message, user: BFGuser):
 
 @antispam
 async def sell_car(message: types.Message, user: BFGuser):
-    """Продажа автомобиля"""
+    """Продажа автомобиля (любого, включая эксклюзивные)"""
     win, lose = BFGconst.emj()
     
     if int(user.property.car) == 0:
@@ -468,16 +468,81 @@ async def sell_car(message: types.Message, user: BFGuser):
     
     car_id = user.property.car.get()
     
-    # Проверяем, эксклюзивная ли машина
+    # Определяем, откуда брать данные
     if car_id in exclusive_cars:
-        await message.answer(f"{user.url}, эксклюзивные машины нельзя продать! {lose}")
+        hdata = exclusive_cars.get(car_id)
+        car_type = "эксклюзивная"
+    else:
+        hdata = cars.get(car_id)
+        car_type = "обычная"
+    
+    if not hdata:
+        await message.answer(f"{user.url}, данные автомобиля не найдены {lose}")
         return
     
-    hdata = cars.get(car_id)
-    price = hdata[5] // 2  # Половина стоимости
+    # Цена продажи = половина стоимости (для эксклюзивных тоже)
+    # Для обычных машин цена в индексе 5, для эксклюзивных в индексе 5 тоже (если там цена)
+    price = hdata[5] // 2
     
+    # Спрашиваем подтверждение
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(text="✅ Да, продать", callback_data=f"confirm_sell_car_{user.id}"),
+        InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_sell")
+    )
+    
+    await message.answer(
+        f"{user.url}, вы действительно хотите продать {hdata[0]}?\n\n"
+        f"🚗 Тип: {car_type}\n"
+        f"💰 Цена продажи: {tr(price)}$\n"
+        f"⚠️ Это действие нельзя отменить!",
+        reply_markup=keyboard.as_markup()
+    )
+
+
+@antispam_earning
+async def confirm_sell_car(call: types.CallbackQuery, user: BFGuser):
+    """Подтверждение продажи автомобиля"""
+    target_user_id = int(call.data.split('_')[3])
+    
+    if target_user_id != user.id:
+        await call.answer("Это не ваша машина!", show_alert=True)
+        return
+    
+    if int(user.property.car) == 0:
+        await call.answer("У вас уже нет машины!", show_alert=True)
+        return
+    
+    car_id = user.property.car.get()
+    
+    # Определяем данные машины
+    if car_id in exclusive_cars:
+        hdata = exclusive_cars.get(car_id)
+    else:
+        hdata = cars.get(car_id)
+    
+    if not hdata:
+        await call.answer("Данные машины не найдены!", show_alert=True)
+        return
+    
+    # Цена продажи
+    price = hdata[5] // 2
+    
+    # Продаём машину (функция db.sell_property уже есть)
     await db.sell_property(user.id, "car", price)
-    await message.answer(f"{user.url}, вы продали автомобиль за {tr(price)}$ {win}")
+    
+    await call.message.edit_text(
+        f"✅ {user.url}, вы продали {hdata[0]} за {tr(price)}$!",
+        parse_mode="HTML"
+    )
+    await call.answer("Машина продана!", show_alert=True)
+
+
+@antispam_earning
+async def cancel_sell(call: types.CallbackQuery):
+    """Отмена продажи"""
+    await call.message.edit_text("❌ Продажа отменена.")
+    await call.answer()
 
 
 @antispam
