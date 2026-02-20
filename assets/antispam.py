@@ -200,12 +200,12 @@ def antispam_carousel(func):
         if ban:
             return
 
-        # Простая проверка на спам (1 секунда)
+        # Простая проверка на спам (0.5 секунды для плавного листания)
         current_time = time.time()
         last_time = getattr(wrapper, 'last_call', {}).get(uid, 0)
         
-        if current_time - last_time < 1:
-            await bot.answer_callback_query(call.id, text="⏳ Не так быстро! (1 сек)")
+        if current_time - last_time < 0.5:
+            await bot.answer_callback_query(call.id, text="⏳ Не так быстро!")
             return
         
         wrapper.last_call = getattr(wrapper, 'last_call', {})
