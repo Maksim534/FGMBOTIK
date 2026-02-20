@@ -27,9 +27,9 @@ phones = {
     9: ("iPhone X", "https://imgfoto.host/i/pIjHn9", 4500000),
     10: ("Samsung Galaxy S23 Ultra", "https://imgfoto.host/i/pIZc3n",7500000),
     11: ("iPhone 13", "https://imgfoto.host/i/pILTNk", 8700000),
-    12: ("Samsung Galaxy Z Fold5", "https://imgfoto.host/i/pI0ORA", 9500000),
-    13: ("iPhone 17 Pro Max", "https://imgfoto.host/i/pISAM1", 15000000),
-    14: ("Diamond Crypto Smartphone", "https://imgfoto.host/i/pIH4qn", 19000000),
+    12: ("Samsung Galaxy Z Fold5", "https://i.postimg.cc/j5dPZvpP/i.jpg", 9500000),
+    13: ("iPhone 17 Pro Max", "https://i.postimg.cc/QMSW91FW/Zg8dfjpbk7w2ub6riq34h-W.jpg", 15000000),
+    14: ("Diamond Crypto Smartphone", "https://i.postimg.cc/JnDJfthj/Ancort-diamond-crypto-smartphone-99.jpg", 19000000),
 
 }
 
