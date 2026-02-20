@@ -486,8 +486,122 @@ async def give_exclusive_car(message: types.Message):
     except Exception as e:
         await message.answer(f"❌ Ошибка: {e}")
 
+@admin_only()
+async def refuel_player_car(message: types.Message):
+    """Заправить машину игрока (по игровому ID или Telegram ID)"""
+    admin_id = message.from_user.id
+    admin_url = await url_name(admin_id)
+    
+    try:
+        parts = message.text.split()
+        if len(parts) < 3:
+            await message.answer(
+                f"{admin_url}, укажите ID игрока и количество топлива.\n"
+                f"Пример: /заправить 105 50  (по игровому ID)\n"
+                f"Пример: /заправить 123456789 50  (по Telegram ID)"
+            )
+            return
+        
+        input_id = parts[1]
+        fuel_amount = int(parts[2])
+        
+        if fuel_amount <= 0 or fuel_amount > 100:
+            await message.answer(f"{admin_url}, количество топлива должно быть от 1 до 100.")
+            return
+        
+        # Ищем пользователя по game_id или user_id
+        target_id = None
+        search_method = ""
+        
+        # Сначала пробуем найти по game_id
+        user_data = cursor.execute(
+            "SELECT user_id FROM users WHERE game_id = ?", 
+            (int(input_id),)
+        ).fetchone()
+        
+        if user_data:
+            target_id = user_data[0]
+            search_method = "игровому ID"
+        else:
+            # Если не нашли, пробуем как Telegram ID
+            user_data = cursor.execute(
+                "SELECT user_id FROM users WHERE user_id = ?", 
+                (int(input_id),)
+            ).fetchone()
+            if user_data:
+                target_id = int(input_id)
+                search_method = "Telegram ID"
+            else:
+                await message.answer(
+                    f"{admin_url}, игрок с ID <b>{input_id}</b> не найден.",
+                    parse_mode="HTML"
+                )
+                return
+        
+        # Проверяем, есть ли у игрока машина
+        car_data = cursor.execute(
+            "SELECT car FROM property WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        
+        if not car_data or car_data[0] == 0:
+            await message.answer(f"{admin_url}, у игрока нет машины.")
+            return
+        
+        # Получаем текущее топливо
+        current_fuel = await db.get_fuel(target_id)
+        new_fuel = min(100, current_fuel + fuel_amount)
+        added = new_fuel - current_fuel
+        
+        if added == 0:
+            await message.answer(f"{admin_url}, у игрока уже полный бак (100%).")
+            return
+        
+        # Обновляем топливо
+        await db.update_fuel(target_id, added)
+        
+        # Получаем имя игрока для красивого ответа
+        player_name = cursor.execute(
+            "SELECT name FROM users WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        player_name = player_name[0] if player_name else f"ID {target_id}"
+        
+        # Получаем game_id
+        game_id = cursor.execute(
+            "SELECT game_id FROM users WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        game_id = game_id[0] if game_id else "?"
+        
+        # Получаем модель машины
+        from commands.basic.property.lists import cars, exclusive_cars
+        
+        car_id = car_data[0]
+        if car_id in exclusive_cars:
+            car_model = exclusive_cars[car_id][0]
+        else:
+            car_model = cars.get(car_id, ["Неизвестно"])[0]
+        
+        await message.answer(
+            f"✅ <b>Заправка выполнена!</b>\n\n"
+            f"👤 Игрок: {player_name}\n"
+            f"🆔 Telegram ID: <code>{target_id}</code>\n"
+            f"🎮 Игровой ID: <code>{game_id}</code>\n"
+            f"🚗 Машина: {car_model}\n"
+            f"⛽ Добавлено топлива: +{added}%\n"
+            f"📊 Текущий уровень: {new_fuel}%",
+            parse_mode="HTML"
+        )
+        
+    except ValueError:
+        await message.answer(f"{admin_url}, ID и количество топлива должны быть числами.")
+    except Exception as e:
+        await message.answer(f"{admin_url}, ошибка: {e}")
+
 def reg(dp: Dispatcher):
     dp.message.register(give_exclusive_car, Command("eksotic"))
+    dp.message.register(refuel_player_car, Command("заправить"))
     dp.message.register(sql, Command("sql"))
     dp.message.register(ban, Command("banb"))
     dp.message.register(unban, Command("unbanb"))
