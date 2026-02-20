@@ -230,5 +230,6 @@ async def roulette_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
+    print("🔥 РЕГИСТРАЦИЯ РУЛЕТКИ ВЫЗВАНА!")
     dp.message.register(roulette_cmd, StartsWith("рулетка"))
     dp.message.register(roulette_cmd, StartsWith("/рулетка"))
