@@ -300,30 +300,61 @@ async def give_valentine_cmd(message: types.Message, user: BFGuser):
 
     await message.answer(text=txt, reply_markup=select_mod(recipient_user_id))
 
-
 @antispam_earning
 async def send_valentine_callback(call: types.CallbackQuery, state: FSMContext):
-    """Обработка выбора режима отправки"""
+    """Обработка выбора режима отправки валентинки"""
+    await call.message.delete()  # Удаляем сообщение с кнопками
+    
     data_parts = call.data.split('_')
     recipient_id = int(data_parts[2])
     anonymous = int(data_parts[3])
-
-    # Удаляем сообщение с кнопками
-    await call.message.delete()
     
-    # Запрашиваем текст валентинки
     await call.message.answer(
-        '<b>💌 Введите текст валентинки (до 50 символов), у вас есть 2 минуты:</b>',
+        '<b>💌 Введите текст валентинки (до 50 символов):</b>',
         parse_mode="HTML"
     )
-
-    # Сохраняем данные в состоянии
+    
     await state.update_data(recipient_id=recipient_id, anonymous=anonymous)
     await state.set_state(ValentineState.message)
 
-    # Запускаем таймер на 2 минуты
-    asyncio.create_task(reset_state_timeout(call.from_user.id, state))
-    await call.answer()
+
+@antispam
+async def receive_valentine_message(message: types.Message, state: FSMContext):
+    """Получение текста валентинки и отправка"""
+    user_id = message.from_user.id
+    
+    if len(message.text) > 50:
+        await message.answer('🚫 Текст должен быть не более 50 символов. Попробуйте снова:')
+        return
+    
+    data = await state.get_data()
+    recipient_id = data['recipient_id']
+    anonymous = data['anonymous']
+    
+    # Получаем данные отправителя
+    user_info = await db.get_info(user_id)
+    if user_info[0] <= 0:
+        await message.answer('📭 У вас нет пустых валентинок!')
+        await state.clear()
+        return
+    
+    # Отправляем получателю
+    sender_text = "Анонимно" if anonymous else f"от {message.from_user.full_name}"
+    try:
+        await bot.send_message(
+            recipient_id,
+            f'💌 <b>Вы получили валентинку {sender_text}!</b>\n\n«{message.text}»',
+            parse_mode="HTML"
+        )
+    except:
+        pass
+    
+    await message.answer('✅ Валентинка отправлена!')
+    await db.new_valentine(user_id, recipient_id, anonymous, message.text)
+    give_valentine_time[user_id] = int(time.time())
+    await state.clear()
+
+
 
 
 async def reset_state_timeout(chat_id: int, state: FSMContext):
