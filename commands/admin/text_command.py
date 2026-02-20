@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from aiogram import types, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from commands.db import conn
 
 from assets.transform import transform_int as tr
 from assets.antispam import admin_only
