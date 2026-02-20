@@ -35,11 +35,11 @@ MODULES = [
     'commands.basic.bank.main',
     'commands.entertaining.case.main',
     'commands.entertaining.earnings.garden.potions',
+    'commands.event.february',
     'commands.basic.transfer',
     'commands.basic.rpmod',
     'commands.main',
     'commands.moderation',
-    'commands.event.february',
 ]
 
 
