@@ -95,4 +95,5 @@ async def rp_couple_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
+    print("🔥 РЕГИСТРАЦИЯ RP_COUPLE ВЫЗВАНА!")
     dp.message.register(rp_couple_cmd, lambda msg: msg.text and msg.text.startswith(".отн "))
