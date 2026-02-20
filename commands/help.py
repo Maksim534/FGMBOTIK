@@ -1,6 +1,6 @@
 from aiogram import types, Dispatcher, F
 from aiogram.filters import Command
-from assets.antispam import antispam, antispam_earning, new_earning_msg
+from assets.antispam import antispam, antispam_earning, new_earning_msg, admin_only  # 👈 ИСПРАВЛЕНО
 from filters.custom import TextIn, StartsWith
 from user import BFGuser
 from assets import keyboards as kb
