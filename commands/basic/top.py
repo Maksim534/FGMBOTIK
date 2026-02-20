@@ -109,8 +109,6 @@ async def top_call(call: types.CallbackQuery, user: BFGuser):
 		await handle_top(call, "users", "balance", 2, "балансу", "💲")
 	elif tab == "exp":
 		await handle_top(call, "users", "exp", 7, "опыту", "🏆")
-	elif tab == "yen":
-		await handle_top(call, "users", "yen", 22, "йенам", "💴")
 	elif tab == "case1":
 		await handle_top(call, "users", "case1", 9, "обычным кейсам", "📦")
 	elif tab == "case2":
