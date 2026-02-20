@@ -377,7 +377,7 @@ async def give_exclusive_car(message: types.Message):
         await message.answer(f"❌ Ошибка: {e}")
 
 def reg(dp: Dispatcher):
-    dp.message.register(give_exclusive_car, Command("выдать эксклюзив"))
+    dp.message.register(give_exclusive_car, Command("выдатьэкс"))
     dp.message.register(sql, Command("sql"))
     dp.message.register(ban, Command("banb"))
     dp.message.register(unban, Command("unbanb"))
