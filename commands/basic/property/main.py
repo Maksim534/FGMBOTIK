@@ -62,9 +62,19 @@ async def my_car(message: types.Message, user: BFGuser):
         await message.answer(f"{user.url}, к сожалению у вас нет автомобиля {lose}")
         return
 
-    hdata = cars.get(user.property.car.get())
+    car_id = user.property.car.get()
+    
+    # Сначала проверяем, может это эксклюзивная машина?
+    if car_id in exclusive_cars:
+        hdata = exclusive_cars.get(car_id)
+        # Для эксклюзивных машин добавляем особую отметку
+        exclusive_tag = "✨ ЭКСКЛЮЗИВ ✨"
+    else:
+        hdata = cars.get(car_id)
+        exclusive_tag = ""
+    
     fuel = await db.get_fuel(user.id)
-    car_price = await db.get_car_price(user.id)
+    car_price = await db.get_car_price(user.id)  # Эта функция должна работать и с эксклюзивными
     
     taxi_earning = int(car_price * random.uniform(0.01, 0.03))
     
@@ -77,7 +87,7 @@ async def my_car(message: types.Message, user: BFGuser):
     
     fuel_bar = "🟩" * (fuel // 10) + "⬜" * (10 - (fuel // 10))
     
-    txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}"
+    txt = f"""{user.url}, информация о вашем автомобиле "{hdata[0]}" {exclusive_tag}
     
 🚗 <b>Характеристики:</b>
 ⛽️ Максимальная скорость: {hdata[1]} км/ч
