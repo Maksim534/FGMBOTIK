@@ -15,13 +15,11 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 async def balance_cmd(message: types.Message, user: BFGuser):
     await message.answer(
         f"""
-<pre>
 👫 Имя: {user.name}
 💵 Наличные: {user.balance.tr():>15}$
 💴 Йены: {user.yen.tr():>19}¥
 🏦 Банковский счет: {user.bank.tr():>11}$
 🌐 Криптовалюта: {user.btc.tr():>13}🌐
-</pre>
 
 {BFGconst.ads}
 """,
