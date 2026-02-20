@@ -79,8 +79,6 @@ async def creat_help_msg(profil, user: BFGuser):
 
 {BFGconst.ads}
 """
-    await message.answer(text, parse_mode="HTML")
-
     return text
 
 
