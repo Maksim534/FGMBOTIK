@@ -22,8 +22,6 @@ async def autocommands() -> None:
     try:
         await autobusiness()
         await autogarden()
-        await autogen()
-        await autotree()
         await autoferma()
     except Exception as e:
         print(f'error autocommands: {e}')
