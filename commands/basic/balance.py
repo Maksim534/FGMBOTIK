@@ -63,7 +63,7 @@ def balance_keyboard(user_id: int) -> InlineKeyboardMarkup:
 async def creat_help_msg(profil, user: BFGuser):
     profil = profil.format(user.url)
 
-    text = f"""{profil}, ваш профиль:
+    text = f"""{profil}
 
 🆔 <b>ID:</b> {user.game_id}
 👤 <b>Имя:</b> {user.name}
