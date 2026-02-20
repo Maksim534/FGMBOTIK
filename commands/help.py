@@ -293,4 +293,4 @@ def reg(dp: Dispatcher):
     dp.message.register(help_game_msg, TextIn("игры"))
     
     dp.callback_query.register(help_category_callback, StartsWith("help_"))
-    dp.callback_query.register(help_back_callback, StartsWith("help_back"))
+    dp.callback_query.register(help_back_callback, F.data == "help_back")
