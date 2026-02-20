@@ -5,6 +5,8 @@ from commands.basic.property.helicopter_salon import reg as heli_reg
 from commands.basic.property.house_salon import reg as house_salon_reg
 from commands.basic.property.phone_salon import reg as phone_salon_reg
 from commands.basic.property.plane_salon import reg as plane_salon_reg
+from commands.basic.property.yacht_salon import reg as yacht_salon_reg
+
 
 import commands.basic.property.db as db
 from assets.antispam import antispam
@@ -712,6 +714,7 @@ def reg(dp: Dispatcher):
     house_salon_reg(dp)
     phone_salon_reg(dp)
     plane_salon_reg(dp)
+    yacht_salon_reg(dp)
     # Колбэки для автомобиля
     dp.message.register(helicopters_list, TextIn("вертолеты", "вертолёты"))
     dp.message.register(cars_list, TextIn("машины"))
