@@ -134,14 +134,16 @@ async def rp_couple_cmd(message: types.Message, user: BFGuser):
         return
     
     # Получаем имена
-    user_name = message.from_user.full_name
+# Получаем игровые имена из базы данных
+    user_name = await get_name(user.id)  # игровое имя отправителя
+    partner_name = await get_name(partner_id)  # игровое имя партнёра
     partner_url = await url_name(partner_id)
     
     # Формируем текст действия (всегда показываем)
     action_text = available_actions[action].format(
         f"<a href='tg://user?id={user.id}'>{user_name}</a>",
-        partner_url
-    )
+        f"<a href='tg://user?id={partner_id}'>{partner_name}</a>"
+)
     
     # Проверка наличия партнёра в чате
     partner_in_chat = await is_user_in_chat(message.chat.id, partner_id)
