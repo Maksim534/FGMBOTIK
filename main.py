@@ -31,6 +31,7 @@ MODULES = [
     'commands.clans.main',
     'commands.games.main',
     'commands.games.miracles',
+    'commands.games.tictactoe',
     'commands.games.refferals',
     'commands.basic.bank.main',
     'commands.entertaining.case.main',
