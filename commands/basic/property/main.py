@@ -261,6 +261,110 @@ async def my_plane(message: types.Message, user: BFGuser):
     await message.answer_photo(photo=hdata[4], caption=txt)
 
 
+@antispam
+async def sell_helicopter(message: types.Message, user: BFGuser):
+    """Продажа вертолёта"""
+    win, lose = BFGconst.emj()
+    
+    if int(user.property.helicopter) == 0:
+        await message.answer(f"{user.url}, у вас нет вертолёта для продажи {lose}")
+        return
+    
+    hdata = helicopters.get(user.property.helicopter.get())
+    price = hdata[4] // 2  # Половина стоимости
+    
+    await db.sell_property(user.id, "helicopter", price)
+    await message.answer(f"{user.url}, вы продали вертолёт за {tr(price)}$ {win}")
+
+
+@antispam
+async def sell_car(message: types.Message, user: BFGuser):
+    """Продажа автомобиля"""
+    win, lose = BFGconst.emj()
+    
+    if int(user.property.car) == 0:
+        await message.answer(f"{user.url}, у вас нет автомобиля для продажи {lose}")
+        return
+    
+    car_id = user.property.car.get()
+    
+    # Проверяем, эксклюзивная ли машина
+    if car_id in exclusive_cars:
+        await message.answer(f"{user.url}, эксклюзивные машины нельзя продать! {lose}")
+        return
+    
+    hdata = cars.get(car_id)
+    price = hdata[5] // 2  # Половина стоимости
+    
+    await db.sell_property(user.id, "car", price)
+    await message.answer(f"{user.url}, вы продали автомобиль за {tr(price)}$ {win}")
+
+
+@antispam
+async def sell_house(message: types.Message, user: BFGuser):
+    """Продажа дома"""
+    win, lose = BFGconst.emj()
+    
+    if int(user.property.house) == 0:
+        await message.answer(f"{user.url}, у вас нет дома для продажи {lose}")
+        return
+    
+    hdata = house.get(user.property.house.get())
+    price = hdata[2] // 2  # Половина стоимости
+    
+    await db.sell_property(user.id, "house", price)
+    await message.answer(f"{user.url}, вы продали дом за {tr(price)}$ {win}")
+
+
+@antispam
+async def sell_phone(message: types.Message, user: BFGuser):
+    """Продажа телефона"""
+    win, lose = BFGconst.emj()
+    
+    if int(user.property.phone) == 0:
+        await message.answer(f"{user.url}, у вас нет телефона для продажи {lose}")
+        return
+    
+    hdata = phones.get(user.property.phone.get())
+    price = hdata[2] // 2  # Половина стоимости
+    
+    await db.sell_property(user.id, "phone", price)
+    await message.answer(f"{user.url}, вы продали телефон за {tr(price)}$ {win}")
+
+
+@antispam
+async def sell_yacht(message: types.Message, user: BFGuser):
+    """Продажа яхты"""
+    win, lose = BFGconst.emj()
+    
+    if int(user.property.yahta) == 0:
+        await message.answer(f"{user.url}, у вас нет яхты для продажи {lose}")
+        return
+    
+    hdata = yahts.get(user.property.yahta.get())
+    price = hdata[4] // 2  # Половина стоимости
+    
+    await db.sell_property(user.id, "yahta", price)
+    await message.answer(f"{user.url}, вы продали яхту за {tr(price)}$ {win}")
+
+
+@antispam
+async def sell_plane(message: types.Message, user: BFGuser):
+    """Продажа самолёта"""
+    win, lose = BFGconst.emj()
+    
+    if int(user.property.plane) == 0:
+        await message.answer(f"{user.url}, у вас нет самолёта для продажи {lose}")
+        return
+    
+    hdata = planes.get(user.property.plane.get())
+    price = hdata[5] // 2  # Половина стоимости
+    
+    await db.sell_property(user.id, "plane", price)
+    await message.answer(f"{user.url}, вы продали самолёт за {tr(price)}$ {win}")
+
+
+
 def reg(dp: Dispatcher):
     # Регистрация салонов
     autosalon_reg(dp)
@@ -277,6 +381,14 @@ def reg(dp: Dispatcher):
     dp.message.register(my_house, TextIn("мой дом"))
     dp.message.register(my_yahta, TextIn("моя яхта"))
     dp.message.register(my_plane, TextIn("мой самолёт"))
+
+    #продажа
+    dp.message.register(sell_helicopter, TextIn("продать вертолёт"))
+    dp.message.register(sell_car, TextIn("продать машину"))
+    dp.message.register(sell_house, TextIn("продать дом"))
+    dp.message.register(sell_phone, TextIn("продать телефон"))
+    dp.message.register(sell_yacht, TextIn("продать яхту"))
+    dp.message.register(sell_plane, TextIn("продать самолёт"))
     
     # Команды для автомобиля
     dp.message.register(refuel_cmd, StartsWith("заправить"))
