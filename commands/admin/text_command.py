@@ -12,6 +12,8 @@ from commands.admin import db
 from commands.db import url_name, cursor
 from filters.custom import StartsWith
 from user import BFGuser
+from commands.basic.property.db import get_fuel, update_fuel
+from commands.basic.property.lists import cars, exclusive_cars
 
 
 @admin_only()
@@ -548,8 +550,8 @@ async def refuel_player_car(message: types.Message):
             await message.answer(f"{admin_url}, у игрока нет машины.")
             return
         
-        # Получаем текущее топливо
-        current_fuel = await db.get_fuel(target_id)
+        # Получаем текущее топливо (используем импортированную функцию)
+        current_fuel = await get_fuel(target_id)
         new_fuel = min(100, current_fuel + fuel_amount)
         added = new_fuel - current_fuel
         
@@ -557,10 +559,10 @@ async def refuel_player_car(message: types.Message):
             await message.answer(f"{admin_url}, у игрока уже полный бак (100%).")
             return
         
-        # Обновляем топливо
-        await db.update_fuel(target_id, added)
+        # Обновляем топливо (используем импортированную функцию)
+        await update_fuel(target_id, added)
         
-        # Получаем имя игрока для красивого ответа
+        # Получаем имя игрока
         player_name = cursor.execute(
             "SELECT name FROM users WHERE user_id = ?", 
             (target_id,)
@@ -575,8 +577,6 @@ async def refuel_player_car(message: types.Message):
         game_id = game_id[0] if game_id else "?"
         
         # Получаем модель машины
-        from commands.basic.property.lists import cars, exclusive_cars
-        
         car_id = car_data[0]
         if car_id in exclusive_cars:
             car_model = exclusive_cars[car_id][0]
