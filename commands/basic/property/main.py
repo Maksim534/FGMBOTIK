@@ -1,6 +1,7 @@
 from aiogram import types, Dispatcher
 
 from commands.basic.property.autosalon import reg as autosalon_reg
+from commands.basic.property.helicopter_salon import reg as heli_reg
 import commands.basic.property.db as db
 from assets.antispam import antispam
 from commands.basic.property.lists import *
@@ -11,6 +12,7 @@ import random
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 import config as cfg
+
 
 # Добавьте эти импорты в начало файла
 from assets.antispam import antispam_earning
@@ -701,6 +703,7 @@ async def sell_plane(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
+    heli_reg(dp)
     autosalon_reg(dp)
     # Колбэки для автомобиля
     dp.message.register(helicopters_list, TextIn("вертолеты", "вертолёты"))
