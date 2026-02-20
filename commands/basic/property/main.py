@@ -1,5 +1,6 @@
 from aiogram import types, Dispatcher
 
+from commands.basic.property.autosalon import reg as autosalon_reg
 import commands.basic.property.db as db
 from assets.antispam import antispam
 from commands.basic.property.lists import *
@@ -699,7 +700,8 @@ async def sell_plane(message: types.Message, user: BFGuser):
     await db.sell_property(user.user_id, "plane", summ)
 
 
-def reg(dp: Dispatcher):    
+def reg(dp: Dispatcher):
+    autosalon_reg(dp)
     # Колбэки для автомобиля
     dp.message.register(helicopters_list, TextIn("вертолеты", "вертолёты"))
     dp.message.register(cars_list, TextIn("машины"))
