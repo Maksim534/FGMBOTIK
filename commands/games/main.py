@@ -2,6 +2,7 @@ import random
 import asyncio
 import time
 from bot import bot
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import types, Dispatcher
 from assets.transform import transform_int as tr
 from commands.games.db import *
