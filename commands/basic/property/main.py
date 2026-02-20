@@ -3,6 +3,7 @@ from aiogram import types, Dispatcher
 from commands.basic.property.autosalon import reg as autosalon_reg
 from commands.basic.property.helicopter_salon import reg as heli_reg
 from commands.basic.property.house_salon import reg as house_salon_reg
+from commands.basic.property.phone_salon import reg as phone_salon_reg
 
 import commands.basic.property.db as db
 from assets.antispam import antispam
@@ -708,6 +709,7 @@ def reg(dp: Dispatcher):
     heli_reg(dp)
     autosalon_reg(dp)
     house_salon_reg(dp)
+    phone_salon_reg(dp)
     # Колбэки для автомобиля
     dp.message.register(helicopters_list, TextIn("вертолеты", "вертолёты"))
     dp.message.register(cars_list, TextIn("машины"))
