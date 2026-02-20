@@ -221,6 +221,42 @@ def antispam_carousel(func):
 
     return wrapper
 
+def moderation(func):
+    async def wrapper(message: types.Message, user: BFGuser):
+        if message.forward_from:
+            return
+
+        if message.chat.type != "supergroup":
+            await message.answer("👇 <b>Эту команду можно использовать только в чатах.</b>")
+            return
+
+        # Проверяем, что пользователь - администратор
+        member = await message.bot.get_chat_member(message.chat.id, message.from_user.id)
+        if member.status not in ["creator", "administrator"]:
+            await message.reply(f"😨 <b>Эту команду могут использовать только администраторы чата.</b>")
+            return
+
+        # Проверяем права бота
+        bot_info = await message.chat.get_member(user_id=message.bot.id)
+        text = ""
+
+        if not isinstance(bot_info, (ChatMemberOwner, ChatMemberAdministrator)):
+            await message.reply("⚠️ <b>Боту необходимы права администратора в чате.</b>")
+            return
+
+        if not bot_info.can_delete_messages:
+            text += "- 🗑️ Удаление сообщений\n"
+        if not bot_info.can_restrict_members:
+            text += "- 📛 Блокировка пользователей\n"
+            
+        if text:
+            await message.reply(f"⚠️ <b>Боту необходимы права администратора в чате:</b>\n\n{text}")
+            return
+
+        await func(message, user)
+
+    return wrapper
+
 
 async def new_earning_msg(chat_id: int, message_id: int) -> None:
     earning_msg[chat_id, message_id] = (0, time.time()-2)
