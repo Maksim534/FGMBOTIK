@@ -14,6 +14,7 @@ from user import BFGuser, BFGconst
 from assets.keyboards.game import kwak_game
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from commands.basic.property.lists import exclusive_cars, cars
+import config as cfg
 
 last_roulette_time = {}
 
