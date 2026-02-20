@@ -32,16 +32,27 @@ actions_pattern = "|".join(re.escape(key) for key in COUPLE_ACTIONS.keys())
 pattern = rf"^\.отн\s+({actions_pattern})$"
 
 
+async def is_user_in_chat(chat_id: int, user_id: int) -> bool:
+    """Проверяет, находится ли пользователь в чате"""
+    try:
+        member = await bot.get_chat_member(chat_id, user_id)
+        return member.status not in ["left", "kicked"]
+    except:
+        return False
+
+
 @antispam
 async def rp_couple_cmd(message: types.Message, user: BFGuser):
-    print(f"🔥 Текст сообщения: '{message.text}'")
-    print(f"🔍 Начинается с .отн: {message.text.startswith('.отн')}")
-    """Обработка RP-команд для пары (только в ЛС)"""
+    """Обработка RP-команд для пары (только в общих чатах)"""
     win, lose = BFGconst.emj()
     
-    # Проверяем, что команда вызвана в личных сообщениях
-    if message.chat.type != "private":
-        await message.answer(f"{user.url}, RP-команды для пары работают только в личных сообщениях бота! 🤫")
+    # Проверяем, что команда вызвана в групповом чате
+    if message.chat.type == "private":
+        await message.answer(
+            f"{user.url}, RP-команды для пары работают только в общих чатах! 🌍\n\n"
+            f"Приходите в общий чат со своей половинкой и проявляйте чувства там! 💕",
+            parse_mode="HTML"
+        )
         return
     
     # Проверяем, состоит ли пользователь в браке
@@ -61,9 +72,9 @@ async def rp_couple_cmd(message: types.Message, user: BFGuser):
     if not match:
         return
     
-    action = match.group(1)  # Извлекаем действие (обнять, поцеловать и т.д.)
+    action = match.group(1)
     
-    # Получаем имена для красивого отображения
+    # Получаем имена
     user_name = message.from_user.full_name
     partner_name = await get_name(partner_id)
     partner_url = await url_name(partner_id)
@@ -74,26 +85,43 @@ async def rp_couple_cmd(message: types.Message, user: BFGuser):
         partner_url
     )
     
-    # Отправляем уведомление партнёру в ЛС
-    try:
-        await bot.send_message(
-            partner_id,
-            f"💌 <b>Романтическое уведомление</b>\n\n"
-            f"{action_text}\n\n"
-            f"<i>Ответь своей половинке взаимностью через .отн [действие]</i>",
+    # Проверяем, есть ли партнёр в этом чате
+    partner_in_chat = await is_user_in_chat(message.chat.id, partner_id)
+    
+    if partner_in_chat:
+        # Если партнёр в чате - отправляем сообщение
+        await message.answer(
+            f"💞 <b>Романтический момент</b> 💞\n\n"
+            f"{action_text}",
             parse_mode="HTML"
         )
-    except Exception as e:
-        print(f"Не удалось отправить уведомление партнёру {partner_id}: {e}")
+    else:
+        # Если партнёра нет в чате
+        await message.answer(
+            f"{user.url}, вашей половинки нет в этом чате! 😢\n\n"
+            f"💭 Пригласи {partner_name} в этот чат, чтобы проявлять свои чувства!",
+            parse_mode="HTML"
+        )
+
+
+@antispam
+async def rp_couple_list_cmd(message: types.Message, user: BFGuser):
+    """Показывает список доступных RP-команд для пары"""
+    win, lose = BFGconst.emj()
     
-    # Отправляем подтверждение отправителю
+    actions_list = "\n".join([f"  • <code>.отн {action}</code>" for action in COUPLE_ACTIONS.keys()])
+    
     await message.answer(
-        f"✅ <b>Действие отправлено!</b>\n\n"
-        f"{action_text}",
+        f"{user.url}, <b>доступные RP-команды для пары:</b>\n\n"
+        f"{actions_list}\n\n"
+        f"📍 <i>Команды работают только в общих чатах</i>\n"
+        f"📍 <i>Оба партнёра должны быть в одном чате</i>\n"
+        f"💡 <i>Пример: .отн обнять</i>\n"
+        f"💕 <i>Команды работают только если у вас есть пара!</i>",
         parse_mode="HTML"
     )
 
 
 def reg(dp: Dispatcher):
-    print("🔥 РЕГИСТРАЦИЯ RP_COUPLE ВЫЗВАНА!")
-    dp.message.register(rp_couple_cmd, lambda msg: msg.text and msg.text.startswith(".отн "))
+    dp.message.register(rp_couple_list_cmd, lambda msg: msg.text and msg.text.strip() == ".отн список")
+    dp.message.register(rp_couple_cmd, lambda msg: msg.text and msg.text.startswith(".отн ") and not msg.text.strip() == ".отн список")
