@@ -1,5 +1,7 @@
 from commands.db import conn, cursor
 from datetime import datetime
+import time
+from commands.db import conn, cursor
 
 
 async def get_wedlock(user_id: int) -> tuple:
@@ -27,19 +29,23 @@ async def divorce_db(user_id: int) -> None:
     cursor.execute('DELETE FROM wedlock WHERE user1 = ? OR user2 = ?', (user_id, user_id))
     conn.commit()
 
-# Добавьте этот код в существующий файл db.py
-
-# Таблица для хранения уровней отношений
 cursor.execute('''CREATE TABLE IF NOT EXISTS couple_levels (
     couple_id TEXT PRIMARY KEY,  -- составной ключ вида "user1_user2" (меньший ID первым)
     level INTEGER DEFAULT 1,
     sparks INTEGER DEFAULT 0,
     total_sparks INTEGER DEFAULT 0,
-    last_action INTEGER,
-    FOREIGN KEY (user1) REFERENCES users (user_id),
-    FOREIGN KEY (user2) REFERENCES users (user_id)
+    last_action INTEGER
 )''')
 conn.commit()
+
+# Названия уровней
+LEVEL_NAMES = {
+    1: "👋 Знакомые",
+    2: "🤝 Друзья", 
+    3: "💕 Близкие",
+    4: "🔥 Интрижка",
+    5: "💞 Отношения"
+}
 
 async def get_couple_key(user1: int, user2: int) -> str:
     """Создаёт ключ для пары (меньший ID первым)"""
@@ -75,7 +81,7 @@ async def add_sparks(user1: int, user2: int, amount: int = 1) -> dict:
         new_sparks = sparks + amount
         new_total = total_sparks + amount
         
-        # Определяем новый уровень
+        # Определяем новый уровень (каждые 10 искр)
         new_level = level
         if new_total >= 40 and level < 5:
             new_level = 5
@@ -113,21 +119,4 @@ async def add_sparks(user1: int, user2: int, amount: int = 1) -> dict:
         "sparks": amount,
         "total": new_total if existing else amount
     }
-
-# Таблица уровней
-LEVEL_NAMES = {
-    1: "👋 Знакомые",
-    2: "🤝 Друзья", 
-    3: "💕 Близкие",
-    4: "🔥 Интрижка",
-    5: "💞 Отношения"
-}
-
-LEVEL_REQUIREMENTS = {
-    1: 0,
-    2: 10,
-    3: 20,
-    4: 30,
-    5: 40
-}
     
