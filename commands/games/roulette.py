@@ -229,4 +229,5 @@ async def roulette_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-    dp.message.register(roulette_cmd, lambda msg: msg.text and msg.text.lower() == "рулетка")
+    dp.message.register(roulette_cmd, StartsWith("рулетка"))
+    dp.message.register(roulette_cmd, StartsWith("/рулетка"))
