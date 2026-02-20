@@ -59,28 +59,6 @@ async def set_name_cmd(message: types.Message, user: BFGuser):
     await message.answer(f'Ваш ник изменён на «{name}»')
 
 
-@antispam
-async def kazna_cmd(message: types.Message, user: BFGuser):
-    await message.answer(f'💰 На данный момент казна штата составляет 98.894.419.531.599.545$')
-
-
-@antispam
-async def try_luck_cmd(message: types.Message, user: BFGuser):
-    user_id = message.from_user.id
-    bt, left = await lucktime(user_id)
-    
-    if bt == 1:
-        hours = left // 3600
-        minutes = (left % 3600) // 60
-        txt = f'{hours}ч {minutes}м' if hours > 0 else f'{minutes}м'
-        await message.answer(f'{user.url}, ты уже испытывал свою удачу, следующий раз ты сможешь через {txt}')
-        return
-
-    summ = random.randint(2_000_000, 10_000_000)
-
-    await user.biores.upd(summ, '+')
-    await message.answer(f'✅ Вы успешно испытали удачу и получили {tr(summ)}кг биоресурса ☣️')
-
 
 @antispam
 async def stats_cmd(message: types.Message, user: BFGuser):
@@ -108,8 +86,6 @@ def reg(dp: Dispatcher):
     dp.message.register(vibor_cmd, StartsWith("выбери "))
     dp.message.register(shans_cmd, StartsWith("шанс "))
     dp.message.register(set_name_cmd, StartsWith("сменить ник"))
-    dp.message.register(kazna_cmd, TextIn("казна"))
     dp.message.register(stats_cmd, TextIn("статистика бота"))
-    dp.message.register(try_luck_cmd, TextIn("испытать удачу"))
     dp.message.register(my_name, TextIn("мой ник"))
     dp.message.register(chat_list, TextIn("!беседа"))
