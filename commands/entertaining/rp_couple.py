@@ -34,6 +34,7 @@ pattern = rf"^\.отн\s+({actions_pattern})$"
 
 @antispam
 async def rp_couple_cmd(message: types.Message, user: BFGuser):
+    print(f"🔥 rp_couple_cmd вызвана! Текст: {message.text}")
     """Обработка RP-команд для пары (только в ЛС)"""
     win, lose = BFGconst.emj()
     
@@ -93,4 +94,4 @@ async def rp_couple_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-    dp.message.register(rp_couple_cmd, lambda msg: msg.text and msg.text.startswith(".отн"))
+    dp.message.register(rp_couple_cmd, lambda msg: msg.text and msg.text == ".отн тест")
