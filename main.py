@@ -39,7 +39,7 @@ MODULES = [
     'commands.main',
     'commands.moderation',
     'commands.event.february',
-    'commands.entertaining',
+    'commands.entertaining.rp_couple.py',
 ]
 
 
