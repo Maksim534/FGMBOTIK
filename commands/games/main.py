@@ -669,7 +669,7 @@ async def roulette_cmd(message: types.Message, user: BFGuser):
         win_text = f"{prize['name']}: +{tr(win_amount)}$"
     elif prize["name"] == "💡 Опыт":
         win_amount = random.randint(prize["min"], prize["max"])
-        await user.exp.upd(win_amount, '+')
+        await user.expe.upd(win_amount, '+')
         win_text = f"{prize['name']}: +{win_amount}"
     elif prize["name"] == "👑 Рейтинг":
         win_amount = random.randint(prize["min"], prize["max"])
