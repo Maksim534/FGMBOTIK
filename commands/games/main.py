@@ -567,13 +567,12 @@ else:
 
 
 ROULETTE_PRIZES = [
-    {"name": "💰 Деньги", "chance": 50, "min": 5_000_000, "max": 50_000_000},
-    {"name": "💡 Опыт", "chance": 15, "min": 1000, "max": 10000},
-    {"name": "👑 Рейтинг", "chance": 10, "min": 500, "max": 5000},
-    {"name": "🌐 Биткоины", "chance": 10, "min": 1, "max": 500},
-    {"name": "💳 B-Coins", "chance": 8, "min": 1, "max": 2},
-    {"name": "⚡ Энергия", "chance": 5, "min": 5, "max": 20},
-    {"name": "💴 Йены", "chance": 1.5, "min": 1_000_000, "max": 10_000_000},
+    {"name": "💰 Деньги", "chance": 55, "min": 5_000_000, "max": 50_000_000},
+    {"name": "💡 Опыт", "chance": 16, "min": 1000, "max": 10000},
+    {"name": "👑 Рейтинг", "chance": 11, "min": 500, "max": 5000},
+    {"name": "🌐 Биткоины", "chance": 10, "min": 0.001, "max": 0.05},
+    {"name": "💳 B-Coins", "chance": 5, "min": 100, "max": 1000},
+    {"name": "⚡ Энергия", "chance": 2.5, "min": 5, "max": 20},
     {"name": "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА", "chance": 0.5, "car_id": 101},
 ]
 
@@ -629,8 +628,6 @@ async def roulette_info_cmd(message: types.Message, user: BFGuser):
             text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} монет)\n"
         elif prize["name"] == "⚡ Энергия":
             text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
-        elif prize["name"] == "💴 Йены":
-            text += f"{prize['name']}: {prize['chance']}% (от {tr(prize['min'])}¥ до {tr(prize['max'])}¥)\n"
         elif prize["name"] == "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА":
             car_name = exclusive_cars[prize["car_id"]][0]
             text += f"{prize['name']}: {prize['chance']}% ({car_name})\n"
@@ -747,10 +744,6 @@ async def roulette_play_cmd(message: types.Message, user: BFGuser):
         win_amount = random.randint(prize["min"], prize["max"])
         await user.energy.upd(win_amount, '+')
         win_text = f"{prize['name']}: +{win_amount}"
-    elif prize["name"] == "💴 Йены":
-        win_amount = random.randint(prize["min"], prize["max"])
-        await user.yen.upd(win_amount, '+')
-        win_text = f"{prize['name']}: +{tr(win_amount)}¥"
     else:
         win_text = f"{prize['name']}"
     
@@ -765,7 +758,6 @@ async def roulette_play_cmd(message: types.Message, user: BFGuser):
         f"⏳ Следующий раз через 24 часа",
         parse_mode="HTML"
     )
-
 
 
 def reg(dp: Dispatcher):
