@@ -563,7 +563,6 @@ else:
 # ==================== БЕСПЛАТНАЯ РУЛЕТКА ====================
 
 
-# Призы и их шансы (в сумме 100)
 ROULETTE_PRIZES = [
     {"name": "💰 Деньги", "chance": 50, "min": 5_000_000, "max": 50_000_000},
     {"name": "💡 Опыт", "chance": 15, "min": 1000, "max": 10000},
@@ -572,7 +571,7 @@ ROULETTE_PRIZES = [
     {"name": "💳 B-Coins", "chance": 8, "min": 100, "max": 1000},
     {"name": "⚡ Энергия", "chance": 5, "min": 5, "max": 20},
     {"name": "💴 Йены", "chance": 1.5, "min": 1_000_000, "max": 10_000_000},
-    {"name": "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА", "chance": 0.5, "car_id": 101},  # ID машины из exclusive_cars
+    {"name": "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА", "chance": 0.5, "car_id": 101},
 ]
 
 # Анимация вращения
@@ -599,8 +598,68 @@ def get_roulette_prize():
 
 
 @antispam
-async def roulette_cmd(message: types.Message, user: BFGuser):
-    """Команда рулетка - бесплатная игра с анимацией (раз в 24 часа)"""
+async def roulette_info_cmd(message: types.Message, user: BFGuser):
+    """Информация о рулетке и шансах"""
+    win, lose = BFGconst.emj()
+    
+    # Формируем текст с шансами
+    text = f"""🎰 <b>РУЛЕТКА УДАЧИ</b> 🎰
+
+{user.url}, крути рулетку и выигрывай ценные призы! 
+Игра доступна <b>1 раз в 24 часа</b> и абсолютно бесплатно!
+
+━━━━━━━━━━━━━━━━━━━━
+📊 <b>ШАНСЫ ВЫПАДЕНИЯ:</b>
+━━━━━━━━━━━━━━━━━━━━
+"""
+    
+    for prize in ROULETTE_PRIZES:
+        if prize["name"] == "💰 Деньги":
+            text += f"{prize['name']}: {prize['chance']}% (от {tr(prize['min'])}$ до {tr(prize['max'])}$)\n"
+        elif prize["name"] == "💡 Опыт":
+            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
+        elif prize["name"] == "👑 Рейтинг":
+            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
+        elif prize["name"] == "🌐 Биткоины":
+            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} BTC)\n"
+        elif prize["name"] == "💳 B-Coins":
+            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} монет)\n"
+        elif prize["name"] == "⚡ Энергия":
+            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
+        elif prize["name"] == "💴 Йены":
+            text += f"{prize['name']}: {prize['chance']}% (от {tr(prize['min'])}¥ до {tr(prize['max'])}¥)\n"
+        elif prize["name"] == "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА":
+            car_name = exclusive_cars[prize["car_id"]][0]
+            text += f"{prize['name']}: {prize['chance']}% ({car_name})\n"
+    
+    text += f"""
+━━━━━━━━━━━━━━━━━━━━
+💡 <b>КАК ИГРАТЬ:</b>
+• Нажми кнопку "🎰 Крутить рулетку"
+• Наслаждайся анимацией вращения
+• Получи свой приз!
+
+⏳ <b>Ограничение:</b> 1 раз в 24 часа
+💸 <b>Стоимость:</b> БЕСПЛАТНО
+
+<i>Желаем удачи! 🍀</i>"""
+
+    # Создаём кнопку для запуска
+    keyboard = InlineKeyboardBuilder()
+    bot_mention = f"@{cfg.bot_username}"
+    keyboard.row(
+        InlineKeyboardButton(
+            text="🎰 Крутить рулетку",
+            switch_inline_query_current_chat=f"{bot_mention} рулетка"
+        )
+    )
+    
+    await message.answer(text, reply_markup=keyboard.as_markup(), parse_mode="HTML")
+
+
+@antispam
+async def roulette_play_cmd(message: types.Message, user: BFGuser):
+    """Запуск анимированной рулетки"""
     win, lose = BFGconst.emj()
     
     # Проверка кулдауна (24 часа)
@@ -620,7 +679,7 @@ async def roulette_cmd(message: types.Message, user: BFGuser):
     
     # Отправляем первое сообщение
     msg = await message.answer(
-        f"{user.url}, 🎰 <b>БЕСПЛАТНАЯ РУЛЕТКА ЗАПУЩЕНА!</b>\n\n"
+        f"{user.url}, 🎰 <b>РУЛЕТКА ЗАПУЩЕНА!</b>\n\n"
         f"{ROULETTE_ANIMATION[0]}",
         parse_mode="HTML"
     )
@@ -629,7 +688,7 @@ async def roulette_cmd(message: types.Message, user: BFGuser):
     for frame in ROULETTE_ANIMATION[1:-1]:
         await asyncio.sleep(0.5)
         await msg.edit_text(
-            f"{user.url}, 🎰 <b>БЕСПЛАТНАЯ РУЛЕТКА ЗАПУЩЕНА!</b>\n\n"
+            f"{user.url}, 🎰 <b>РУЛЕТКА ЗАПУЩЕНА!</b>\n\n"
             f"{frame}",
             parse_mode="HTML"
         )
@@ -647,12 +706,11 @@ async def roulette_cmd(message: types.Message, user: BFGuser):
         car_name = exclusive_cars[car_id][0]
         
         # Выдаём машину (заменяем текущую, если есть)
-        await db.buy_property(user.id, car_id, "car", 0)  # 0 цена
+        await db.buy_property(user.id, car_id, "car", 0)
         
         # Проверяем, была ли у игрока машина
         old_car_id = user.property.car.get()
         if old_car_id != 0:
-            # Получаем название старой машины
             if old_car_id in exclusive_cars:
                 old_car_name = exclusive_cars[old_car_id][0]
             else:
@@ -709,6 +767,8 @@ async def roulette_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
+    dp.message.register(roulette_info_cmd, StartsWith("рулетка"))  # Информация и кнопка
+    dp.message.register(roulette_play_cmd, StartsWith("/рулетка"))  # Запуск игры (можно и так)
     # Регистрация команд
     dp.message.register(darts_cmd, StartsWith("дартс"))
     dp.message.register(dice_cmd, StartsWith("кости"))
@@ -721,7 +781,6 @@ def reg(dp: Dispatcher):
     dp.message.register(oxota, StartsWith("охота"))
     dp.message.register(crash, StartsWith("краш"))
     dp.message.register(kwak_cmd, StartsWith("квак"))
-    dp.message.register(roulette_cmd, StartsWith("рулетка"))  # Новая команда
 
     # Регистрация колбэков
     dp.callback_query.register(kwak_callback, lambda call: call.data.startswith("kwak_"))
