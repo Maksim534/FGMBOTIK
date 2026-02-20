@@ -94,4 +94,4 @@ async def rp_couple_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-    dp.message.register(rp_couple_cmd, lambda msg: msg.text and msg.text == ".отн тест")
+    dp.message.register(rp_couple_cmd, lambda msg: msg.text and msg.text.startswith(".отн "))
