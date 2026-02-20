@@ -217,7 +217,7 @@ async def help_cmd(message: types.Message, user: BFGuser):
     )
     msg = await message.answer(
         text,
-        reply_markup=kb.help_keyboard(user.id),
+        reply_markup=kb.help_menu(user.id),  # 👈 ИСПРАВЛЕНО
         disable_web_page_preview=True,
         parse_mode="HTML"
     )
@@ -233,11 +233,28 @@ async def help_category_callback(call: types.CallbackQuery, user: BFGuser):
         text = HELP_TEXTS[category].format(user.url)
         await call.message.edit_text(
             text,
-            reply_markup=kb.help_back_keyboard(user.id),
+            reply_markup=kb.help_back(user.id),  # 👈 ИСПРАВЛЕНО
             parse_mode="HTML"
         )
     await call.answer()
 
+
+@antispam_earning
+async def help_back_callback(call: types.CallbackQuery, user: BFGuser):
+    """Возврат в главное меню помощи"""
+    text = HELP_TEXTS["main"].format(
+        user.url,
+        cfg.chat,
+        cfg.channel,
+        adm
+    )
+    await call.message.edit_text(
+        text,
+        reply_markup=kb.help_menu(user.id),  # 👈 ИСПРАВЛЕНО
+        disable_web_page_preview=True,
+        parse_mode="HTML"
+    )
+    await call.answer()
 
 @antispam_earning
 async def help_back_callback(call: types.CallbackQuery, user: BFGuser):
