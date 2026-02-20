@@ -12,6 +12,7 @@ from filters.custom import StartsWith
 from user import BFGuser, BFGconst
 from assets.keyboards.game import kwak_game
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from commands.basic.property.lists import exclusive_cars, cars
 
 last_roulette_time = {}
 
