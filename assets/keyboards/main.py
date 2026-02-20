@@ -35,7 +35,10 @@ def help_menu(user_id: int) -> InlineKeyboardMarkup:
 def help_back(user_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
-        InlineKeyboardButton(text="🔙 Назад в меню", callback_data="help_back")  # Без лишних символов
+        InlineKeyboardButton(
+            text="🔙 Назад в меню", 
+            callback_data="help_back"  # Должно быть именно так, без пробелов, без user_id
+        )
     )
     return builder.as_markup()
 
