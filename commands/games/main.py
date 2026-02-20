@@ -570,8 +570,8 @@ ROULETTE_PRIZES = [
     {"name": "💰 Деньги", "chance": 50, "min": 5_000_000, "max": 50_000_000},
     {"name": "💡 Опыт", "chance": 15, "min": 1000, "max": 10000},
     {"name": "👑 Рейтинг", "chance": 10, "min": 500, "max": 5000},
-    {"name": "🌐 Биткоины", "chance": 10, "min": 0.001, "max": 0.05},
-    {"name": "💳 B-Coins", "chance": 8, "min": 100, "max": 1000},
+    {"name": "🌐 Биткоины", "chance": 10, "min": 1, "max": 500},
+    {"name": "💳 B-Coins", "chance": 8, "min": 1, "max": 2},
     {"name": "⚡ Энергия", "chance": 5, "min": 5, "max": 20},
     {"name": "💴 Йены", "chance": 1.5, "min": 1_000_000, "max": 10_000_000},
     {"name": "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА", "chance": 0.5, "car_id": 101},
@@ -649,11 +649,10 @@ async def roulette_info_cmd(message: types.Message, user: BFGuser):
 
     # Создаём кнопку для запуска
     keyboard = InlineKeyboardBuilder()
-    bot_mention = f"@{cfg.bot_username}"
     keyboard.row(
         InlineKeyboardButton(
             text="🎰 Крутить рулетку",
-            switch_inline_query_current_chat=f"{bot_mention} рулетка"
+            switch_inline_query_current_chat=f"рулетка"
         )
     )
     
