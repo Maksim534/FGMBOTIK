@@ -83,19 +83,18 @@ def get_available_actions(level: int) -> dict:
 
 @antispam
 async def rp_couple_cmd(message: types.Message, user: BFGuser):
-    """Обработка RP-команд для пары с системой уровней и таймаутом"""
+    """Обработка RP-команд для пары (скрытый таймер 10 минут)"""
     win, lose = BFGconst.emj()
     
-    # Проверяем, что команда вызвана в групповом чате
+    # Проверка на групповой чат
     if message.chat.type == "private":
         await message.answer(
-            f"{user.url}, RP-команды для пары работают только в общих чатах! 🌍\n\n"
-            f"Приходите в общий чат со своей половинкой и проявляйте чувства там! 💕",
+            f"{user.url}, RP-команды для пары работают только в общих чатах! 🌍",
             parse_mode="HTML"
         )
         return
     
-    # Проверяем, состоит ли пользователь в браке
+    # Проверка наличия пары
     couple_data = await get_wedlock(user.id)
     if not couple_data:
         await message.answer(
@@ -104,25 +103,23 @@ async def rp_couple_cmd(message: types.Message, user: BFGuser):
         )
         return
     
-    # Определяем, кто партнёр
+    # Определяем партнёра
     partner_id = couple_data[0] if couple_data[1] == user.id else couple_data[1]
     
-    # Получаем действие из сообщения
+    # Получаем действие
     match = re.search(pattern, message.text.lower().strip())
     if not match:
         return
     
     action = match.group(1)
     
-    # Получаем текущий уровень пары
+    # Получаем уровень пары
     level_info = await get_couple_level(user.id, partner_id)
     current_level = level_info["level"]
     
-    # Проверяем, доступно ли это действие на текущем уровне
+    # Проверка доступности действия
     available_actions = get_available_actions(current_level)
     if action not in available_actions:
-        # Ищем на каком уровне откроется это действие
-        required_level = None
         for lvl, actions in COUPLE_ACTIONS.items():
             if action in actions:
                 required_level = lvl
@@ -136,85 +133,63 @@ async def rp_couple_cmd(message: types.Message, user: BFGuser):
         )
         return
     
-    # Проверяем таймаут между искрами
-    couple_key = f"{min(user.id, partner_id)}_{max(user.id, partner_id)}"
-    current_time = time.time()
-    last_time = last_action_time.get(couple_key, 0)
-    time_diff = current_time - last_time
-    
-    if time_diff < SPARK_COOLDOWN:
-        minutes_left = int((SPARK_COOLDOWN - time_diff) // 60)
-        seconds_left = int((SPARK_COOLDOWN - time_diff) % 60)
-        await message.answer(
-            f"{user.url}, ⏳ искры ещё не накопились!\n"
-            f"Следующее получение через {minutes_left} мин {seconds_left} сек",
-            parse_mode="HTML"
-        )
-        return
-    
     # Получаем имена
     user_name = message.from_user.full_name
-    partner_name = await get_name(partner_id)
     partner_url = await url_name(partner_id)
     
-    # Случайное количество искр (1-3)
-    sparks_earned = random.randint(1, 3)
-    
-    # Добавляем искры паре
-    level_data = await add_sparks(user.id, partner_id, sparks_earned)
-    total_sparks = level_data["total"]
-    new_level = level_data["level"]
-    
-    # Обновляем время последнего действия
-    last_action_time[couple_key] = current_time
-    
-    # Получаем название уровня
-    level_name = LEVEL_NAMES[new_level]
-    
-    # Формируем текст действия
+    # Формируем текст действия (всегда показываем)
     action_text = available_actions[action].format(
         f"<a href='tg://user?id={user.id}'>{user_name}</a>",
         partner_url
     )
     
-    # Проверяем, есть ли партнёр в этом чате
+    # Проверка наличия партнёра в чате
     partner_in_chat = await is_user_in_chat(message.chat.id, partner_id)
-    
-    if partner_in_chat:
-        # Если партнёр в чате - отправляем сообщение с искрами
-        next_level = new_level + 1 if new_level < 5 else 5
-        next_required = next_level * 10 if new_level < 5 else 0
-        sparks_to_next = next_required - total_sparks if new_level < 5 else 0
-        
-        # Сообщаем, повысился ли уровень
-        level_up_text = ""
-        if new_level > current_level:
-            level_up_text = f"\n🎉 <b>УРОВЕНЬ ПОВЫШЕН!</b> 🎉\n"
-            # Показываем новые доступные действия
-            new_actions = list(COUPLE_ACTIONS[new_level].keys())
-            level_up_text += f"✨ Новые действия: {', '.join(new_actions)}\n"
-        
-        response = f"💞 <b>Романтический момент</b> 💞\n\n"
-        response += f"{action_text}\n\n"
-        response += f"✨ <b>+{sparks_earned} искр</b> к вашим отношениям!\n"
-        response += level_up_text
-        response += f"📊 <b>Уровень:</b> {level_name}\n"
-        response += f"🔥 <b>Всего искр:</b> {total_sparks}\n"
-        
-        if new_level < 5:
-            response += f"➡️ <b>До следующего уровня:</b> {sparks_to_next} искр"
-        else:
-            response += f"🏆 <b>Максимальный уровень!</b>"
-        
-        await message.answer(response, parse_mode="HTML")
-    else:
-        # Если партнёра нет в чате
+    if not partner_in_chat:
+        partner_name = await get_name(partner_id)
         await message.answer(
             f"{user.url}, вашей половинки нет в этом чате! 😢\n\n"
-            f"💭 Пригласи {partner_name} в этот чат, чтобы проявлять свои чувства!",
+            f"{action_text}",
             parse_mode="HTML"
         )
-
+        return
+    
+    # ===== ЛОГИКА НАЧИСЛЕНИЯ ИСКР (СКРЫТЫЙ ТАЙМЕР) =====
+    couple_key = f"{min(user.id, partner_id)}_{max(user.id, partner_id)}"
+    current_time = time.time()
+    last_time = last_action_time.get(couple_key, 0)
+    time_diff = current_time - last_time
+    cooldown = 600  # 10 минут в секундах
+    
+    sparks_earned = 0
+    sparks_message = ""
+    level_up_text = ""
+    
+    # Проверяем, прошло ли 10 минут
+    if time_diff >= cooldown or last_time == 0:
+        # Начисляем искры
+        sparks_earned = random.randint(1, 3)
+        level_data = await add_sparks(user.id, partner_id, sparks_earned)
+        total_sparks = level_data["total"]
+        new_level = level_data["level"]
+        
+        # Обновляем время
+        last_action_time[couple_key] = current_time
+        
+        sparks_message = f"\n✨ <b>+{sparks_earned} искр</b> к вашим отношениям!"
+        
+        # Проверяем повышение уровня
+        if new_level > current_level:
+            new_actions = list(COUPLE_ACTIONS[new_level].keys())
+            level_up_text = f"\n🎉 <b>УРОВЕНЬ ПОВЫШЕН до {LEVEL_NAMES[new_level]}!</b>"
+            level_up_text += f"\n✨ Новые действия: {', '.join(new_actions)}"
+    
+    # Финальное сообщение (действие показываем всегда)
+    response += f"{action_text}"
+    response += sparks_message
+    response += level_up_text
+    
+    await message.answer(response, parse_mode="HTML")
 
 @antispam
 async def rp_couple_list_cmd(message: types.Message, user: BFGuser):
