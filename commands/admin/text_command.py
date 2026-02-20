@@ -384,6 +384,6 @@ def reg(dp: Dispatcher):
     dp.message.register(take_the_money, StartsWith("забрать"))
     dp.message.register(reset_the_money, StartsWith("обнулить"))
     
-    # Добавьте эти две строки для колбэков подтверждения
+    # Колбэки для подтверждения обнуления
     dp.callback_query.register(reset_confirm_callback, F.data.startswith("confirm_reset_"))
-    dp.callback_query.register(reset_cancel_callback, F.data == "cancel_reset")
+    dp.callback_query.register(reset_cancel_callback, F.data == "cancel_reset")  # 👈 ИСПРАВЛЕНО
