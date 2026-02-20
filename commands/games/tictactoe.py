@@ -139,7 +139,7 @@ async def tictactoe_cmd(message: types.Message, user: BFGuser):
     win, lose = BFGconst.emj()
     
     # Проверяем, что игра происходит в супергруппе
-    if message.chat.type != 'supergroup':
+    if message.chat.type not in ['group', 'supergroup']:
         await message.answer(f"{user.url}, играть можно только в группах! 🎮")
         return
     
