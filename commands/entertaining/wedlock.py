@@ -8,6 +8,8 @@ from assets import keyboards as kb
 from filters.custom import TextIn, StartsWith
 from user import BFGuser, BFGconst
 from assets.gettime import get_ptime
+from commands.entertaining.db import get_couple_level, LEVEL_NAMES
+from commands.entertaining.rp_couple import get_available_actions
 
 
 @antispam
