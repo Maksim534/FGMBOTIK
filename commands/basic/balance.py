@@ -16,10 +16,10 @@ async def balance_cmd(message: types.Message, user: BFGuser):
     await message.answer(
         f"""
 👫 Имя: {user.name}
-💵 Наличные: {user.balance.tr():>15}$
-💴 Йены: {user.yen.tr():>19}¥
-🏦 Банковский счет: {user.bank.tr():>11}$
-🌐 Криптовалюта: {user.btc.tr():>13}🌐
+💵 Наличные: {user.balance.tr()}$
+💴 Йены: {user.yen.tr()}¥
+🏦 Банковский счет: {user.bank.tr()}$
+🌐 Криптовалюта: {user.btc.tr()}🌐
 
 {BFGconst.ads}
 """,
