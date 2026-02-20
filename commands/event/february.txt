@@ -561,7 +561,7 @@ async def valentine_top_callback(call: types.CallbackQuery, user: BFGuser):
 
 # ==================== РЕГИСТРАЦИЯ ХЭНДЛЕРОВ ====================
 def reg(dp: Dispatcher):
-    dp.message.register(valentine_cmd, F.text.lower().in_(["валентинка", "/valentine"]))
+    dp.message.register(valentine_cmd, F.text.lower().in_(["вфыв", "/valentine"]))
     dp.message.register(get_valentine_cmd, F.text.lower() == "/get_valentine")
     dp.message.register(give_valentine_cmd, F.text.lower().startswith("/send_valentine"))
     dp.message.register(my_valentine_cmd, F.text.lower() == "/my_valentine")
