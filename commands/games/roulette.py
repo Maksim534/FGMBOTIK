@@ -160,6 +160,7 @@ async def award_prize(user: BFGuser, prize: dict) -> str:
 
 @antispam
 async def roulette_cmd(message: types.Message, user: BFGuser):
+    print(f"🔥 roulette_cmd вызвана! Текст: {message.text}")
     """Команда /рулетка - запустить анимированную рулетку"""
     win, lose = BFGconst.emj()
     
