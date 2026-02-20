@@ -119,8 +119,6 @@ async def top_call(call: types.CallbackQuery, user: BFGuser):
 		await handle_top(call, "users", "case3", 11, "рудным кейсам", "🏺")
 	elif tab == "case4":
 		await handle_top(call, "users", "case4", 12, "материальным кейсам", "🌌")
-	elif tab == "bsterritory":
-		await handle_top_earning(call, "business", "bsterritory", 4, "бизнесам", "🗄")
 
 
 @antispam
