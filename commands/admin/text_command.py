@@ -338,7 +338,7 @@ async def reset_confirm_callback(call: types.CallbackQuery):  # 👈 Убрал�
 
 @admin_only()
 async def give_exclusive_car(message: types.Message):
-    """Выдать эксклюзивную машину игроку (по реплаю или ID)"""
+    """Выдать эксклюзивную машину игроку (по реплаю, игровому ID или Telegram ID)"""
     try:
         parts = message.text.split()
         
@@ -347,10 +347,14 @@ async def give_exclusive_car(message: types.Message):
             await message.answer(
                 "❌ Используйте:\n"
                 "• `/eksotic [id_игрока] [id_машины]` — по ID\n"
-                "• `/eksotic [id_машины]` — ответом на сообщение",
+                "• `/eksotic [id_машины]` — ответом на сообщение\n\n"
+                "<i>ID игрока может быть игровым или Telegram ID</i>",
                 parse_mode="HTML"
             )
             return
+        
+        target_id = None
+        car_id = None
         
         # Случай 1: Выдача по реплаю (без ID игрока)
         if message.reply_to_message:
@@ -368,15 +372,49 @@ async def give_exclusive_car(message: types.Message):
         # Случай 2: Выдача по ID игрока
         else:
             if len(parts) < 3:
-                await message.answer("❌ Укажите ID игрока и ID машины!\nПример: /eksotic 105 101")
+                await message.answer(
+                    "❌ Укажите ID игрока и ID машины!\n"
+                    "Пример: /eksotic 105 101  (по игровому ID)\n"
+                    "Пример: /eksotic 123456789 101  (по Telegram ID)"
+                )
                 return
             
             try:
-                target_id = int(parts[1])
+                input_id = int(parts[1])
                 car_id = int(parts[2])
             except ValueError:
                 await message.answer("❌ ID должны быть числами!")
                 return
+            
+            # Ищем пользователя по game_id или user_id
+            # Сначала пробуем найти по game_id
+            user_data = cursor.execute(
+                "SELECT user_id FROM users WHERE game_id = ?", 
+                (input_id,)
+            ).fetchone()
+            
+            if user_data:
+                target_id = user_data[0]  # Нашли по game_id
+            else:
+                # Если не нашли, пробуем как Telegram ID
+                user_data = cursor.execute(
+                    "SELECT user_id FROM users WHERE user_id = ?", 
+                    (input_id,)
+                ).fetchone()
+                if user_data:
+                    target_id = input_id  # Это и есть Telegram ID
+                else:
+                    await message.answer(
+                        f"❌ Игрок с ID <b>{input_id}</b> не найден.\n"
+                        f"Проверьте, правильно ли указан игровой или Telegram ID.",
+                        parse_mode="HTML"
+                    )
+                    return
+        
+        # Проверяем, что target_id определён
+        if not target_id:
+            await message.answer("❌ Не удалось определить ID игрока!")
+            return
         
         # Проверяем существование exclusive_cars
         try:
@@ -390,16 +428,6 @@ async def give_exclusive_car(message: types.Message):
             await message.answer("❌ Это не эксклюзивная машина!")
             return
         
-        # Проверяем, существует ли игрок
-        user_exists = cursor.execute(
-            "SELECT user_id FROM users WHERE user_id = ?", 
-            (target_id,)
-        ).fetchone()
-        
-        if not user_exists:
-            await message.answer("❌ Игрок с таким ID не найден!")
-            return
-        
         # Проверяем, нет ли уже машины у игрока
         current_car = cursor.execute(
             "SELECT car FROM property WHERE user_id = ?", 
@@ -407,7 +435,19 @@ async def give_exclusive_car(message: types.Message):
         ).fetchone()
         
         if current_car and current_car[0] != 0:
-            await message.answer("❌ У игрока уже есть машина!")
+            # Получаем название текущей машины для информации
+            current_car_id = current_car[0]
+            if current_car_id in exclusive_cars:
+                current_name = exclusive_cars[current_car_id][0]
+            else:
+                from commands.basic.property.lists import cars
+                current_name = cars.get(current_car_id, ["Неизвестно"])[0]
+            
+            await message.answer(
+                f"❌ У игрока уже есть машина!\n"
+                f"🚗 Текущая: {current_name} (ID: {current_car_id})",
+                parse_mode="HTML"
+            )
             return
         
         # Выдаём машину бесплатно
@@ -417,10 +457,28 @@ async def give_exclusive_car(message: types.Message):
         )
         conn.commit()
         
+        # Получаем имя игрока для красивого ответа
+        player_name = cursor.execute(
+            "SELECT name FROM users WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        player_name = player_name[0] if player_name else f"ID {target_id}"
+        
+        # Получаем game_id игрока
+        game_id = cursor.execute(
+            "SELECT game_id FROM users WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        game_id = game_id[0] if game_id else "?"
+        
         car_name = exclusive_cars[car_id][0]
+        
         await message.answer(
-            f"✅ Игроку <code>{target_id}</code> выдана эксклюзивная машина:\n"
-            f"🚗 <b>{car_name}</b> (ID: {car_id})",
+            f"✅ <b>Эксклюзивная машина выдана!</b>\n\n"
+            f"👤 Игрок: {player_name}\n"
+            f"🆔 Telegram ID: <code>{target_id}</code>\n"
+            f"🎮 Игровой ID: <code>{game_id}</code>\n"
+            f"🚗 Машина: {car_name} (ID: {car_id})",
             parse_mode="HTML"
         )
         
