@@ -336,7 +336,48 @@ async def reset_confirm_callback(call: types.CallbackQuery):  # 👈 Убрал�
     finally:
         await call.answer()
 
+@admin_only()
+async def give_exclusive_car(message: types.Message):
+    """Выдать эксклюзивную машину игроку (по реплаю или ID)"""
+    try:
+        # Получаем ID цели (из реплая или аргумента)
+        if message.reply_to_message:
+            target_id = message.reply_to_message.from_user.id
+        else:
+            target_id = int(message.text.split()[1])
+        
+        car_id = int(message.text.split()[2])
+        
+        # Проверяем, что это эксклюзивная машина
+        if car_id not in exclusive_cars:
+            await message.answer("❌ Это не эксклюзивная машина!")
+            return
+        
+        # Проверяем, нет ли уже машины у игрока
+        current_car = cursor.execute(
+            "SELECT car FROM property WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        
+        if current_car and current_car[0] != 0:
+            await message.answer("❌ У игрока уже есть машина!")
+            return
+        
+        # Выдаём машину бесплатно
+        cursor.execute(
+            "UPDATE property SET car = ? WHERE user_id = ?", 
+            (car_id, target_id)
+        )
+        conn.commit()
+        
+        car_name = exclusive_cars[car_id][0]
+        await message.answer(f"✅ Игроку выдана эксклюзивная машина: {car_name}")
+        
+    except Exception as e:
+        await message.answer(f"❌ Ошибка: {e}")
+
 def reg(dp: Dispatcher):
+    dp.message.register(give_exclusive_car, Command("выдать эксклюзив"))
     dp.message.register(sql, Command("sql"))
     dp.message.register(ban, Command("banb"))
     dp.message.register(unban, Command("unbanb"))
