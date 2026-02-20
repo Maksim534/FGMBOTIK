@@ -64,18 +64,23 @@ def balance_keyboard(user_id: int) -> InlineKeyboardMarkup:
 async def creat_help_msg(profil, user: BFGuser):
     profil = profil.format(user.url)
 
-    text = f"""{profil}
-🪪 ID: {user.game_id}
-🏆 Статус: {user.Fstatus}
-💰 Денег: {user.balance.tr()}$
-💴 Йены: {user.yen.tr()}¥
-🏦 В банке: {user.bank.tr()}$
-💳 B-Coins: {user.bcoins.tr()}
-💽 Биткоины: {user.btc.tr()}฿
-🏋 Энергия: {user.energy}
-👑 Рейтинг: {user.rating.tr()}
-🌟 Опыт: {user.expe.tr()}
-🎲 Всего сыграно игр: {user.games.tr()}
+    text = f"""{profil}, ваш профиль:
+
+🆔 <b>ID:</b> {user.game_id}
+👤 <b>Имя:</b> {user.name}
+🏆 <b>Статус:</b> {user.Fstatus}
+💰 <b>Наличные:</b> {user.balance.tr()}$
+🏦 <b>В банке:</b> {user.bank.tr()}$
+💳 <b>B-Coins:</b> {user.bcoins.tr()}
+🌐 <b>Биткоины:</b> {user.btc.tr()} BTC
+⚡️ <b>Энергия:</b> {user.energy}
+👑 <b>Рейтинг:</b> {user.rating.tr()}
+💡 <b>Опыт:</b> {user.expe.tr()}
+🎲 <b>Игр:</b> {user.games.tr()}
+
+{BFGconst.ads}
+"""
+    await message.answer(text, parse_mode="HTML")
 
 """
     return text
