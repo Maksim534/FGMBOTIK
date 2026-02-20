@@ -55,12 +55,19 @@ async def get_fuel(user_id: int) -> int:
 
 
 async def get_car_price(user_id: int) -> int:
-    """Получение цены автомобиля пользователя"""
+    """Получение цены автомобиля пользователя (обычного или эксклюзивного)"""
     car_num = cursor.execute("SELECT car FROM property WHERE user_id = ?", (user_id,)).fetchone()
     if not car_num or car_num[0] == 0:
         return 0
     
-    # Импортируем список машин
+    car_id = car_num[0]
+    
+    # Проверяем эксклюзивные машины
+    from commands.basic.property.lists import exclusive_cars
+    if car_id in exclusive_cars:
+        return exclusive_cars[car_id][5]  # Цена эксклюзивной
+    
+    # Если не эксклюзивная, проверяем обычные
     from commands.basic.property.lists import cars
-    car_data = cars.get(car_num[0])
-    return car_data[5] if car_data else 0  # Цена автомобиля
+    car_data = cars.get(car_id)
+    return car_data[5] if car_data else 0
