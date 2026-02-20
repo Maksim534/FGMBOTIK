@@ -241,6 +241,8 @@ async def help_category_callback(call: types.CallbackQuery, user: BFGuser):
 
 @antispam_earning
 async def help_back_callback(call: types.CallbackQuery, user: BFGuser):
+    print(f"🔙 help_back_callback вызван! Data: {call.data}")  # ОТЛАДКА
+    print(f"👤 Пользователь: {user.id}")
     """Возврат в главное меню помощи"""
     text = HELP_TEXTS["main"].format(
         user.url,
