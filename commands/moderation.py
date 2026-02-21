@@ -47,8 +47,7 @@ async def get_ruser(message: types.Message) -> str:
 @antispam
 @moderation
 async def mute_cmd(message: types.Message, user: BFGuser):
-    print(f"🔥 mute_cmd вызвана! Текст: '{message.text}'")
-    # ... остальной код
+	print(f"🔥 mute_cmd вызвана! Текст: '{message.text}'")
 	chat_id = message.chat.id
 	
 	if not message.reply_to_message:
