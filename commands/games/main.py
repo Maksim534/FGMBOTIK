@@ -644,11 +644,10 @@ async def roulette_info_cmd(message: types.Message, user: BFGuser):
 
     # Создаём кнопку для запуска
     keyboard = InlineKeyboardBuilder()
-    bot_mention = f"@{cfg.bot_username}"
     keyboard.row(
         InlineKeyboardButton(
             text="🎰 Крутить рулетку",
-            switch_inline_query_current_chat=f"{bot_mention} рулетка"
+            switch_inline_query_current_chat=f"рулетка"
         )
     )
     
