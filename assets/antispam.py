@@ -32,35 +32,6 @@ def admin_only(private=False):
     return decorator
 
 
-def moderation(func):
-    async def wrapper(message: types.Message, user: BFGuser):
-        print(f"🔍 moderation wrapper для {func.__name__}")
-        print(f"  Тип чата: {message.chat.type}")
-        print(f"  ID пользователя: {message.from_user.id}")
-        message = None
-
-        for arg in args:
-            if isinstance(arg, types.Message):
-                message = arg
-                break
-        if not message and 'message' in kwargs:
-            message = kwargs['message']
-
-        if not message:
-            raise ValueError("antispam: argument not found message: types.Message")
-
-        if message.forward_from:
-            return
-
-        if message.chat.type == "supergroup":
-            await db.upd_chat_db(message.chat.id)
-
-        uid = message.from_user.id
-
-        ban = await check_ban(uid)
-        if ban:
-            return
-
         sig = inspect.signature(func)
         if "user" in sig.parameters and "user" not in kwargs:
             user = BFGuser(message=message)
