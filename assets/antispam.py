@@ -32,10 +32,11 @@ def admin_only(private=False):
     return decorator
 
 
-def antispam(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        print(f"🔥 antispam wrapper вызван для функции {func.__name__}")
+def moderation(func):
+    async def wrapper(message: types.Message, user: BFGuser):
+        print(f"🔍 moderation wrapper для {func.__name__}")
+        print(f"  Тип чата: {message.chat.type}")
+        print(f"  ID пользователя: {message.from_user.id}")
         message = None
 
         for arg in args:
