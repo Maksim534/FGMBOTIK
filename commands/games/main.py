@@ -647,7 +647,7 @@ async def roulette_info_cmd(message: types.Message, user: BFGuser):
     keyboard.row(
         InlineKeyboardButton(
             text="🎰 Крутить рулетку",
-            switch_inline_query_current_chat=f"рулетка"
+            switch_inline_query_current_chat=f"крутить рулетку"
         )
     )
     
