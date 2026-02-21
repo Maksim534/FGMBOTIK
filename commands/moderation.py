@@ -10,6 +10,8 @@ from user import BFGuser
 import time
 import re
 
+print("🔥 МОДУЛЬ MODERATION ЗАГРУЖЕН!")
+
 time_units = {"д": 86400, "d": 86400, "ч": 3600, "h": 3600, "м": 60, "m": 60}
 
 MutePermissions = ChatPermissions(
@@ -45,7 +47,7 @@ async def get_ruser(message: types.Message) -> str:
 
 
 @antispam
-@moderation
+#@moderation
 async def mute_cmd(message: types.Message, user: BFGuser):
 	print(f"🔥 mute_cmd вызвана! Текст: '{message.text}'")
 	chat_id = message.chat.id
@@ -139,7 +141,7 @@ async def unban_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-	dp.message.register(mute_cmd, F.text.startswith(("mute", "мут", "заткнуть")))
+    dp.message.register(mute_cmd, lambda msg: True)  # Будет вызываться на КАЖДОЕ сообщение!
 	dp.message.register(unmute_cmd, F.text.startswith(("unmute", "размут", "говори")))
 	dp.message.register(ban_cmd, F.text.startswith(("ban", "бан",)))
 	dp.message.register(unban_cmd, F.text.startswith(("unban", "разбан")))
