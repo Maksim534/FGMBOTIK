@@ -3,9 +3,7 @@ from aiogram.types import ChatPermissions
 from datetime import timedelta, datetime
 import re
 
-from assets.antispam import antispam, moderation
 from bot import bot
-from user import BFGuser
 
 # Конвертер времени: 10м -> 600 секунд, 2ч -> 7200, 1д -> 86400
 TIME_UNITS = {
@@ -20,14 +18,12 @@ def parse_time(text: str) -> int | None:
     if not match:
         return None
     amount = int(match.group(1))
-    unit = match.group(2) or 'м'  # если единица не указана, считаем минуты
+    unit = match.group(2) or 'м'
     if unit not in TIME_UNITS:
         return None
     return amount * TIME_UNITS[unit]
 
-@antispam
-@moderation
-async def mute_cmd(message: types.Message, user: BFGuser):
+async def mute_cmd(message: types.Message):
     """Замутить пользователя (ответом на сообщение)"""
     if not message.reply_to_message:
         await message.reply("❌ Ответьте на сообщение пользователя.")
@@ -46,36 +42,37 @@ async def mute_cmd(message: types.Message, user: BFGuser):
     target = message.reply_to_message.from_user
     until = timedelta(seconds=seconds)
 
-    await bot.restrict_chat_member(
-        chat_id=message.chat.id,
-        user_id=target.id,
-        permissions=ChatPermissions(can_send_messages=False),
-        until_date=datetime.now() + until
-    )
+    try:
+        await bot.restrict_chat_member(
+            chat_id=message.chat.id,
+            user_id=target.id,
+            permissions=ChatPermissions(can_send_messages=False),
+            until_date=datetime.now() + until
+        )
+        await message.reply(f"🔇 Пользователь {target.full_name} замучен на {args[1]}.")
+    except Exception as e:
+        await message.reply(f"❌ Ошибка: {e}")
 
-    await message.reply(f"🔇 Пользователь {target.full_name} замучен на {args[1]}.")
-
-@antispam
-@moderation
-async def unmute_cmd(message: types.Message, user: BFGuser):
+async def unmute_cmd(message: types.Message):
     """Снять мут с пользователя"""
     if not message.reply_to_message:
         await message.reply("❌ Ответьте на сообщение пользователя.")
         return
 
     target = message.reply_to_message.from_user
-    await bot.restrict_chat_member(
-        chat_id=message.chat.id,
-        user_id=target.id,
-        permissions=ChatPermissions(can_send_messages=True),
-        until_date=None
-    )
 
-    await message.reply(f"🔊 Пользователь {target.full_name} размучен.")
+    try:
+        await bot.restrict_chat_member(
+            chat_id=message.chat.id,
+            user_id=target.id,
+            permissions=ChatPermissions(can_send_messages=True),
+            until_date=None
+        )
+        await message.reply(f"🔊 Пользователь {target.full_name} размучен.")
+    except Exception as e:
+        await message.reply(f"❌ Ошибка: {e}")
 
-@antispam
-@moderation
-async def ban_cmd(message: types.Message, user: BFGuser):
+async def ban_cmd(message: types.Message):
     """Забанить пользователя (с временем или навсегда)"""
     if not message.reply_to_message:
         await message.reply("❌ Ответьте на сообщение пользователя.")
@@ -89,58 +86,57 @@ async def ban_cmd(message: types.Message, user: BFGuser):
         seconds = parse_time(args[1])
         if seconds:
             until = datetime.now() + timedelta(seconds=seconds)
-        else:
-            await message.reply("❌ Неверный формат времени. Бан будет вечным.")
-            until = None
-    else:
-        until = None  # вечный бан
 
-    await bot.ban_chat_member(
-        chat_id=message.chat.id,
-        user_id=target.id,
-        until_date=until
-    )
+    try:
+        await bot.ban_chat_member(
+            chat_id=message.chat.id,
+            user_id=target.id,
+            until_date=until
+        )
+        time_str = args[1] if len(args) >= 2 else "навсегда"
+        await message.reply(f"⛔ Пользователь {target.full_name} забанен ({time_str}).")
+    except Exception as e:
+        await message.reply(f"❌ Ошибка: {e}")
 
-    time_str = args[1] if len(args) >= 2 else "навсегда"
-    await message.reply(f"⛔ Пользователь {target.full_name} забанен ({time_str}).")
-
-@antispam
-@moderation
-async def unban_cmd(message: types.Message, user: BFGuser):
+async def unban_cmd(message: types.Message):
     """Разбанить пользователя"""
     if not message.reply_to_message:
         await message.reply("❌ Ответьте на сообщение пользователя.")
         return
 
     target = message.reply_to_message.from_user
-    await bot.unban_chat_member(
-        chat_id=message.chat.id,
-        user_id=target.id,
-        only_if_banned=True
-    )
 
-    await message.reply(f"✅ Пользователь {target.full_name} разбанен.")
+    try:
+        await bot.unban_chat_member(
+            chat_id=message.chat.id,
+            user_id=target.id,
+            only_if_banned=True
+        )
+        await message.reply(f"✅ Пользователь {target.full_name} разбанен.")
+    except Exception as e:
+        await message.reply(f"❌ Ошибка: {e}")
 
-@antispam
-@moderation
-async def kick_cmd(message: types.Message, user: BFGuser):
+async def kick_cmd(message: types.Message):
     """Выгнать пользователя (кик)"""
     if not message.reply_to_message:
         await message.reply("❌ Ответьте на сообщение пользователя.")
         return
 
     target = message.reply_to_message.from_user
-    await bot.ban_chat_member(
-        chat_id=message.chat.id,
-        user_id=target.id,
-        until_date=datetime.now() + timedelta(seconds=1)  # баним на секунду
-    )
-    await bot.unban_chat_member(
-        chat_id=message.chat.id,
-        user_id=target.id
-    )
 
-    await message.reply(f"👢 Пользователь {target.full_name} кикнут.")
+    try:
+        await bot.ban_chat_member(
+            chat_id=message.chat.id,
+            user_id=target.id,
+            until_date=datetime.now() + timedelta(seconds=1)
+        )
+        await bot.unban_chat_member(
+            chat_id=message.chat.id,
+            user_id=target.id
+        )
+        await message.reply(f"👢 Пользователь {target.full_name} кикнут.")
+    except Exception as e:
+        await message.reply(f"❌ Ошибка: {e}")
 
 def reg(dp: Dispatcher):
     dp.message.register(mute_cmd, F.text.startswith(("мут", "mute")))
