@@ -12,6 +12,7 @@ from bot import bot
 
 # Словарь для хранения времени последнего действия пары
 last_action_time = {}  # ключ: "user1_user2", значение: timestamp
+active_proposals = {}
 
 # RP команды для пар с привязкой к уровням
 COUPLE_ACTIONS = {
@@ -307,7 +308,157 @@ async def my_couple_level_cmd(message: types.Message, user: BFGuser):
     await message.answer(response, parse_mode="HTML")
 
 
+@antispam
+async def rp_couple_sex_proposal(message: types.Message, user: BFGuser):
+    """Предложение интима партнёру с подтверждением"""
+    win, lose = BFGconst.emj()
+    
+    # Проверка на групповой чат
+    if message.chat.type == "private":
+        await message.answer(
+            f"{user.url}, эта команда работает только в общих чатах! 🌍",
+            parse_mode="HTML"
+        )
+        return
+    
+    # Проверка наличия пары
+    couple_data = await get_wedlock(user.id)
+    if not couple_data:
+        await message.answer(
+            f"{user.url}, у вас нет пары! Сначала найдите свою половинку через 💍 <b>свадьбу</b>",
+            parse_mode="HTML"
+        )
+        return
+    
+    # Определяем партнёра
+    partner_id = couple_data[0] if couple_data[1] == user.id else couple_data[1]
+    
+    # Проверяем, нет ли уже активного предложения
+    if user.id in active_proposals:
+        await message.answer(
+            f"{user.url}, у вас уже есть активное предложение! Подождите ответа.",
+            parse_mode="HTML"
+        )
+        return
+    
+    # Проверяем, есть ли партнёр в чате
+    partner_in_chat = await is_user_in_chat(message.chat.id, partner_id)
+    if not partner_in_chat:
+        partner_name = await get_name(partner_id)
+        await message.answer(
+            f"{user.url}, вашей половинки нет в этом чате! 😢",
+            parse_mode="HTML"
+        )
+        return
+    
+    # Получаем имена
+    user_name = message.from_user.full_name
+    user_mention = f"<a href='tg://user?id={user.id}'>{user_name}</a>"
+    partner_name = await get_name(partner_id)
+    partner_mention = f"<a href='tg://user?id={partner_id}'>{partner_name}</a>"
+    
+    # Сохраняем предложение
+    active_proposals[user.id] = (partner_id, message.message_id, time.time())
+    
+    # Создаём клавиатуру
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(
+        InlineKeyboardButton(text="💚 Согласиться", callback_data=f"sex_accept_{user.id}"),
+        InlineKeyboardButton(text="💔 Отказаться", callback_data=f"sex_decline_{user.id}")
+    )
+    
+    # Отправляем уведомление в чат
+    await message.answer(
+        f"💕 <b>ИНТИМНОЕ ПРЕДЛОЖЕНИЕ</b> 💕\n\n"
+        f"{user_mention} делает предложение {partner_mention}...\n\n"
+        f"✨ {partner_name}, согласны ли вы?",
+        reply_markup=keyboard.as_markup(),
+        parse_mode="HTML"
+    )
+
+
+@antispam_earning
+async def sex_accept_callback(call: types.CallbackQuery, user: BFGuser):
+    """Обработка согласия"""
+    proposer_id = int(call.data.split('_')[2])
+    
+    # Проверяем, существует ли предложение
+    if proposer_id not in active_proposals:
+        await call.answer("❌ Это предложение уже неактуально.", show_alert=True)
+        await call.message.delete()
+        return
+    
+    partner_id, msg_id, timestamp = active_proposals[proposer_id]
+    
+    # Проверяем, что отвечает именно партнёр
+    if user.id != partner_id:
+        await call.answer("❌ Это не ваше предложение!", show_alert=True)
+        return
+    
+    # Проверяем срок действия (10 минут)
+    if time.time() - timestamp > 600:
+        await call.answer("⌛️ Время вышло! Предложение устарело.", show_alert=True)
+        await call.message.delete()
+        active_proposals.pop(proposer_id, None)
+        return
+    
+    # Получаем имена
+    proposer_name = await get_name(proposer_id)
+    partner_name = await get_name(partner_id)
+    proposer_mention = f"<a href='tg://user?id={proposer_id}'>{proposer_name}</a>"
+    partner_mention = f"<a href='tg://user?id={partner_id}'>{partner_name}</a>"
+    
+    # Удаляем предложение
+    active_proposals.pop(proposer_id, None)
+    
+    # Случайный результат (90% успех, 10% неудача)
+    success = random.random() < 0.9
+    
+    if success:
+        result_text = f"🎉 <b>УРА! СВЕРШИЛОСЬ!</b> 🎉\n\n{proposer_mention} и {partner_mention} 💕"
+        # Можно начислить бонусные искры
+        sparks_earned = random.randint(5, 10)
+        await add_sparks(proposer_id, partner_id, sparks_earned)
+        result_text += f"\n\n✨ <b>+{sparks_earned} искр</b> за особый момент!"
+    else:
+        result_text = f"😢 {proposer_mention}, вам отказали...\n\n💔 Попробуйте в другой раз."
+    
+    await call.message.edit_text(result_text, parse_mode="HTML")
+    await call.answer()
+
+
+@antispam_earning
+async def sex_decline_callback(call: types.CallbackQuery, user: BFGuser):
+    """Обработка отказа"""
+    proposer_id = int(call.data.split('_')[2])
+    
+    if proposer_id not in active_proposals:
+        await call.answer("❌ Предложение уже неактуально.", show_alert=True)
+        await call.message.delete()
+        return
+    
+    partner_id, msg_id, timestamp = active_proposals[proposer_id]
+    
+    if user.id != partner_id:
+        await call.answer("❌ Это не ваше предложение!", show_alert=True)
+        return
+    
+    proposer_name = await get_name(proposer_id)
+    proposer_mention = f"<a href='tg://user?id={proposer_id}'>{proposer_name}</a>"
+    
+    active_proposals.pop(proposer_id, None)
+    
+    result_text = f"😢 {proposer_mention}, вам отказали...\n\n💔 Попробуйте в другой раз."
+    
+    await call.message.edit_text(result_text, parse_mode="HTML")
+    await call.answer()
+
+
+# Добавьте регистрацию новых обработчиков в функцию reg
 def reg(dp: Dispatcher):
     dp.message.register(rp_couple_list_cmd, lambda msg: msg.text and msg.text.strip() == ".отн список")
     dp.message.register(rp_couple_cmd, lambda msg: msg.text and msg.text.startswith(".отн ") and not msg.text.strip() == ".отн список")
     dp.message.register(my_couple_level_cmd, lambda msg: msg.text and msg.text.strip() == ".мой уровень")
+    dp.message.register(rp_couple_sex_proposal, lambda msg: msg.text and msg.text.strip() == ".отн секс")
+    dp.callback_query.register(sex_accept_callback, F.data.startswith("sex_accept_"))
+    dp.callback_query.register(sex_decline_callback, F.data.startswith("sex_decline_"))
