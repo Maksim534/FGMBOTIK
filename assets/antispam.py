@@ -45,6 +45,45 @@ def admin_only(private=False):
     return wrapper
 
 
+def antispam(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        print(f"🔥 antispam wrapper вызван для функции {func.__name__}")
+        message = None
+
+        for arg in args:
+            if isinstance(arg, types.Message):
+                message = arg
+                break
+        if not message and 'message' in kwargs:
+            message = kwargs['message']
+
+        if not message:
+            raise ValueError("antispam: argument not found message: types.Message")
+
+        if message.forward_from:
+            return
+
+        if message.chat.type == "supergroup":
+            await db.upd_chat_db(message.chat.id)
+
+        uid = message.from_user.id
+        ban = await check_ban(uid)
+        if ban:
+            return
+
+        sig = inspect.signature(func)
+        if "user" in sig.parameters and "user" not in kwargs:
+            user = BFGuser(message=message)
+            await user.update()
+            kwargs["user"] = user
+
+        await FunEvent.emit(func.__name__, message, kwargs.get("user"), "message")
+        return await func(*args, **kwargs)
+
+    return wrapper
+
+
 def antispam_earning(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
