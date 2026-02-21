@@ -566,14 +566,20 @@ else:
 # ==================== БЕСПЛАТНАЯ РУЛЕТКА ====================
 
 
+# ==================== РУЛЕТКА ====================
+# Словарь для хранения времени последней игры
+last_roulette_time = {}
+
+# Призы и их шансы (в сумме 100)
 ROULETTE_PRIZES = [
-    {"name": "💰 Деньги", "chance": 45, "min": 5_000_000, "max": 50_000_000},
-    {"name": "💡 Опыт", "chance": 18, "min": 1000, "max": 10000},
-    {"name": "👑 Рейтинг", "chance": 12, "min": 500, "max": 5000},
-    {"name": "🌐 Биткоины", "chance": 11, "min": 1, "max": 500},
-    {"name": "💳 B-Coins", "chance": 6, "min": 1, "max": 5},
-    {"name": "⚡ Энергия", "chance": 3.5, "min": 50, "max": 100},
-    {"name": "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА", "chance": 2.5, "car_id": 101},
+    {"name": "💰 Деньги", "chance": 50, "min": 5_000_000, "max": 50_000_000},
+    {"name": "💡 Опыт", "chance": 15, "min": 1000, "max": 10000},
+    {"name": "👑 Рейтинг", "chance": 10, "min": 500, "max": 5000},
+    {"name": "🌐 Биткоины", "chance": 10, "min": 0.001, "max": 0.05},
+    {"name": "💳 B-Coins", "chance": 8, "min": 100, "max": 1000},
+    {"name": "⚡ Энергия", "chance": 5, "min": 5, "max": 20},
+    {"name": "💴 Йены", "chance": 1.5, "min": 1_000_000, "max": 10_000_000},
+    {"name": "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА", "chance": 0.5, "car_id": 101},
 ]
 
 # Анимация вращения
@@ -604,52 +610,45 @@ async def roulette_info_cmd(message: types.Message, user: BFGuser):
     """Информация о рулетке и шансах"""
     win, lose = BFGconst.emj()
     
-    # Формируем текст с шансами
-    text = f"""🎰 <b>РУЛЕТКА УДАЧИ</b> 🎰
-
-{user.url}, крути рулетку и выигрывай ценные призы! 
-Игра доступна <b>1 раз в 24 часа</b> и абсолютно бесплатно!
-
-━━━━━━━━━━━━━━━━━━━━
-📊 <b>ШАНСЫ ВЫПАДЕНИЯ:</b>
-━━━━━━━━━━━━━━━━━━━━
-"""
+    text = f"🎰 <b>Рулетка удачи</b> 🎰\n\n"
+    text += f"{user.url}, крути рулетку и выигрывай ценные призы!\n"
+    text += f"Игра доступна <b>1 раз в 6 часов</b> и абсолютно бесплатная!\n\n"
+    text += f"📊 <b>Шансы выпадения:</b>\n"
     
     for prize in ROULETTE_PRIZES:
         if prize["name"] == "💰 Деньги":
-            text += f"{prize['name']}: {prize['chance']}% (от {tr(prize['min'])}$ до {tr(prize['max'])}$)\n"
+            text += f"  • {prize['name']}: {prize['chance']}% (от {tr(prize['min'])}$ до {tr(prize['max'])}$)\n"
         elif prize["name"] == "💡 Опыт":
-            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
+            text += f"  • {prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
         elif prize["name"] == "👑 Рейтинг":
-            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
+            text += f"  • {prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
         elif prize["name"] == "🌐 Биткоины":
-            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} BTC)\n"
+            text += f"  • {prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} BTC)\n"
         elif prize["name"] == "💳 B-Coins":
-            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} монет)\n"
+            text += f"  • {prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} монет)\n"
         elif prize["name"] == "⚡ Энергия":
-            text += f"{prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
+            text += f"  • {prize['name']}: {prize['chance']}% ({prize['min']}-{prize['max']} ед.)\n"
+        elif prize["name"] == "💴 Йены":
+            text += f"  • {prize['name']}: {prize['chance']}% (от {tr(prize['min'])}¥ до {tr(prize['max'])}¥)\n"
         elif prize["name"] == "🚗 ЭКСКЛЮЗИВНАЯ МАШИНА":
             car_name = exclusive_cars[prize["car_id"]][0]
-            text += f"{prize['name']}: {prize['chance']}% ({car_name})\n"
+            text += f"  • {prize['name']}: {prize['chance']}% ({car_name})\n"
     
-    text += f"""
-━━━━━━━━━━━━━━━━━━━━
-💡 <b>КАК ИГРАТЬ:</b>
-• Нажми кнопку "🎰 Крутить рулетку"
-• Наслаждайся анимацией вращения
-• Получи свой приз!
-
-⏳ <b>Ограничение:</b> 1 раз в 24 часа
-💸 <b>Стоимость:</b> БЕСПЛАТНО
-
-<i>Желаем удачи! 🍀</i>"""
+    text += f"\n💡 <b>Как играть?</b>\n"
+    text += f"1. Нажми кнопку «Крутить рулетку»\n"
+    text += f"2. Наслаждайся анимацией\n"
+    text += f"3. Получи свой приз!\n\n"
+    text += f"⏳ <b>Ограничение:</b> 1 раз в 6 часов\n"
+    text += f"💸 <b>Стоимость:</b> бесплатно\n\n"
+    text += f"<i>Желаем удачи! 🍀</i>"
 
     # Создаём кнопку для запуска
     keyboard = InlineKeyboardBuilder()
+    bot_mention = f"@{cfg.bot_username}"
     keyboard.row(
         InlineKeyboardButton(
             text="🎰 Крутить рулетку",
-            switch_inline_query_current_chat=f"крутить рулетку"
+            switch_inline_query_current_chat=f"{bot_mention} рулетка"
         )
     )
     
@@ -661,24 +660,23 @@ async def roulette_play_cmd(message: types.Message, user: BFGuser):
     """Запуск анимированной рулетки"""
     win, lose = BFGconst.emj()
     
-    # Проверка кулдауна (24 часа)
+    # Проверка кулдауна (6 часов = 21600 секунд)
     current_time = time.time()
     last_time = last_roulette_time.get(user.id, 0)
     time_diff = current_time - last_time
-    cooldown = 86400  # 24 часа в секундах
+    cooldown = 21600  # 6 часов в секундах
     
     if time_diff < cooldown:
         hours = int((cooldown - time_diff) // 3600)
         minutes = int(((cooldown - time_diff) % 3600) // 60)
         await message.answer(
-            f"{user.url}, ⏳ рулетка ещё крутится!\n"
-            f"Следующий раз через {hours} ч {minutes} мин {lose}"
+            f"{user.url}, рулетка ещё крутится! Следующий раз через {hours} ч {minutes} мин {lose}"
         )
         return
     
     # Отправляем первое сообщение
     msg = await message.answer(
-        f"{user.url}, 🎰 <b>РУЛЕТКА ЗАПУЩЕНА!</b>\n\n"
+        f"{user.url}, 🎰 <b>рулетка запущена!</b>\n\n"
         f"{ROULETTE_ANIMATION[0]}",
         parse_mode="HTML"
     )
@@ -687,7 +685,7 @@ async def roulette_play_cmd(message: types.Message, user: BFGuser):
     for frame in ROULETTE_ANIMATION[1:-1]:
         await asyncio.sleep(0.5)
         await msg.edit_text(
-            f"{user.url}, 🎰 <b>РУЛЕТКА ЗАПУЩЕНА!</b>\n\n"
+            f"{user.url}, 🎰 <b>рулетка запущена!</b>\n\n"
             f"{frame}",
             parse_mode="HTML"
         )
@@ -744,6 +742,10 @@ async def roulette_play_cmd(message: types.Message, user: BFGuser):
         win_amount = random.randint(prize["min"], prize["max"])
         await user.energy.upd(win_amount, '+')
         win_text = f"{prize['name']}: +{win_amount}"
+    elif prize["name"] == "💴 Йены":
+        win_amount = random.randint(prize["min"], prize["max"])
+        await user.yen.upd(win_amount, '+')
+        win_text = f"{prize['name']}: +{tr(win_amount)}¥"
     else:
         win_text = f"{prize['name']}"
     
@@ -752,10 +754,10 @@ async def roulette_play_cmd(message: types.Message, user: BFGuser):
     
     # Финальное сообщение
     await msg.edit_text(
-        f"{user.url}, 🎰 <b>РУЛЕТКА ОСТАНОВИЛАСЬ!</b>\n\n"
-        f"🎯 <b>ВАШ ПРИЗ:</b>\n"
+        f"{user.url}, 🎰 <b>рулетка остановилась!</b>\n\n"
+        f"🎯 <b>Ваш приз:</b>\n"
         f"{win_text}\n\n"
-        f"⏳ Следующий раз через 24 часа",
+        f"⏳ Следующий раз через 6 часов",
         parse_mode="HTML"
     )
 
