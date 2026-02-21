@@ -112,8 +112,8 @@ async def unban_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-    print("🔥 reg() ВЫЗВАНА для moderation.py")
-    dp.message.register(mute_cmd, lambda msg: True)
+	print("🔥 reg() ВЫЗВАНА для moderation.py")
+	dp.message.register(mute_cmd, lambda msg: True)
 	dp.message.register(unmute_cmd, F.text.startswith(("unmute", "размут", "говори")))
 	dp.message.register(ban_cmd, F.text.startswith(("ban", "бан",)))
 	dp.message.register(unban_cmd, F.text.startswith(("unban", "разбан")))
