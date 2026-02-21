@@ -110,6 +110,11 @@ async def unban_cmd(message: types.Message, user: BFGuser):
 	await bot.unban_chat_member(chat_id, rid, only_if_banned=True)
 	await message.answer(f'Администратор {user.url}, снял бан {rname}.')
 
+@dp.message()
+async def catch_all(message: types.Message):
+    print(f"🔥 Поймано сообщение: '{message.text}'")
+    await message.answer("Сообщение получено!")
+	
 
 def reg(dp: Dispatcher):
 	print("🔥 reg() ВЫЗВАНА для moderation.py")
