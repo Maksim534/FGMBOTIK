@@ -27,7 +27,6 @@ def admin_only(private=False):
 def antispam(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
-        print(f"🔥 antispam wrapper вызван для функции {func.__name__}")
         message = None
 
         for arg in args:
