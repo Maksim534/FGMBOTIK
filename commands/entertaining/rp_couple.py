@@ -1,7 +1,7 @@
 import re
 import random
 import time
-from aiogram import types, Dispatcher
+from aiogram import types, Dispatcher, F
 from aiogram.filters import Command
 
 from assets.antispam import antispam, antispam_earning
