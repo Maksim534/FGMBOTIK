@@ -4,7 +4,7 @@ import time
 from aiogram import types, Dispatcher
 from aiogram.filters import Command
 
-from assets.antispam import antispam
+from assets.antispam import antispam, antispam_earning
 from commands.entertaining.db import get_wedlock, add_sparks, get_couple_level, LEVEL_NAMES
 from commands.db import url_name, get_name
 from user import BFGuser, BFGconst
