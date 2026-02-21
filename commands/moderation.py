@@ -1,120 +1,150 @@
 from aiogram import types, Dispatcher, F
 from aiogram.types import ChatPermissions
-
-from datetime import timedelta
-from assets.antispam import antispam, moderation
-from commands.db import chek_user
-from assets.gettime import get_ptime
-from bot import bot
-from user import BFGuser
-import time
+from datetime import timedelta, datetime
 import re
 
-print("🔥 МОДУЛЬ MODERATION ЗАГРУЖЕН!")
+from assets.antispam import antispam, moderation
+from bot import bot
+from user import BFGuser
 
-time_units = {"д": 86400, "d": 86400, "ч": 3600, "h": 3600, "м": 60, "m": 60}
+# Конвертер времени: 10м -> 600 секунд, 2ч -> 7200, 1д -> 86400
+TIME_UNITS = {
+    'м': 60, 'm': 60,
+    'ч': 3600, 'h': 3600,
+    'д': 86400, 'd': 86400
+}
 
-MutePermissions = ChatPermissions(
-	can_send_messages=False,
-	can_send_audios=False,
-	can_send_documents=False,
-	can_send_photos=False,
-	can_send_videos=False,
-	can_send_video_notes=False,
-	can_send_voice_notes=False,
-	can_send_other_messages=False
-)
+def parse_time(text: str) -> int | None:
+    """Извлекает число и единицу времени из строки (например, '10м' -> 600)"""
+    match = re.search(r'(\d+)\s*([мчдmhd]?)', text.lower().strip())
+    if not match:
+        return None
+    amount = int(match.group(1))
+    unit = match.group(2) or 'м'  # если единица не указана, считаем минуты
+    if unit not in TIME_UNITS:
+        return None
+    return amount * TIME_UNITS[unit]
 
-UnMutePermissions = ChatPermissions(
-	can_send_messages=True,
-	can_send_audios=True,
-	can_send_documents=True,
-	can_send_photos=True,
-	can_send_videos=True,
-	can_send_video_notes=True,
-	can_send_voice_notes=True,
-	can_send_other_messages=True
-)
-
-
-async def get_ruser(message: types.Message) -> str:
-	user_id = message.reply_to_message.from_user.id
-	user = await chek_user(user_id)
-	if not user:
-		rname = message.from_user.full_name.replace('<', '').replace('>', '').replace('@', '').replace('t.me', '')
-		return f'<a href="tg://user?id={user_id}">{rname}</a>'
-	return f'<a href="tg://user?id={user_id}">{user[0]}</a>'
-
-
-@antispam  # можно пока убрать, если мешает
+@antispam
+@moderation
 async def mute_cmd(message: types.Message, user: BFGuser):
-    print(f"🔥 mute_cmd вызвана! Текст: '{message.text}'")
-    await message.answer("Команда сработала!")
+    """Замутить пользователя (ответом на сообщение)"""
+    if not message.reply_to_message:
+        await message.reply("❌ Ответьте на сообщение пользователя.")
+        return
+
+    args = message.text.split()
+    if len(args) < 2:
+        await message.reply("❌ Укажите время. Пример: мут 10м")
+        return
+
+    seconds = parse_time(args[1])
+    if not seconds:
+        await message.reply("❌ Неверный формат времени. Используйте: 10м, 2ч, 1д")
+        return
+
+    target = message.reply_to_message.from_user
+    until = timedelta(seconds=seconds)
+
+    await bot.restrict_chat_member(
+        chat_id=message.chat.id,
+        user_id=target.id,
+        permissions=ChatPermissions(can_send_messages=False),
+        until_date=datetime.now() + until
+    )
+
+    await message.reply(f"🔇 Пользователь {target.full_name} замучен на {args[1]}.")
 
 @antispam
 @moderation
 async def unmute_cmd(message: types.Message, user: BFGuser):
-	chat_id = message.chat.id
+    """Снять мут с пользователя"""
+    if not message.reply_to_message:
+        await message.reply("❌ Ответьте на сообщение пользователя.")
+        return
 
-	if not message.reply_to_message:
-		await message.reply('Вы должны ответить на сообщение пользователя.')
-		return
-	
-	rid = message.reply_to_message.from_user.id
-	rname = await get_ruser(message)
-	
-	await bot.restrict_chat_member(chat_id, rid, permissions=UnMutePermissions)
-	await message.answer(f'Администратор {user.url}, снял мут {rname}.')
+    target = message.reply_to_message.from_user
+    await bot.restrict_chat_member(
+        chat_id=message.chat.id,
+        user_id=target.id,
+        permissions=ChatPermissions(can_send_messages=True),
+        until_date=None
+    )
 
+    await message.reply(f"🔊 Пользователь {target.full_name} размучен.")
 
 @antispam
 @moderation
 async def ban_cmd(message: types.Message, user: BFGuser):
-	chat_id = message.chat.id
-	
-	if not message.reply_to_message:
-		await message.reply('Вы должны ответить на сообщение пользователя.')
-		return
-	
-	try:
-		pattern = r"(\d+)\s*([a-zа-я]+)"
-		match = re.search(pattern, message.text.lower())
-		amount, unit = match.groups()
-		amount = int(amount)
-		unit = unit[0]
-		ban_time_s = int(amount * time_units[unit])
-		ban_time = timedelta(seconds=ban_time_s)
-	except:
-		ban_time = None
-	
-	rid = message.reply_to_message.from_user.id
-	rname = await get_ruser(message)
-	
-	await bot.ban_chat_member(chat_id, rid, until_date=ban_time)
-	txt = get_ptime(int(time.time() - ban_time_s)) if ban_time else 'всегда'
-	await message.answer(f'Администратор {user.url}, выдал бан на {txt} {rname}.')
+    """Забанить пользователя (с временем или навсегда)"""
+    if not message.reply_to_message:
+        await message.reply("❌ Ответьте на сообщение пользователя.")
+        return
 
+    target = message.reply_to_message.from_user
+    args = message.text.split()
+    until = None
+
+    if len(args) >= 2:
+        seconds = parse_time(args[1])
+        if seconds:
+            until = datetime.now() + timedelta(seconds=seconds)
+        else:
+            await message.reply("❌ Неверный формат времени. Бан будет вечным.")
+            until = None
+    else:
+        until = None  # вечный бан
+
+    await bot.ban_chat_member(
+        chat_id=message.chat.id,
+        user_id=target.id,
+        until_date=until
+    )
+
+    time_str = args[1] if len(args) >= 2 else "навсегда"
+    await message.reply(f"⛔ Пользователь {target.full_name} забанен ({time_str}).")
 
 @antispam
 @moderation
 async def unban_cmd(message: types.Message, user: BFGuser):
-	chat_id = message.chat.id
-	
-	if not message.reply_to_message:
-		await message.reply('Вы должны ответить на сообщение пользователя.')
-		return
-	
-	rid = message.reply_to_message.from_user.id
-	rname = await get_ruser(message)
-	
-	await bot.unban_chat_member(chat_id, rid, only_if_banned=True)
-	await message.answer(f'Администратор {user.url}, снял бан {rname}.')
+    """Разбанить пользователя"""
+    if not message.reply_to_message:
+        await message.reply("❌ Ответьте на сообщение пользователя.")
+        return
 
-	
+    target = message.reply_to_message.from_user
+    await bot.unban_chat_member(
+        chat_id=message.chat.id,
+        user_id=target.id,
+        only_if_banned=True
+    )
+
+    await message.reply(f"✅ Пользователь {target.full_name} разбанен.")
+
+@antispam
+@moderation
+async def kick_cmd(message: types.Message, user: BFGuser):
+    """Выгнать пользователя (кик)"""
+    if not message.reply_to_message:
+        await message.reply("❌ Ответьте на сообщение пользователя.")
+        return
+
+    target = message.reply_to_message.from_user
+    await bot.ban_chat_member(
+        chat_id=message.chat.id,
+        user_id=target.id,
+        until_date=datetime.now() + timedelta(seconds=1)  # баним на секунду
+    )
+    await bot.unban_chat_member(
+        chat_id=message.chat.id,
+        user_id=target.id
+    )
+
+    await message.reply(f"👢 Пользователь {target.full_name} кикнут.")
 
 def reg(dp: Dispatcher):
-	print("🔥 reg() ВЫЗВАНА для moderation.py")
-	dp.message.register(mute_cmd, lambda msg: True)
-	dp.message.register(unmute_cmd, F.text.startswith(("unmute", "размут", "говори")))
-	dp.message.register(ban_cmd, F.text.startswith(("ban", "бан",)))
-	dp.message.register(unban_cmd, F.text.startswith(("unban", "разбан")))
+    dp.message.register(mute_cmd, F.text.startswith(("мут", "mute")))
+    dp.message.register(unmute_cmd, F.text.startswith(("размут", "unmute")))
+    dp.message.register(ban_cmd, F.text.startswith(("бан", "ban")))
+    dp.message.register(unban_cmd, F.text.startswith(("разбан", "unban")))
+    dp.message.register(kick_cmd, F.text.startswith(("кик", "kick")))
