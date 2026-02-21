@@ -46,39 +46,10 @@ async def get_ruser(message: types.Message) -> str:
 	return f'<a href="tg://user?id={user_id}">{user[0]}</a>'
 
 
-@antispam
-#@moderation
+@antispam  # можно пока убрать, если мешает
 async def mute_cmd(message: types.Message, user: BFGuser):
-	print(f"🔥 mute_cmd вызвана! Текст: '{message.text}'")
-	chat_id = message.chat.id
-	
-	if not message.reply_to_message:
-		await message.reply('Вы должны ответить на сообщение пользователя.')
-		return
-	
-	pattern = r"(\d+)\s*([a-zа-я]+)"
-	match = re.search(pattern, message.text.lower())
-	
-	if not match:
-		await message.answer('Проверьте правильность написания команды.')
-		return
-	
-	amount, unit = match.groups()
-	amount = int(amount)
-	unit = unit[0]
-	
-	if unit not in time_units:
-		await message.answer('Проверьте правильность написания команды.')
-		return
-	
-	rid = message.reply_to_message.from_user.id
-	rname = await get_ruser(message)
-	
-	mute_time = amount * time_units[unit]
-	mtime = int(time.time() - mute_time)
-	await bot.restrict_chat_member(chat_id, rid, until_date=timedelta(seconds=mute_time), permissions=MutePermissions)
-	await message.answer(f'Администратор {user.url}, выдал затычку пользователю {rname} на {get_ptime(mtime)}.')
-
+    print(f"🔥 mute_cmd вызвана! Текст: '{message.text}'")
+    await message.answer("Команда сработала!")
 
 @antispam
 @moderation
@@ -141,7 +112,8 @@ async def unban_cmd(message: types.Message, user: BFGuser):
 
 
 def reg(dp: Dispatcher):
-	dp.message.register(mute_cmd, lambda msg: True)  # Будет вызываться на КАЖДОЕ сообщение!
+    print("🔥 reg() ВЫЗВАНА для moderation.py")
+    dp.message.register(mute_cmd, lambda msg: True)
 	dp.message.register(unmute_cmd, F.text.startswith(("unmute", "размут", "говори")))
 	dp.message.register(ban_cmd, F.text.startswith(("ban", "бан",)))
 	dp.message.register(unban_cmd, F.text.startswith(("unban", "разбан")))
