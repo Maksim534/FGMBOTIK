@@ -1,21 +1,16 @@
 import inspect
-
 from aiogram import types
 from functools import wraps
 import time
-
 from aiogram.types import ChatMemberOwner, ChatMemberAdministrator
 
 import config as cfg
 import commands.db as db
 from bot import bot
-
 from user import BFGuser
 from assets.classes import FunEvent
 
-
 earning_msg = {}
-
 
 def admin_only(private=False):
     def decorator(func):
@@ -23,27 +18,11 @@ def admin_only(private=False):
         async def wrapper(message: types.Message, *args, **kwargs):
             if message.from_user.id not in cfg.admin:
                 return
-            
             if private and message.chat.type != "private":
                 return
-            
             return await func(message, *args, **kwargs)
         return wrapper
     return decorator
-
-
-        sig = inspect.signature(func)
-        if "user" in sig.parameters and "user" not in kwargs:
-            user = BFGuser(message=message)
-            await user.update()
-            kwargs["user"] = user
-
-        await FunEvent.emit(func.__name__, message, kwargs.get("user"), "message")
-
-        return await func(*args, **kwargs)
-
-    return wrapper
-
 
 def antispam(func):
     @wraps(func)
@@ -82,7 +61,6 @@ def antispam(func):
         return await func(*args, **kwargs)
 
     return wrapper
-
 
 def antispam_earning(func):
     @wraps(func)
@@ -140,7 +118,6 @@ def antispam_earning(func):
 
     return wrapper
 
-
 def moderation(func):
     async def wrapper(message: types.Message, user: BFGuser):
         if message.forward_from:
@@ -175,7 +152,6 @@ def moderation(func):
         await func(message, user)
 
     return wrapper
-
 
 async def check_ban(user_id: int) -> bool:
     await db.reg_user(user_id=user_id)
@@ -212,7 +188,6 @@ def antispam_carousel(func):
         if ban:
             return
 
-        # Простая проверка на спам (0.5 секунды для плавного листания)
         current_time = time.time()
         last_time = getattr(wrapper, 'last_call', {}).get(uid, 0)
         
@@ -233,10 +208,8 @@ def antispam_carousel(func):
 
     return wrapper
 
-
 async def new_earning_msg(chat_id: int, message_id: int) -> None:
     earning_msg[chat_id, message_id] = (0, time.time()-2)
-    
     
 async def new_earning(msg: types.Message) -> None:
     earning_msg[msg.chat.id, msg.message_id] = (0, time.time()-2)
