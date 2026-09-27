@@ -1,0 +1,303 @@
+import random
+
+from aiogram import types, Dispatcher
+
+from aiogram.types import CallbackQuery
+from assets.antispam import antispam_earning
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from assets.transform import transform_int as tr
+from filters.custom import TextIn, StartsWith
+from user import BFGuser, BFGconst
+from assets.antispam import antispam
+import config as cfg
+from commands.basic.ore import db
+
+# Хранилище последней руды пользователя
+last_ore = {}  # {user_id: "название_руды"}
+
+def get_dig_keyboard(ore: str) -> InlineKeyboardMarkup:
+    """Создаёт кнопку для повторного копания той же руды"""
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    from aiogram.utils.keyboard import InlineKeyboardBuilder
+    
+    builder = InlineKeyboardBuilder()
+    builder.row(InlineKeyboardButton(
+        text=f"⛏ Копать {ore}",
+        switch_inline_query_current_chat=f"копать {ore}"
+    ))
+    return builder.as_markup()
+
+@antispam
+async def energy_cmd(message: types.Message, user: BFGuser):
+    await message.answer(f"{user.url}, на данный момент у тебя {user.energy} ⚡")
+
+
+@antispam
+async def mine_cmd(message: types.Message, user: BFGuser):
+    await message.answer(f"""{user.url}, добро пожаловать на вашу шахту! 🏞️
+
+Здесь вы можете добывать различные ресурсы для продажи, используя свою энергию ⚡.
+
+✨ Для добычи ресурсов используйте:- копать железо
+- копать золото
+- копать алмазы
+- копать аметисты
+- копать аквамарин
+- копать изумруды
+- копать материю
+- копать плазму
+- копать никель
+- копать титан
+- копать кобальт
+- копать эктоплазму
+<b>«Статусы» увеличивают количество выпадаемой руды и получаемого опыта.</b>
+
+🛒 Для продажи ресурсов:
+- продать железо
+- продать золото
+- продать алмазы
+- продать аметисты
+- продать аквамарин
+- продать изумруды
+- продать материю
+- продать плазму
+- продать никель
+- продать титан
+- продать кобальт
+- продать эктоплазму
+- продать палладий
+
+📊 Для статистики:
+- Моя шахта""")
+
+
+@antispam
+async def price_cmd(message: types.Message, user: BFGuser):
+    await message.answer(f"""{user.url}, курс руды:
+⛓ 1 железо - 150$
+🌕 1 золото - 3.000$
+💎 1 алмаз - 5.000$
+🎆 1 аметист - 10.000$
+💠 1 аквамарин - 25.000$
+🍀 1 изумруд - 32.000$
+🌌 1 материя - 48.000$
+💥 1 плазма - 80.000$
+🪙 1 никель - 150.000$
+⚙ 1 титан - 210.000$
+🧪 1 кобальт - 250.000$
+☄️ 1 эктоплазма - 400.000$
+⚗ 1 палладий - 500.000$""")
+
+
+@antispam
+async def inventary_cmd(message: types.Message, user: BFGuser):
+    resources = {
+        "iron": {"name": "⛓ Железо", "quantity": user.mine.iron},
+        "gold": {"name": "🌕 Золото", "quantity": user.mine.gold},
+        "diamond": {"name": "💎 Алмаз", "quantity": user.mine.diamond},
+        "amethyst": {"name": "🎆 Аметист", "quantity": user.mine.amestit},
+        "aquamarine": {"name": "💠 Аквамарин", "quantity": user.mine.aquamarine},
+        "emeralds": {"name": "🍀 Изумруд", "quantity": user.mine.emeralds},
+        "matter": {"name": "🌌 Материя", "quantity": user.mine.matter},
+        "plasma": {"name": "💥 Плазма", "quantity": user.mine.plasma},
+        "nickel": {"name": "🪙 Никель", "quantity": user.mine.nickel},
+        "titanium": {"name": "⚙️ Титан", "quantity": user.mine.titanium},
+        "cobalt": {"name": "🧪 Кобальт", "quantity": user.mine.cobalt},
+        "ectoplasm": {"name": "☄️ Эктоплазма", "quantity": user.mine.ectoplasm},
+        "palladium": {"name": "⚗️ Палладий", "quantity": user.mine.palladium},
+        "corn": {"name": "🥜 Зёрна", "quantity": user.corn},
+        "biores": {"name": "☣️ Биоресурсы", "quantity": user.biores},
+    }
+
+    positive_resources = {name: info for name, info in resources.items() if int(info["quantity"]) > 0}
+
+    if positive_resources:
+        result_message = "\n".join([f"{info['name']}: {int(info['quantity']):,} шт." for name, info in positive_resources.items()])
+        await message.answer(f"{user.url},\n{result_message}")
+    else:
+        await message.answer(f"{user.url}, ваш инвентарь пуст.")
+
+
+def mine_level(expe: int) -> tuple | None:
+    levels = [
+        ("Эктоплазма ☄️", "SOON...", "???", 10000000000),
+        ("Кобаль 🧪", "Эктоплазма ☄️", "10.000.000.000", 20000000),
+        ("Титан ⚙️", "Кобаль 🧪", "20.000.000", 5000000),
+        ("Никель 🪙", "Титан ⚙️", "5.000.000", 950000),
+        ("Плазма 💥", "Никель 🪙", "950.000", 500000),
+        ("Материя 🌌", "Плазма 💥", "500.000", 100000),
+        ("Изумруд 🍀", "Материя 🌌", "100.000", 60000),
+        ("Аквамарин 💠", "Изумруд 🍀", "60.000", 25000),
+        ("Аметист 🎆", "Аквамарин 💠", "25.000", 10000),
+        ("Алмазы 💎", "Аметист 🎆", "10.000", 2000),
+        ("Золото 🌕", "Алмазы 💎", "2.000", 500),
+        ("Железо ⛓", "Золото 🌕", "500", 0)
+    ]
+
+    for level, next_level, limit, threshold in levels:
+        if int(expe) >= threshold:
+            return level, next_level, limit
+
+
+@antispam
+async def my_mine_cmd(message: types.Message, user: BFGuser):
+    mine_level_t, mine_level_s, exp = mine_level(user.expe)
+
+    await message.answer(f"""{user.url}, это ваш профиль шахты:
+🏆 Опыт: {user.expe.tr()}
+⚡ Энергия: {user.energy}
+⛏ Ваш уровень: {mine_level_t}
+➡ Следующий уровень: {mine_level_s}
+⭐️ Требуется {exp} опыта""")
+
+
+@antispam
+async def dig_mine_cmd(message: types.Message, user: BFGuser):
+    ads = BFGconst.ads
+    win, lose = BFGconst.emj()
+
+    # НОВЫЙ КОД: Обработка упоминания бота в начале сообщения
+    text = message.text
+    bot_username = f"@{cfg.bot_username.lower()}"
+    
+    # Если сообщение начинается с @бота, убираем его
+    if text.lower().startswith(bot_username):
+        # Убираем @username и возможный пробел после него
+        text = text[len(bot_username):].lstrip()
+    
+    txt = text.split()
+    # КОНЕЦ НОВОГО КОДА
+
+    if int(user.energy) <= 0:
+        await message.answer(f"{user.url}, у вас недостаточно энергии для копки {lose}")
+        return
+
+    status_limits = {0: 1, 1: 2, 2: 3, 3: 5, 4: 10}
+    coff = status_limits.get(user.status, status_limits[0])
+
+    # Далее ваш существующий код...
+    if len(txt) < 2:
+        await message.answer(f"{user.url}, данной руды не существует {lose}")
+        return
+ 
+    ruda = txt[1].lower()
+    # ... остальная часть функции
+
+    ruda_data = {
+        "железо": ("iron", 40, 1, 0),
+        "золото": ("gold", 4, 3, 500),
+        "алмазы": ("diamond", 2, 5, 2000),
+        "аметисты": ("amestit", 1, 15, 10000),
+        "аквамарин": ("aquamarine", 1, 30, 25000),
+        "изумруды": ("emeralds", 1, 55, 60000),
+        "материю": ("matter", 1, 65, 100000),
+        "плазму": ("plasma", 1, 180, 500000),
+        "никель": ("nickel", 1, 500, 950000),
+        "титан": ("titanium", 1, 2300, 5000000),
+        "кобальт": ("cobalt", 1, 3600, 20000000),
+        "эктоплазму": ("ectoplasm", 1, 7200, 10000000000)
+    }
+
+    if ruda in ruda_data:
+        eng_ruda, min_i, op, min_expe = ruda_data[ruda]
+        
+        # Проверка на минимальный опыт
+        if user.expe.get() < min_expe:
+            await message.answer(f"{user.url}, чтобы копать {ruda} вам требуется {tr(min_expe)} опыта {lose}")
+            return
+
+        # Запоминаем последнюю руду пользователя
+        last_ore[user.id] = ruda
+
+        # Копаем руду
+        i = random.randint(min_i, min_i + 5) * coff
+        await db.dig_ore(i, user.user_id, eng_ruda, op)
+        opit = user.expe.get() + op
+
+        # Отправляем сообщение с кнопкой
+        await message.answer(
+            f"{user.url}, +{i} {ruda}.\n💡 Энергия: {user.energy.get() - 1}, опыт: {tr(opit)}\n\n{ads}",
+            reply_markup=get_dig_keyboard(ruda)
+        )
+    else:
+        await message.answer(f"{user.url}, данной руды не существует {lose}")
+
+@antispam
+async def sell_cmd(message: types.Message, user: BFGuser):
+    user_id = message.from_user.id
+    txt = message.text.split()
+    win, lose = BFGconst.emj()
+
+    if len(txt) < 2:
+        return
+    
+    ruda = txt[1].lower()
+
+    ruda_data = {
+        "железо": ("iron", 150, user.mine.iron),
+        "золото": ("gold", 3000, user.mine.gold),
+        "алмазы": ("diamond", 5000, user.mine.diamond),
+        "аметисты": ("amestit", 10000, user.mine.amestit),
+        "аквамарин": ("aquamarine", 25000, user.mine.aquamarine),
+        "изумруды": ("emeralds", 32000, user.mine.emeralds),
+        "материю": ("matter", 48000, user.mine.matter),
+        "плазму": ("plasma", 80000, user.mine.plasma),
+        "никель": ("nickel", 150000, user.mine.nickel),
+        "титан": ("titanium", 210000, user.mine.titanium),
+        "кобальт": ("cobalt", 250000, user.mine.cobalt),
+        "эктоплазму": ("ectoplasm", 400000, user.mine.ectoplasm),
+        "палладий": ("palladium", 500000, user.mine.palladium)
+    }
+
+    if ruda in ruda_data:
+        balance = int(ruda_data[ruda][2])
+        if len(txt) >= 3:
+            try:
+                kolvo = int(txt[2].lower())
+            except:
+                return
+        else:
+            kolvo = int(balance)
+
+        if kolvo <= 0 or kolvo > balance:
+            await message.answer(f"{user.url}, у вас недостаточно {ruda} {lose}")
+            return
+
+        i = kolvo * int(ruda_data[ruda][1])
+        await db.sell_ore(i, user_id, ruda_data[ruda][0], kolvo)
+        await message.answer(f"{user.url}, вы продали {kolvo} {ruda} за {tr(i)}$ ✅")
+
+
+ruds = ["железо", "золото", "алмазы", "аметисты", "аквамарины", "изумруды", "материю",
+        "плазму", "никель", "титан", "кобальт", "эктоплазму", "палладий"]
+
+@antispam_earning
+async def dig_callback(call: types.CallbackQuery, user: BFGuser):
+    """Обработчик нажатия на кнопку копания"""
+    ore = call.data.split('_')[1]  # Получаем руду из callback_data (формат: dig_железо)
+    
+    # Создаём "виртуальное" сообщение для вызова функции копания
+    class FakeMessage:
+        def __init__(self, text, user_id, chat_id):
+            self.text = text
+            self.from_user = type('obj', (object,), {'id': user_id})
+            self.chat = type('obj', (object,), {'id': chat_id})
+    
+    fake_msg = FakeMessage(f"копать {ore}", user.id, call.message.chat.id)
+    
+    # Вызываем существующую функцию копания
+    await dig_mine_cmd(fake_msg, user)
+    await call.answer()
+
+
+def reg(dp: Dispatcher):
+    # ... существующие регистрации ...
+    #dp.callback_query.register(dig_callback, StartsWith("dig_"))
+    dp.message.register(mine_cmd, TextIn("шахта"))
+    dp.message.register(energy_cmd, TextIn("энергия"))
+    dp.message.register(price_cmd, TextIn("курс руды"))
+    dp.message.register(my_mine_cmd, TextIn("моя шахта"))
+    dp.message.register(dig_mine_cmd, StartsWith("копать "))
+    dp.message.register(sell_cmd, StartsWith("продать"))
+    dp.message.register(inventary_cmd, TextIn("инвентарь"))

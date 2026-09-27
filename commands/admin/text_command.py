@@ -1,0 +1,613 @@
+import time
+import re
+from datetime import datetime, timedelta
+from aiogram import types, Dispatcher, F
+from aiogram.filters import Command
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from commands.db import conn
+
+from assets.transform import transform_int as tr
+from assets.antispam import admin_only
+from commands.admin import db
+from commands.db import url_name, cursor
+from filters.custom import StartsWith
+from user import BFGuser
+from commands.basic.property.db import get_fuel, update_fuel
+from commands.basic.property.lists import cars, exclusive_cars
+
+
+@admin_only()
+async def sql(message: types.Message):
+    res = await db.zap_sql(message.text[message.text.find(' '):])
+    bot_msg = await message.answer(f'🕘 Выполнение запроса...')
+    if not res:
+        await bot_msg.edit_text(f"🚀 SQL Запрос выполнен.")
+    else:
+        await bot_msg.edit_text(f"❌ Возникла ошибка при изменении\n⚠️ Ошибка: {res}")
+        
+        
+@admin_only()
+async def ban(message: types.Message):
+    try:
+        parts = message.text.split()
+        if len(parts) < 3:
+            await message.reply("❌ Используйте: /banb [игровой id] [время] [причина]\n"
+                               "Пример: /banb 105 7д Нарушение")
+            return
+            
+        game_id = parts[1]
+        time_str = parts[2]
+        reason = ' '.join(parts[3:]) if len(parts) > 3 else 'Не указана'
+        
+        # Конвертируем время в секунды
+        total_seconds = 0
+        matches = re.findall(r'(\d+)([дчм])', time_str)
+        
+        if not matches:
+            await message.reply("❌ Неверный формат времени. Используйте: 7д, 5ч, 30м")
+            return
+            
+        for value, unit in matches:
+            value = int(value)
+            if unit == 'д':
+                total_seconds += value * 86400
+            elif unit == 'ч':
+                total_seconds += value * 3600
+            elif unit == 'м':
+                total_seconds += value * 60
+        
+        if total_seconds == 0:
+            await message.reply("❌ Время должно быть больше 0")
+            return
+        
+        # Рассчитываем время разблокировки
+        unban_time = int(time.time()) + total_seconds
+        moscow_time = datetime.fromtimestamp(unban_time) + timedelta(hours=2)
+        unban_date = moscow_time.strftime('%Y-%m-%d %H:%M:%S')  # 👈 ИСПРАВЛЕНО
+        
+    except Exception as e:
+        await message.reply(f"❌ Ошибка: {e}")
+        return
+    # Проверяем существование пользователя
+    user_data = cursor.execute(
+        "SELECT user_id, name FROM users WHERE game_id = ?", 
+        (int(game_id),)
+    ).fetchone()
+    
+    if not user_data:
+        await message.answer(f"❌ Пользователь с игровым ID <b>{game_id}</b> не найден.")
+        return
+    
+    telegram_id, name = user_data
+    
+    # Баним
+    await db.new_ban(telegram_id, unban_time, reason)
+    
+    # Форматируем время для вывода
+    if 'д' in time_str:
+        display_time = time_str
+    else:
+        # Переводим секунды обратно в дни/часы/минуты
+        days = total_seconds // 86400
+        hours = (total_seconds % 86400) // 3600
+        minutes = (total_seconds % 3600) // 60
+        parts = []
+        if days > 0: parts.append(f"{days}д")
+        if hours > 0: parts.append(f"{hours}ч")
+        if minutes > 0: parts.append(f"{minutes}м")
+        display_time = ''.join(parts)
+    
+    await message.answer(
+        f'📛 <b>Пользователь заблокирован</b>\n'
+        f'👤 Имя: {name}\n'
+        f'🆔 Игровой ID: {game_id}\n'
+        f'⏱ Срок: {display_time}\n'
+        f'📅 Разблокировка: {unban_date}\n'
+        f'📋 Причина: {reason}'
+    )
+
+
+@admin_only()
+async def unban(message: types.Message):
+    try:
+        parts = message.text.split()
+        if len(parts) < 2:
+            await message.reply("❌ Используйте: /unbanb [игровой id]")
+            return
+            
+        game_id = parts[1]
+        
+    except Exception as e:
+        await message.reply(f"❌ Ошибка: {e}")
+        return
+    
+    # Проверяем существование пользователя
+    user_data = cursor.execute(
+        "SELECT user_id, name FROM users WHERE game_id = ?", 
+        (int(game_id),)
+    ).fetchone()
+    
+    if not user_data:
+        await message.answer(f"❌ Пользователь с игровым ID <b>{game_id}</b> не найден.")
+        return
+    
+    telegram_id, name = user_data
+    
+    # Проверяем, забанен ли пользователь
+    ban_info = cursor.execute(
+        "SELECT * FROM ban_list WHERE user_id = ?", 
+        (telegram_id,)
+    ).fetchone()
+    
+    if not ban_info:
+        await message.answer(f"👤 {name} (ID: {game_id}) не находится в бане.")
+        return
+    
+    # Разбаниваем - передаём game_id
+    await db.unban_user(int(game_id))
+    
+    await message.answer(
+        f'🛡 <b>Пользователь разблокирован</b>\n'
+        f'👤 Имя: {name}\n'
+        f'🆔 Игровой ID: {game_id}'
+    )
+    
+@admin_only()
+async def take_the_money(message: types.Message):
+    """Команда 'забрать' - забирает деньги у пользователя (ответом на сообщение)"""
+    admin_id = message.from_user.id
+    admin_url = await url_name(admin_id)
+
+    # Проверяем, что это ответ на сообщение
+    if not message.reply_to_message:
+        await message.answer(f'{admin_url}, чтобы забрать деньги нужно ответить на сообщение пользователя.')
+        return
+    
+    try:
+        target_user_id = message.reply_to_message.from_user.id
+        target_url = await url_name(target_user_id)
+    except Exception as e:
+        await message.answer(f'{admin_url}, ошибка получения пользователя.')
+        return
+
+    # Получаем сумму
+    try:
+        parts = message.text.split()
+        if len(parts) < 2:
+            await message.answer(f'{admin_url}, вы не ввели сумму которую хотите забрать.')
+            return
+            
+        summ_str = parts[1].replace('е', 'e').replace(' ', '')
+        summ = int(float(summ_str))
+        
+        if summ <= 0:
+            await message.answer(f'{admin_url}, сумма должна быть больше 0.')
+            return
+            
+    except ValueError:
+        await message.answer(f'{admin_url}, введите корректную сумму.')
+        return
+    except Exception as e:
+        await message.answer(f'{admin_url}, ошибка в формате суммы.')
+        return
+
+    # Проверяем баланс пользователя
+    balance = cursor.execute(
+        "SELECT balance FROM users WHERE user_id = ?", 
+        (target_user_id,)
+    ).fetchone()
+    
+    if not balance:
+        await message.answer(f'{admin_url}, пользователь не найден в базе данных.')
+        return
+    
+    current_balance = int(balance[0])
+    if current_balance < summ:
+        await message.answer(
+            f'{admin_url}, у пользователя {target_url} недостаточно денег.\n'
+            f'💰 Баланс: {tr(current_balance)}$'
+        )
+        return
+
+    # Забираем деньги
+    await db.take_the_money(target_user_id, summ)
+    
+    await message.answer(
+        f'{admin_url}, вы забрали {tr(summ)}$ у пользователя {target_url}\n'
+        f'💰 Новый баланс: {tr(current_balance - summ)}$'
+    )
+
+
+@admin_only()
+async def reset_the_money(message: types.Message):
+    """Команда 'обнулить' - полностью обнуляет прогресс пользователя (по реплаю или по ID)"""
+    admin_id = message.from_user.id
+    admin_url = await url_name(admin_id)
+    
+    target_user_id = None
+    target_url = None
+    target_game_id = None
+    
+    # Случай 1: Обнуление по реплаю (ответ на сообщение)
+    if message.reply_to_message:
+        try:
+            target_user_id = message.reply_to_message.from_user.id
+            target_url = await url_name(target_user_id)
+            
+            # Получаем game_id пользователя
+            game_id_data = cursor.execute(
+                "SELECT game_id FROM users WHERE user_id = ?", 
+                (target_user_id,)
+            ).fetchone()
+            target_game_id = game_id_data[0] if game_id_data else None
+            
+        except Exception as e:
+            await message.answer(f'{admin_url}, ошибка получения пользователя: {e}')
+            return
+    
+    # Случай 2: Обнуление по игровому ID (например: обнулить 105)
+    else:
+        try:
+            parts = message.text.split()
+            if len(parts) < 2:
+                await message.answer(
+                    f'{admin_url}, укажите игровой ID или ответьте на сообщение пользователя.\n'
+                    f'Пример: обнулить 105'
+                )
+                return
+            
+            game_id = int(parts[1])
+            target_game_id = game_id
+            
+            # Ищем пользователя по game_id
+            user_data = cursor.execute(
+                "SELECT user_id, name FROM users WHERE game_id = ?", 
+                (game_id,)
+            ).fetchone()
+            
+            if not user_data:
+                await message.answer(f'{admin_url}, пользователь с игровым ID <b>{game_id}</b> не найден.')
+                return
+            
+            target_user_id = user_data[0]
+            target_url = await url_name(target_user_id)
+            
+        except ValueError:
+            await message.answer(f'{admin_url}, игровой ID должен быть числом.')
+            return
+        except Exception as e:
+            await message.answer(f'{admin_url}, ошибка: {e}')
+            return
+    
+    # Запрашиваем подтверждение
+    markup = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="✅ Да, обнулить", callback_data=f"confirm_reset_{target_user_id}"),
+            InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_reset")
+        ]
+    ])
+    
+    await message.answer(
+        f'{admin_url}, вы действительно хотите ПОЛНОСТЬЮ ОБНУЛИТЬ пользователя?\n\n'
+        f'👤 Имя: {target_url}\n'
+        f'🆔 Игровой ID: {target_game_id}\n'
+        f'🆔 Telegram ID: <code>{target_user_id}</code>\n\n'
+        f'⚠️ Это действие удалит:\n'
+        f'• Все деньги и банковские счета\n'
+        f'• Всю недвижимость и имущество\n'
+        f'• Весь прогресс в шахте, ферме, бизнесе\n'
+        f'• Энергию, опыт и рейтинг\n\n'
+        f'<b>Это действие необратимо!</b>',
+        reply_markup=markup
+    )
+
+
+@admin_only()
+async def reset_cancel_callback(call: types.CallbackQuery):
+    """Отмена обнуления"""
+    await call.message.edit_text('❌ Обнуление отменено.')
+    await call.answer()
+
+@admin_only()
+async def reset_confirm_callback(call: types.CallbackQuery):  # 👈 Убрали user
+    """Подтверждение обнуления пользователя"""
+    try:
+        # Получаем ID из callback_data (формат: confirm_reset_123456789)
+        target_user_id = int(call.data.split('_')[2])
+        
+        # Обнуляем пользователя
+        await db.reset_the_money(target_user_id)
+        
+        # Получаем информацию для красивого ответа
+        user_data = cursor.execute(
+            "SELECT game_id, name FROM users WHERE user_id = ?", 
+            (target_user_id,)
+        ).fetchone()
+        
+        target_game_id = user_data[0] if user_data else "?"
+        target_name = user_data[1] if user_data else "Неизвестно"
+        
+        await call.message.edit_text(
+            f'✅ Пользователь успешно обнулён!\n'
+            f'👤 Имя: {target_name}\n'
+            f'🆔 Игровой ID: {target_game_id}\n'
+            f'🆔 Telegram ID: <code>{target_user_id}</code>\n\n'
+            f'Все его данные сброшены до начальных значений.'
+        )
+    except Exception as e:
+        await call.message.edit_text(f'❌ Ошибка при обнулении: {e}')
+    finally:
+        await call.answer()
+
+@admin_only()
+async def give_exclusive_car(message: types.Message):
+    """Выдать эксклюзивную машину игроку (по реплаю, игровому ID или Telegram ID)"""
+    try:
+        parts = message.text.split()
+        
+        # Проверяем минимальное количество аргументов
+        if len(parts) < 2:
+            await message.answer(
+                "❌ Используйте:\n"
+                "• `/eksotic [id_игрока] [id_машины]` — по ID\n"
+                "• `/eksotic [id_машины]` — ответом на сообщение\n\n"
+                "<i>ID игрока может быть игровым или Telegram ID</i>",
+                parse_mode="HTML"
+            )
+            return
+        
+        target_id = None
+        car_id = None
+        
+        # Случай 1: Выдача по реплаю (без ID игрока)
+        if message.reply_to_message:
+            if len(parts) < 2:
+                await message.answer("❌ Укажите ID машины!")
+                return
+            
+            target_id = message.reply_to_message.from_user.id
+            try:
+                car_id = int(parts[1])
+            except ValueError:
+                await message.answer("❌ ID машины должен быть числом!")
+                return
+        
+        # Случай 2: Выдача по ID игрока
+        else:
+            if len(parts) < 3:
+                await message.answer(
+                    "❌ Укажите ID игрока и ID машины!\n"
+                    "Пример: /eksotic 105 101  (по игровому ID)\n"
+                    "Пример: /eksotic 123456789 101  (по Telegram ID)"
+                )
+                return
+            
+            try:
+                input_id = int(parts[1])
+                car_id = int(parts[2])
+            except ValueError:
+                await message.answer("❌ ID должны быть числами!")
+                return
+            
+            # Ищем пользователя по game_id или user_id
+            # Сначала пробуем найти по game_id
+            user_data = cursor.execute(
+                "SELECT user_id FROM users WHERE game_id = ?", 
+                (input_id,)
+            ).fetchone()
+            
+            if user_data:
+                target_id = user_data[0]  # Нашли по game_id
+            else:
+                # Если не нашли, пробуем как Telegram ID
+                user_data = cursor.execute(
+                    "SELECT user_id FROM users WHERE user_id = ?", 
+                    (input_id,)
+                ).fetchone()
+                if user_data:
+                    target_id = input_id  # Это и есть Telegram ID
+                else:
+                    await message.answer(
+                        f"❌ Игрок с ID <b>{input_id}</b> не найден.\n"
+                        f"Проверьте, правильно ли указан игровой или Telegram ID.",
+                        parse_mode="HTML"
+                    )
+                    return
+        
+        # Проверяем, что target_id определён
+        if not target_id:
+            await message.answer("❌ Не удалось определить ID игрока!")
+            return
+        
+        # Проверяем существование exclusive_cars
+        try:
+            from commands.basic.property.lists import exclusive_cars
+        except ImportError:
+            await message.answer("❌ Ошибка загрузки списка эксклюзивных машин!")
+            return
+        
+        # Проверяем, что это эксклюзивная машина
+        if car_id not in exclusive_cars:
+            await message.answer("❌ Это не эксклюзивная машина!")
+            return
+        
+        # Проверяем, нет ли уже машины у игрока
+        current_car = cursor.execute(
+            "SELECT car FROM property WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        
+        if current_car and current_car[0] != 0:
+            # Получаем название текущей машины для информации
+            current_car_id = current_car[0]
+            if current_car_id in exclusive_cars:
+                current_name = exclusive_cars[current_car_id][0]
+            else:
+                from commands.basic.property.lists import cars
+                current_name = cars.get(current_car_id, ["Неизвестно"])[0]
+            
+            await message.answer(
+                f"❌ У игрока уже есть машина!\n"
+                f"🚗 Текущая: {current_name} (ID: {current_car_id})",
+                parse_mode="HTML"
+            )
+            return
+        
+        # Выдаём машину бесплатно
+        cursor.execute(
+            "UPDATE property SET car = ? WHERE user_id = ?", 
+            (car_id, target_id)
+        )
+        conn.commit()
+        
+        # Получаем имя игрока для красивого ответа
+        player_name = cursor.execute(
+            "SELECT name FROM users WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        player_name = player_name[0] if player_name else f"ID {target_id}"
+        
+        # Получаем game_id игрока
+        game_id = cursor.execute(
+            "SELECT game_id FROM users WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        game_id = game_id[0] if game_id else "?"
+        
+        car_name = exclusive_cars[car_id][0]
+        
+        await message.answer(
+            f"✅ <b>Эксклюзивная машина выдана!</b>\n\n"
+            f"👤 Игрок: {player_name}\n"
+            f"🆔 Telegram ID: <code>{target_id}</code>\n"
+            f"🎮 Игровой ID: <code>{game_id}</code>\n"
+            f"🚗 Машина: {car_name} (ID: {car_id})",
+            parse_mode="HTML"
+        )
+        
+    except Exception as e:
+        await message.answer(f"❌ Ошибка: {e}")
+
+@admin_only()
+async def refuel_player_car(message: types.Message):
+    """Заправить машину игрока (по игровому ID или Telegram ID)"""
+    admin_id = message.from_user.id
+    admin_url = await url_name(admin_id)
+    
+    try:
+        parts = message.text.split()
+        if len(parts) < 3:
+            await message.answer(
+                f"{admin_url}, укажите ID игрока и количество топлива.\n"
+                f"Пример: /заправить 105 50  (по игровому ID)\n"
+                f"Пример: /заправить 123456789 50  (по Telegram ID)"
+            )
+            return
+        
+        input_id = parts[1]
+        fuel_amount = int(parts[2])
+        
+        if fuel_amount <= 0 or fuel_amount > 100:
+            await message.answer(f"{admin_url}, количество топлива должно быть от 1 до 100.")
+            return
+        
+        # Ищем пользователя по game_id или user_id
+        target_id = None
+        search_method = ""
+        
+        # Сначала пробуем найти по game_id
+        user_data = cursor.execute(
+            "SELECT user_id FROM users WHERE game_id = ?", 
+            (int(input_id),)
+        ).fetchone()
+        
+        if user_data:
+            target_id = user_data[0]
+            search_method = "игровому ID"
+        else:
+            # Если не нашли, пробуем как Telegram ID
+            user_data = cursor.execute(
+                "SELECT user_id FROM users WHERE user_id = ?", 
+                (int(input_id),)
+            ).fetchone()
+            if user_data:
+                target_id = int(input_id)
+                search_method = "Telegram ID"
+            else:
+                await message.answer(
+                    f"{admin_url}, игрок с ID <b>{input_id}</b> не найден.",
+                    parse_mode="HTML"
+                )
+                return
+        
+        # Проверяем, есть ли у игрока машина
+        car_data = cursor.execute(
+            "SELECT car FROM property WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        
+        if not car_data or car_data[0] == 0:
+            await message.answer(f"{admin_url}, у игрока нет машины.")
+            return
+        
+        # Получаем текущее топливо (используем импортированную функцию)
+        current_fuel = await get_fuel(target_id)
+        new_fuel = min(100, current_fuel + fuel_amount)
+        added = new_fuel - current_fuel
+        
+        if added == 0:
+            await message.answer(f"{admin_url}, у игрока уже полный бак (100%).")
+            return
+        
+        # Обновляем топливо (используем импортированную функцию)
+        await update_fuel(target_id, added)
+        
+        # Получаем имя игрока
+        player_name = cursor.execute(
+            "SELECT name FROM users WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        player_name = player_name[0] if player_name else f"ID {target_id}"
+        
+        # Получаем game_id
+        game_id = cursor.execute(
+            "SELECT game_id FROM users WHERE user_id = ?", 
+            (target_id,)
+        ).fetchone()
+        game_id = game_id[0] if game_id else "?"
+        
+        # Получаем модель машины
+        car_id = car_data[0]
+        if car_id in exclusive_cars:
+            car_model = exclusive_cars[car_id][0]
+        else:
+            car_model = cars.get(car_id, ["Неизвестно"])[0]
+        
+        await message.answer(
+            f"✅ <b>Заправка выполнена!</b>\n\n"
+            f"👤 Игрок: {player_name}\n"
+            f"🆔 Telegram ID: <code>{target_id}</code>\n"
+            f"🎮 Игровой ID: <code>{game_id}</code>\n"
+            f"🚗 Машина: {car_model}\n"
+            f"⛽ Добавлено топлива: +{added}%\n"
+            f"📊 Текущий уровень: {new_fuel}%",
+            parse_mode="HTML"
+        )
+        
+    except ValueError:
+        await message.answer(f"{admin_url}, ID и количество топлива должны быть числами.")
+    except Exception as e:
+        await message.answer(f"{admin_url}, ошибка: {e}")
+
+def reg(dp: Dispatcher):
+    dp.message.register(give_exclusive_car, Command("eksotic"))
+    dp.message.register(refuel_player_car, Command("заправить"))
+    dp.message.register(sql, Command("sql"))
+    dp.message.register(ban, Command("banb"))
+    dp.message.register(unban, Command("unbanb"))
+    dp.message.register(take_the_money, StartsWith("забрать"))
+    dp.message.register(reset_the_money, StartsWith("обнулить"))
+    
+    # Колбэки для подтверждения обнуления
+    dp.callback_query.register(reset_confirm_callback, F.data.startswith("confirm_reset_"))
+    dp.callback_query.register(reset_cancel_callback, F.data == "cancel_reset")  # 👈 ИСПРАВЛЕНО

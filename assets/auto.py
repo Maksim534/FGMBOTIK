@@ -1,0 +1,63 @@
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+from commands.entertaining.earnings.farm.db import autoferma
+from commands.entertaining.earnings.business.db import autobusiness
+from commands.entertaining.earnings.garden.db import autogarden
+from commands.basic.ore.db import auto_energy, auto_rate_btc_new
+from commands.basic.bank.db import autobank 
+from commands.db import reset_limit, update_ads_const
+from assets.auto_fuel import auto_fuel 
+
+from bot import bot
+import config as cfg
+from commands.games.miracles import auto_stop
+
+scheduler = AsyncIOScheduler()
+
+
+async def autocommands() -> None:
+    """Каждый час"""
+    try:
+        await autobusiness()
+        await autogarden()
+        await autoferma()
+    except Exception as e:
+        print(f'error autocommands: {e}')
+
+
+async def autocommands2() -> None:
+    """Каждые 15 минут"""
+    await auto_energy()
+    await auto_fuel()
+
+
+async def autocommands3() -> None:
+    """Каждые 5 минут"""
+    # await autokursbtc() изменение курса на рандом число
+    # Сейчас курс идет за настоящим BTC (autokursbtc_new())
+    await auto_rate_btc_new()
+
+
+async def autocommands4() -> None:
+    """Каждый день в 00:00"""
+    await autobank()
+    await reset_limit()
+
+
+async def upd_bot_username() -> None:
+    """Выполняется при запуске бота"""
+    bot_info = await bot.get_me()
+    cfg.bot_username = bot_info.username
+    await update_ads_const()
+
+
+async def automatisation() -> None:
+    """Запуск задач"""
+    await upd_bot_username()
+    scheduler.add_job(autocommands, 'interval', hours=1)
+    scheduler.add_job(autocommands2, 'interval', minutes=15)
+    scheduler.add_job(autocommands3, 'interval', minutes=5)
+    scheduler.add_job(auto_stop, 'interval', seconds=5)    # commands/games/miracles.py
+    scheduler.add_job(autocommands4, 'cron', hour=00, minute=00)
+    scheduler.start()
+    
